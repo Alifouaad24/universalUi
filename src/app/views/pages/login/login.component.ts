@@ -13,10 +13,54 @@ import {
   InputGroupTextDirective,
   RowComponent
 } from '@coreui/angular';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpConnectService } from '../../../Services/http-connect.service';
+import { LoginRequest } from '../../../Models/Auth/loginRequest';
+import { LoginResponse } from '../../../Models/Auth/loginResponse';
+import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  imports: [ContainerComponent, RowComponent, ColComponent, CardGroupComponent, CardComponent, CardBodyComponent, FormDirective, InputGroupComponent, InputGroupTextDirective, IconDirective, FormControlDirective, ButtonDirective]
+  imports: [ContainerComponent, RowComponent, ColComponent,
+    CardGroupComponent, CardComponent, CardBodyComponent,
+    FormDirective, InputGroupComponent, InputGroupTextDirective, RouterLink, RouterModule, RouterOutlet,
+    IconDirective, FormControlDirective, ButtonDirective, FormsModule, ReactiveFormsModule]
 })
-export class LoginComponent {}
+
+export class LoginComponent {
+
+  loginForm!: FormGroup<{
+    username: FormControl<string>;
+    password: FormControl<string>;
+  }>;
+
+  constructor(
+    private fb: FormBuilder, private router: Router,
+    private httpService: HttpConnectService
+  ) {
+    this.loginForm = this.fb.nonNullable.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required],
+    });
+  }
+
+
+  login(): void {
+    if (this.loginForm.invalid) return;
+
+    const payload: LoginRequest = this.loginForm.getRawValue();
+
+    this.httpService.posteData('', payload).subscribe({
+      next: (res: LoginResponse) => {
+        localStorage.setItem('token', res.token);
+        this.router.navigate(['/Home/dashboard']);
+        console.log('Login successful');
+      },
+      error: err => {
+        console.error('Login failed', err);
+      }
+    });
+  }
+
+}

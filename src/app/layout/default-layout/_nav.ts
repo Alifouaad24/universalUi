@@ -12,18 +12,44 @@ export const navItems: INavData[] = [
   },
   {
     title: true,
-    name: 'Theme'
+    name: 'Admin'
   },
   {
-    name: 'الخدمات',
+    name: 'Businesses',
+    url: '/Home/business',
+    iconComponent: { name: 'cil-task' }
+  },
+    {
+    name: 'Business Types',
     url: '/theme/colors',
-    iconComponent: { name: 'cil-drop' }
+    iconComponent: { name: 'cil-chart' }
   },
   {
-    name: 'الأنشطة',
+    name: 'Countries',
+    url: '/theme/colors',
+    iconComponent: { name: 'cil-location-pin' }
+  },
+  {
+    name: 'Addresses',
+    url: '/theme/colors',
+    iconComponent: { name: 'cil-map' }
+  },
+  {
+    name: 'Services',
+    url: '/theme/colors',
+    iconComponent: { name: 'cil-spreadsheet' }
+  },
+  {
+    name: 'Businesses_Addresses',
     url: '/theme/typography',
     linkProps: { fragment: 'headings' },
     iconComponent: { name: 'cil-pencil' }
+  },
+    {
+    name: 'Business Business_Type',
+    url: '/theme/typography',
+    linkProps: { fragment: 'headings' },
+    iconComponent: { name: 'cil-star' }
   },
   {
     name: 'Components',

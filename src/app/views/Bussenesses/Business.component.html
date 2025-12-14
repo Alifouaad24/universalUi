@@ -1,0 +1,48 @@
+<div class="container my-4">
+  <a cButton color="primary" variant="outline" routerLink="../add-edit-business" >
+   Add Business
+  </a>
+</div>
+
+
+<c-card>
+  <c-card-header>
+    <strong>Businesses List</strong>
+  </c-card-header>
+
+  <c-card-body>
+    <table cTable striped hover responsive>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Country</th>
+          <th>Status</th>
+          <th>Whatsapp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let bus of Businesses; index as i">
+          <td>{{ i + 1 }}</td>
+          <td>{{ bus.name }}</td>
+          <td>{{ bus.code }}</td>
+          <td>
+            <c-badge color="success" *ngIf="bus.active">Active</c-badge>
+            <c-badge color="secondary" *ngIf="!bus.active">Un active</c-badge>
+          </td>
+          <td>{{ bus.whatsapp }}</td>
+          <td>
+            <button cButton color="primary" size="sm">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
+            <button cButton color="danger" size="sm" class="ms-2">
+              <c-icon name="cil-trash"></c-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </c-card-body>
+</c-card>
