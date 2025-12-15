@@ -21,12 +21,20 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Bussenesses/routes').then((m) => m.routes)
       },
       {
+        path: 'business-types',
+        loadChildren: () => import('./views/BusinessType/routes').then((m) => m.routes)
+      },
+      {
+        path: 'countries',
+        loadChildren: () => import('./views/countries/routes').then((m) => m.routes)
+      },
+      {
         path: 'base',
         loadChildren: () => import('./views/base/routes').then((m) => m.routes)
       },
       {
         path: 'buttons',
-        loadChildren: () => import('./views/buttons/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/BusinessType/routes').then((m) => m.routes)
       },
       {
         path: 'forms',

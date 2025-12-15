@@ -21,12 +21,12 @@ export const navItems: INavData[] = [
   },
     {
     name: 'Business Types',
-    url: '/theme/colors',
+    url: '/Home/business-types',
     iconComponent: { name: 'cil-chart' }
   },
   {
     name: 'Countries',
-    url: '/theme/colors',
+    url: '/Home/countries',
     iconComponent: { name: 'cil-location-pin' }
   },
   {

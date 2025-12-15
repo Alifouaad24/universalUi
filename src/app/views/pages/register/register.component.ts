@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { IconDirective } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-
 import {
   ButtonDirective,
   CardBodyComponent,
@@ -33,18 +32,17 @@ export class RegisterComponent {
   confirmPassword?: string;
 
   constructor(private fb: FormBuilder, private http: HttpConnectService, private router: Router) {
-    this.registerForm = this.fb.group(
-      {
-        username: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+    this.registerForm = this.fb.group({
+      userName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(5)]],
+    });
 
-      }
-    );
   }
 
   onSubmit() {
     if (this.registerForm.invalid) {
+      console.log('Form invalid');
       return;
     }
 
@@ -53,16 +51,26 @@ export class RegisterComponent {
       return;
     }
 
-    this.http.posteData('Register', this.registerForm.getRawValue())
+    const payload = {
+      "userName": this.registerForm.value.userName,
+      "email": this.registerForm.value.email,
+      "password": this.registerForm.value.password
+    };
+
+    console.log('Payload:', payload);
+
+    this.http.posteData('Account/Register', payload)
       .subscribe({
-        next: (response) => {
-          localStorage.setItem('token', response.token)
-          this.router.navigate(['/dashboard']);
+        next: (response: any) => {
+          console.log(response);
+          localStorage.setItem('token', response.token);
+          this.router.navigate(['/Home/dashboard']);
         },
         error: (err) => {
           console.error(err);
         }
       });
   }
+
 
 }

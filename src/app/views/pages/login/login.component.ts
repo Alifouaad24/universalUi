@@ -31,7 +31,7 @@ import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router'
 export class LoginComponent {
 
   loginForm!: FormGroup<{
-    username: FormControl<string>;
+    email: FormControl<string>;
     password: FormControl<string>;
   }>;
 
@@ -40,18 +40,20 @@ export class LoginComponent {
     private httpService: HttpConnectService
   ) {
     this.loginForm = this.fb.nonNullable.group({
-      username: ['', Validators.required],
+      email: ['', Validators.required],
       password: ['', Validators.required],
     });
   }
 
 
   login(): void {
+    console.log(this.loginForm.getRawValue())
     if (this.loginForm.invalid) return;
 
     const payload: LoginRequest = this.loginForm.getRawValue();
 
-    this.httpService.posteData('', payload).subscribe({
+
+    this.httpService.posteData('Account/Login', payload).subscribe({
       next: (res: LoginResponse) => {
         localStorage.setItem('token', res.token);
         this.router.navigate(['/Home/dashboard']);

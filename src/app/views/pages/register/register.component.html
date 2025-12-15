@@ -4,7 +4,7 @@
       <c-col lg="7" md="9" xl="6">
         <c-card class="mx-4">
           <c-card-body class="p-4">
-            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" cForm>
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
               <h1>Register</h1>
               <p class="text-body-secondary">Create your account</p>
 
@@ -12,14 +12,13 @@
                 <span cInputGroupText>
                   <svg cIcon name="cilUser"></svg>
                 </span>
-                <input cFormControl formControlName="username" placeholder="Username" autocomplete="name" />
+                <input cFormControl formControlName="userName" placeholder="user Name" autocomplete="name" />
               </c-input-group>
-              <div class="text-danger" *ngIf="
-  registerForm.get('username')?.invalid &&
-  registerForm.get('username')?.touched
-">
-                <small *ngIf="registerForm.get('username')?.errors?.['required']">
-                  Username is required
+              <div class="text-danger" *ngIf="registerForm.get('userName')?.invalid &&
+                                        registerForm.get('userName')?.touched
+                                      ">
+                <small *ngIf="registerForm.get('userName')?.errors?.['required']">
+                  userName is required
                 </small>
               </div>
               <c-input-group class="mb-3">
@@ -42,6 +41,10 @@
                 <input cFormControl formControlName="password" placeholder="Password" type="password"
                   autocomplete="new-password" />
               </c-input-group>
+              <div class="text-danger"
+                *ngIf="registerForm.get('password')?.value?.length < 5 && registerForm.get('password')?.touched">
+                <small>Passwords must be longer than 4 chars</small>
+              </div>
 
               <c-input-group class="mb-4">
                 <span cInputGroupText>

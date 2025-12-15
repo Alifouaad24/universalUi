@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { ButtonModule, CardModule, GridModule } from '@coreui/angular';
 import { IconModule, IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from '../../../icons/icon-subset';
-import { ButtonsComponent } from './buttons.component';
+import { ButtonsComponent } from './Add-business-type';
 
 describe('ButtonsComponent', () => {
   let component: ButtonsComponent;

@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ReactiveFormsModule } from '@angular/forms';
 import { provideRouter } from '@angular/router';
 
-import { ButtonGroupModule, ButtonModule, CardModule, CollapseModule, DropdownModule, GridModule, NavbarModule, NavModule } from '@coreui/angular';
+import { ButtonGroupModule, ButtonModule, CardModule, DropdownModule, FormModule, GridModule } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from '../../../icons/icon-subset';
-import { DropdownsComponent } from './dropdowns.component';
+import { ButtonGroupsComponent } from './button-groups.component';
 
-describe('DropdownsComponent', () => {
-  let component: DropdownsComponent;
-  let fixture: ComponentFixture<DropdownsComponent>;
+describe('ButtonGroupsComponent', () => {
+  let component: ButtonGroupsComponent;
+  let fixture: ComponentFixture<ButtonGroupsComponent>;
   let iconSetService: IconSetService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ButtonModule, DropdownModule, CollapseModule, NoopAnimationsModule, GridModule, CardModule, NavModule, NavbarModule, ButtonGroupModule, DropdownsComponent],
+      imports: [ReactiveFormsModule, ButtonModule, DropdownModule, FormModule, GridModule, CardModule, ButtonModule, ButtonGroupModule, ButtonGroupsComponent],
       providers: [IconSetService, provideRouter([])]
     })
       .compileComponents();
@@ -24,7 +24,7 @@ describe('DropdownsComponent', () => {
     iconSetService = TestBed.inject(IconSetService);
     iconSetService.icons = { ...iconSubset };
 
-    fixture = TestBed.createComponent(DropdownsComponent);
+    fixture = TestBed.createComponent(ButtonGroupsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
