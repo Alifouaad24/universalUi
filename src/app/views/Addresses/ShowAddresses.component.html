@@ -1,6 +1,6 @@
 <div class="container my-4">
-  <a cButton color="primary" variant="outline" routerLink="../add-edit-business" >
-   Add Business
+  <a cButton color="primary" variant="outline" routerLink="../add-edit-Address">
+    Add Address
   </a>
 </div>
 
@@ -15,24 +15,23 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Name</th>
-          <th>Country</th>
-          <th>Status</th>
-          <th>Whatsapp</th>
+          <th>Line 1</th>
+          <th>Line 2</th>
+          <th>State</th>
+          <th>Post Code</th>
+          <th>City</th>
           <th>Actions</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr *ngFor="let bus of Businesses; index as i">
+        <tr *ngFor="let one of allAddresses; index as i">
           <td>{{ i + 1 }}</td>
-          <td>{{ bus.business_name }}</td>
-          <td>{{ bus.country?.name }}</td>
-          <td>
-            <c-badge color="success" *ngIf="bus.is_active">Active</c-badge>
-            <c-badge color="secondary" *ngIf="!bus.is_active">Un active</c-badge>
-          </td>
-          <td>{{ bus.business_whatsapp }}</td>
+          <td>{{ one.line_1 }}</td>
+          <td>{{ one.line_2 }}</td>
+          <td>{{ one.state }}</td>
+          <td>{{ one.post_code }}</td>
+          <td>{{ one.city }}</td>
           <td>
             <button cButton color="primary" size="sm">
               <c-icon name="cil-pencil"></c-icon>

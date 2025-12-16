@@ -31,13 +31,18 @@ export const navItems: INavData[] = [
   },
   {
     name: 'Addresses',
-    url: '/theme/colors',
+    url: '/Home/allAddresses',
     iconComponent: { name: 'cil-map' }
   },
   {
     name: 'Services',
-    url: '/theme/colors',
+    url: '/Home/services',
     iconComponent: { name: 'cil-spreadsheet' }
+  },
+  {
+    name: 'Activities',
+    url: '/Home/activities',
+    iconComponent: { name: 'cil-cursor' }
   },
   {
     name: 'Businesses_Addresses',

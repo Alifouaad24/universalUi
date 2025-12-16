@@ -25,8 +25,20 @@ export const routes: Routes = [
         loadChildren: () => import('./views/BusinessType/routes').then((m) => m.routes)
       },
       {
+        path: 'allAddresses',
+        loadChildren: () => import('./views/Addresses/routes').then((m) => m.routes)
+      },
+      {
         path: 'countries',
         loadChildren: () => import('./views/countries/routes').then((m) => m.routes)
+      },
+      {
+        path: 'services',
+        loadChildren: () => import('./views/Services/routes').then((m) => m.routes)
+      },
+      {
+        path: 'activities',
+        loadChildren: () => import('./views/Activities/routes').then((m) => m.routes)
       },
       {
         path: 'base',

@@ -4,23 +4,18 @@
   </c-card-header>
 
   <c-card-body>
-    <form>
-
+    <form [formGroup]="businessForm" (submit)="submit()" cform>
       <c-row class="mb-3">
         <c-col md="6">
           <label class="form-label">Business Name</label>
-          <input
-            cFormControl
-            type="text"
-            class="form-control"
-            placeholder="name"
-          />
+          <input cFormControl formControlName="Business_name" type="text" class="form-control" placeholder="name" />
         </c-col>
 
         <c-col md="6">
           <label class="form-label">Country</label>
-          <select cSelect class="form-select">
-            <option value="">Choose country</option>
+          <select formControlName="CountryId" cSelect class="form-select">
+            <option selected disabled value="">Choose country</option>
+            <option *ngFor="let one of countries" [value]="one.countryId">{{ one.name }}</option>
           </select>
         </c-col>
       </c-row>
@@ -29,91 +24,78 @@
         <c-col md="6">
           <label class="form-label">Status</label>
           <div class="form-check form-switch">
-            <input
-              class="form-check-input"
-              type="checkbox"
-            />
+            <input formControlName="Is_active" class="form-check-input" type="checkbox" />
             <label class="form-check-label">Active</label>
           </div>
         </c-col>
 
         <c-col md="6">
           <label class="form-label">Phone number</label>
-          <input
-            cFormControl
-            type="text"
-            class="form-control"
-            placeholder="+966xxxxxxxx"
-          />
+          <input formControlName="Business_phone" cFormControl type="text" class="form-control" placeholder="+966xxxxxxxx" />
         </c-col>
       </c-row>
 
       <c-row class="mb-3">
         <c-col md="6">
           <label class="form-label">Website</label>
-          <input
-            cFormControl
-            type="url"
-            class="form-control"
-            placeholder="https://example.com"
-          />
+          <input formControlName="Business_webSite" cFormControl type="url" class="form-control" placeholder="https://example.com" />
         </c-col>
 
         <c-col md="6">
           <label class="form-label">Email</label>
-          <input
-            cFormControl
-            type="email"
-            class="form-control"
-            placeholder="info@email.com"
-          />
+          <input formControlName="Business_email" cFormControl type="email" class="form-control" placeholder="info@email.com" />
         </c-col>
       </c-row>
 
       <c-row class="mb-3">
         <c-col md="4">
           <label class="form-label">Facebook</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_fb" cFormControl type="text" class="form-control" />
         </c-col>
 
         <c-col md="4">
           <label class="form-label">Instagram</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_instgram" cFormControl type="text" class="form-control" />
         </c-col>
 
         <c-col md="4">
           <label class="form-label">TikTok</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_tiktok" cFormControl type="text" class="form-control" />
         </c-col>
       </c-row>
 
       <c-row class="mb-3">
         <c-col md="4">
           <label class="form-label">Google</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_google" cFormControl type="text" class="form-control" />
         </c-col>
 
         <c-col md="4">
           <label class="form-label">YouTube</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_youtube" cFormControl type="text" class="form-control" />
         </c-col>
 
         <c-col md="4">
           <label class="form-label">WhatsApp</label>
-          <input cFormControl type="text" class="form-control" />
+          <input formControlName="Business_whatsapp" cFormControl type="text" class="form-control" />
         </c-col>
       </c-row>
 
       <c-row class="mb-4">
         <c-col md="6">
           <label class="form-label">Business type</label>
-          <select cSelect multiple class="form-select">
+          <select cSelect multiple class="form-select" formControlName="BusinessTypeId">
+            <option *ngFor="let bt of businessesType" [value]="bt.business_type_id">
+              {{ bt.description }}
+            </option>
           </select>
         </c-col>
-
         <c-col md="6">
           <label class="form-label">Addresses</label>
-          <select cSelect multiple class="form-select">
+          <select cSelect multiple class="form-select" formControlName="AddressId">
+            <option *ngFor="let ad of addresses" [value]="ad.address_id">
+              {{ ad.line_1 }} | {{ ad.line_2 }} | {{ ad.state }} | {{ ad.city }} | {{ ad.post_code }}
+            </option>
           </select>
         </c-col>
       </c-row>
@@ -122,7 +104,7 @@
         <button cButton color="secondary" variant="outline">
           Cancel
         </button>
-        <button cButton color="primary">
+        <button cButton color="primary" type="submit" [disabled]="businessForm.invalid">
           Save
         </button>
       </div>

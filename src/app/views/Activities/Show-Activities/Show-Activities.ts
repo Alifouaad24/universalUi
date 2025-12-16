@@ -31,10 +31,12 @@ import { BusinessType } from '../../../Models/Business/BusinessType';
 import { CommonModule } from '@angular/common';
 import { IconModule } from '@coreui/icons-angular';
 import { Country } from '../../../Models/CountryModel';
+import { ServiceModel } from '../../../Models/ServiceModel';
+import { ActiviityModel } from '../../../Models/ActivityModel';
 
 @Component({
   selector: 'app-button-groups',
-  templateUrl: './Show-Countries.html',
+  templateUrl: './Show-Activities.html',
   imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule,
     CardHeaderComponent, CardBodyComponent, ButtonGroupComponent,
     ButtonDirective, RouterLink, ReactiveFormsModule,
@@ -51,13 +53,13 @@ import { Country } from '../../../Models/CountryModel';
     
     ToastBodyComponent]
 })
-export class ShowCountriesComponent implements OnInit {
+export class ShowActivitiesComponent implements OnInit {
 
-  Countries: Country[] = [];
+  activities: ActiviityModel[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
-  selectedType?: Country;
+  selectedType?: ActiviityModel;
   ///// for toastr ////////
   position = 'top-end';
   toastVisible = signal(false); 
@@ -73,15 +75,13 @@ export class ShowCountriesComponent implements OnInit {
 
   getAllCountries() {
     this.isLoading = true;
-    this.http.getAllData('Country').subscribe(
+    this.http.getAllData('Activity').subscribe(
       (res: any) => {
-        this.Countries = (res as any[]).map(item => new Country({
-          countryId: item.countryId,
-          name: item.name,
-          businesses: item.businesses,
-          insert_on: item.insert_on,
-          insert_by: item.insert_by,
-          visible: item.visible
+        this.activities = (res as any[]).map(item => new ActiviityModel({
+          activity_id: item.service_id,
+          description: item.description,
+          business: item.business,
+          insert_on: item.insert_on
         }));
         this.isLoading = false;
 
@@ -95,20 +95,20 @@ export class ShowCountriesComponent implements OnInit {
     );
   }
 
-  confirmDelete(type: Country) {
+  confirmDelete(type: ActiviityModel) {
     this.selectedType = type;
     this.showDeleteModal = true;
   }
 
-  deleteBusinessType(type?: Country) {
+  deleteBusinessType(type?: ActiviityModel) {
     if (!type) return;
-    this.http.deleteData(`Country/${type.countryId}`,).subscribe(() => {
-      this.Countries = this.Countries.filter(t => t.countryId !== type.countryId);
+    this.http.deleteData(`Activity/${type.activity_id}`,).subscribe(() => {
+      this.activities = this.activities.filter(t => t.activity_id !== type.activity_id);
       this.showDeleteModal = false;
-      this.toastMessage.set(`${type.name} deleted successfully`);
+      this.toastMessage.set(`${type.description} deleted successfully`);
       this.toastVisible.set(true);
     },(error) =>{
-      this.toastMessage.set(`An error occured during delete (${type.name})`);
+      this.toastMessage.set(`An error occured during delete (${type.description})`);
       this.toastVisible.set(true);
     });
   }
