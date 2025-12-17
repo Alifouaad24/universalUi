@@ -1,6 +1,6 @@
 <div class="container my-4">
-  <a cButton color="primary" variant="outline" routerLink="../add-edit-business" >
-   Add Business
+  <a cButton color="primary" variant="outline" routerLink="../add-edit-business">
+    Add Business
   </a>
 </div>
 
@@ -37,7 +37,7 @@
             <button cButton color="primary" size="sm">
               <c-icon name="cil-pencil"></c-icon>
             </button>
-            <button cButton color="danger" size="sm" class="ms-2">
+            <button cButton color="danger" size="sm" (click)="toggleLiveDemo(bus.business_id)" class="ms-2">
               <c-icon name="cil-trash"></c-icon>
             </button>
           </td>
@@ -46,3 +46,25 @@
     </table>
   </c-card-body>
 </c-card>
+
+
+
+<c-modal id="liveDemoModal" [visible]="visible" (visibleChange)="handleLiveDemoChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>Delete item</h5>
+    <button (click)="toggleLiveDemo(0)" cButtonClose></button>
+  </c-modal-header>
+  <c-modal-body>Are you sure to delete this item?</c-modal-body>
+  <c-modal-footer>
+    <button (click)="toggleLiveDemo(0)" cButton color="secondary">
+      Close
+    </button>
+    <button cButton color="danger" (click)="delete()" [disabled]="isDeleting">
+
+      <c-spinner *ngIf="isDeleting" size="sm" class="me-2">
+      </c-spinner>
+      <span *ngIf="!isDeleting">Delete</span>
+      <span *ngIf="isDeleting"></span>
+    </button>
+  </c-modal-footer>
+</c-modal>

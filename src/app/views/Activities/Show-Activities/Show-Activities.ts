@@ -78,7 +78,7 @@ export class ShowActivitiesComponent implements OnInit {
     this.http.getAllData('Activity').subscribe(
       (res: any) => {
         this.activities = (res as any[]).map(item => new ActiviityModel({
-          activity_id: item.service_id,
+          activity_id: item.activity_id,
           description: item.description,
           business: item.business,
           insert_on: item.insert_on
@@ -100,7 +100,7 @@ export class ShowActivitiesComponent implements OnInit {
     this.showDeleteModal = true;
   }
 
-  deleteBusinessType(type?: ActiviityModel) {
+  deleteActivity(type?: ActiviityModel) {
     if (!type) return;
     this.http.deleteData(`Activity/${type.activity_id}`,).subscribe(() => {
       this.activities = this.activities.filter(t => t.activity_id !== type.activity_id);

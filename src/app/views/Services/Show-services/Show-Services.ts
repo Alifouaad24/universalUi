@@ -101,7 +101,7 @@ export class ShowServicesComponent implements OnInit {
 
   deleteBusinessType(type?: ServiceModel) {
     if (!type) return;
-    this.http.deleteData(`Country/${type.service_id}`,).subscribe(() => {
+    this.http.deleteData(`Service/${type.service_id}`,).subscribe(() => {
       this.services = this.services.filter(t => t.service_id !== type.service_id);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.description} deleted successfully`);

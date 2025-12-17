@@ -101,7 +101,8 @@ export class ShowBusinessTypesComponent implements OnInit {
 
   deleteBusinessType(type?: BusinessType) {
     if (!type) return;
-    this.http.deleteData(`BusinessType/${type.business_type_id}`,).subscribe(() => {
+    this.http.deleteData(`BusinessType/${type.business_type_id}`,).subscribe((res) => {
+      console.log(res)
       this.businessTypes = this.businessTypes.filter(t => t.business_type_id !== type.business_type_id);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.description} deleted successfully`);

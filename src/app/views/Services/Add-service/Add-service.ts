@@ -26,7 +26,7 @@ export class AddEditServiceComponent implements OnInit {
   constructor(private http: HttpConnectService, private router: Router) { }
 
   ngOnInit(): void {
-
+    this.getAllActivities()
   }
 
   getAllActivities(){
@@ -55,7 +55,7 @@ export class AddEditServiceComponent implements OnInit {
       "activity_id": this.selectedActivityId
     }
 
-    this.http.posteData('Service', { "name": this.description }).subscribe(res => {
+    this.http.posteData('Service', payLoad).subscribe(res => {
       this.router.navigate(['Home/services'])
       this.loading = false
     }, (error) => {

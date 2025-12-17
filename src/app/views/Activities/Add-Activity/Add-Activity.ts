@@ -27,11 +27,11 @@ export class AddEditActivityComponent implements OnInit {
   constructor(private http: HttpConnectService, private router: Router) { }
 
   ngOnInit(): void {
-
+    this.getAllBusinesses()
   }
 
-  getAllActivities(){
-    this.http.getAllData('Activity').subscribe(res => {
+  getAllBusinesses(){
+    this.http.getAllData('Business').subscribe(res => {
     this.Businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
       business_id: el.business_id,
       business_name: el.business_name,

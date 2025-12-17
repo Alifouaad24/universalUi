@@ -5,7 +5,7 @@
 </div>
 <div class="card">
   <div class="card-header">
-    Business Types
+    Services
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -19,6 +19,7 @@
         <tr>
           <th>#</th>
           <th>Description</th>
+          <th>Activity</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -26,6 +27,7 @@
         <tr *ngFor="let type of services; index as i">
           <td>{{ i + 1 }}</td>
           <td>{{ type.description }}</td>
+          <td>{{ type.activiity.description }}</td>
           <td>
             <ng-container *ngIf="services.length">
               <button class="btn btn-sm btn-primary me-1">

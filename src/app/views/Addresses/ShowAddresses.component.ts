@@ -1,6 +1,6 @@
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { BadgeComponent, ButtonDirective, FormModule, TableDirective } from '@coreui/angular';
+import { BadgeComponent, ButtonDirective, FormModule, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ProgressBarComponent, ProgressComponent, TableDirective, ToastBodyComponent, ToastCloseDirective, ToastComponent, ToastModule } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 
 import {
@@ -15,8 +15,11 @@ import { AddressModel } from '../../Models/AddressModel';
 
 @Component({
   templateUrl: 'ShowAddresses.component.html',
-  imports: [CardComponent, CardHeaderComponent, CardBodyComponent, RowComponent, RouterLink, RouterOutlet, 
-     BadgeComponent, CommonModule, FormModule, IconComponent, TableDirective, ButtonDirective]
+  imports: [CardComponent, CardHeaderComponent, ToastComponent, ToastBodyComponent,
+     ToastCloseDirective, ToastModule, ProgressComponent,
+     ModalComponent, ModalHeaderComponent,ModalBodyComponent, ModalFooterComponent,
+     CardBodyComponent, RowComponent, RouterLink, RouterOutlet,
+    BadgeComponent, CommonModule, FormModule, IconComponent, TableDirective, ButtonDirective]
 })
 export class ShowAddressesComponent implements OnInit {
 
@@ -26,19 +29,20 @@ export class ShowAddressesComponent implements OnInit {
   showDeleteModal: boolean = false;
   ///// for toastr ////////
   position = 'top-end';
-  toastVisible = signal(false); 
-  toastMessage = signal(''); 
+  toastVisible = signal(false);
+  toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
-  
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) {}
+  selectedType?: AddressModel;
 
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
+  Businesses?: any[]
   ngOnInit(): void {
     this.getAllAddresses()
   }
 
 
-  getAllAddresses(){
+  getAllAddresses() {
     this.http.getAllData('Address').subscribe((res: any) => {
       this.allAddresses = (res as AddressModel[]).map(el => new AddressModel({
         address_id: el.address_id,
@@ -61,5 +65,32 @@ export class ShowAddressesComponent implements OnInit {
       })
   }
 
-  Businesses?: any[]
+  confirmDelete(type: AddressModel) {
+    this.selectedType = type;
+    this.showDeleteModal = true;
+  }
+
+
+  deleteAddress(type?: AddressModel) {
+    if (!type) return;
+    this.http.deleteData(`Address/${type.address_id}`,).subscribe((res) => {
+      console.log(res)
+      this.allAddresses = this.allAddresses.filter(t => t.address_id !== type.address_id);
+      this.showDeleteModal = false;
+      this.toastMessage.set(`$ deleted successfully`);
+      this.toastVisible.set(true);
+    }, (error) => {
+      this.toastMessage.set(`An error occured during delete`);
+      this.toastVisible.set(true);
+    });
+  }
+  onVisibleChange(visible: boolean) {
+    this.showDeleteModal = false;
+    this.toastVisible.set(visible);
+    if (!visible) this.percentage.set(0);
+  }
+
+  onTimerChange(value: number) {
+    this.percentage.set(value * 25);
+  }
 }
