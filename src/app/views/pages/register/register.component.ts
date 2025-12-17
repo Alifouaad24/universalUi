@@ -52,7 +52,7 @@ export class RegisterComponent {
     }
 
     const payload = {
-      "userName": this.registerForm.value.userName,
+      "userName": this.registerForm.value.userName.replace(' ', '-'),
       "email": this.registerForm.value.email,
       "password": this.registerForm.value.password
     };
