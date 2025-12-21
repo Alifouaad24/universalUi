@@ -1,7 +1,8 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
+import { BusinessContextService } from '../../../core/Services/business-context.service';
 import {
   AvatarComponent,
   BadgeComponent,
@@ -14,6 +15,7 @@ import {
   DropdownItemDirective,
   DropdownMenuDirective,
   DropdownToggleDirective,
+  FormModule,
   HeaderComponent,
   HeaderNavComponent,
   HeaderTogglerDirective,
@@ -21,19 +23,26 @@ import {
   NavLinkDirective,
   SidebarToggleDirective
 } from '@coreui/angular';
-
+import { FormsModule } from '@angular/forms';
 import { IconDirective } from '@coreui/icons-angular';
 
 @Component({
   selector: 'app-default-header',
   templateUrl: './default-header.component.html',
-  imports: [ContainerComponent, HeaderTogglerDirective, SidebarToggleDirective, IconDirective, HeaderNavComponent, NavItemComponent, NavLinkDirective, RouterLink, RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent, DropdownComponent, DropdownToggleDirective, AvatarComponent, DropdownMenuDirective, DropdownHeaderDirective, DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
+  imports: [ContainerComponent, HeaderTogglerDirective, CommonModule, FormsModule,
+    SidebarToggleDirective, IconDirective, HeaderNavComponent,
+    NavItemComponent, NavLinkDirective, RouterLink,
+    RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent,
+    DropdownComponent, DropdownToggleDirective, AvatarComponent,
+    DropdownMenuDirective, DropdownHeaderDirective,
+    DropdownItemDirective, BadgeComponent, DropdownDividerDirective]
 })
+
 export class DefaultHeaderComponent extends HeaderComponent {
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
-
+  businesses: BusinessModel[] = [];
   readonly colorModes = [
     { name: 'light', text: 'Light', icon: 'cilSun' },
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
@@ -45,9 +54,36 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor() {
+  constructor(private businessCtx: BusinessContextService) {
     super();
   }
+
+  currentBusiness: any;
+
+
+  ngOnInit(): void {
+    this.businesses = this.businessCtx.getBusinesses();
+
+    this.businessCtx.getCurrentBusiness().subscribe(b => {
+      this.currentBusiness = b;
+    });
+  }
+
+  selectBusiness(b: any) {
+    this.currentBusiness = b;
+    setTimeout(() => this.businessCtx.setCurrentBusiness(b), 0);
+  }
+
+  logout() {
+    console.log('Logging out...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('businesses');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('currentBusiness');
+    window.location.href = '/login';
+
+  }
+
 
   sidebarId = input('sidebar1');
 

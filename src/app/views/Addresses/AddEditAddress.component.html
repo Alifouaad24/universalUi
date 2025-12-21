@@ -1,6 +1,6 @@
 <c-card>
   <c-card-header>
-    <strong>Add Address</strong>
+    <strong>{{ !addressToEdit ? 'Add Address' : 'Edit Address'}}</strong>
   </c-card-header>
 
   <c-card-body>
@@ -40,7 +40,7 @@
           Cancel
         </button>
         <button type="submit" cButton color="primary">
-          Save
+          {{ !addressToEdit ? 'Add' : 'Edit'}}
         </button>
       </div>
 

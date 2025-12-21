@@ -1,23 +1,62 @@
 <!-- add-business-type.component.html -->
 <div class="card">
   <div class="card-header">
-      Add Service
+    {{!serviceToEdit ? 'Add Service' : 'Edit Service'}}
   </div>
   <div class="card-body">
     <div class="mb-3">
       <label for="description" class="form-label">Description</label>
-      <input type="text" class="form-control" id="description" [(ngModel)]="description" placeholder="Enter Country Name">
+      <input type="text" class="form-control" id="description" [(ngModel)]="description"
+        placeholder="Enter Country Name">
     </div>
     <div class="mb-3">
-      <label class="form-label">Activity</label>
-      <select class="form-select" [(ngModel)]="selectedActivityId">
-        <option disabled [ngValue]="null">-- Select Activity --</option>
-        <option *ngFor="let act of activities" [ngValue]="act.activity_id">
-          {{ act.description }}
-        </option>
-      </select>
+      <label class="form-label d-block">Service Type</label>
+
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="visibility" id="public" value="public"
+          [(ngModel)]="visibility" />
+        <label class="form-check-label" for="public">Public</label>
+      </div>
+
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="visibility" id="local" value="local"
+          [(ngModel)]="visibility" />
+        <label class="form-check-label" for="local">Local</label>
+      </div>
     </div>
-    <button [disabled]="loading" class="btn btn-primary" (click)="addService()">Add</button>
+
+    <hr/>
+
+    <div class="mb-3" style="height: 100px; overflow-y: scroll;">
+      <label class="form-label d-block">Activities</label>
+
+      <div class="form-check" *ngFor="let act of activities">
+        <input class="form-check-input" type="checkbox" [id]="'act-' + act.activity_id"
+          [checked]="selectedActivityIds.includes(act.activity_id!)"
+          (change)="toggleActivity(act.activity_id!, $event)" />
+
+        <label class="form-check-label" [for]="'act-' + act.activity_id">
+          {{ act.description }}
+        </label>
+      </div>
+    </div>
+<hr/>
+    <div class="mb-3" style="height: 100px; overflow-y: scroll;">
+      <label class="form-label d-block">Businesses</label>
+
+      <div class="form-check" *ngFor="let one of businesses">
+        <input class="form-check-input" type="checkbox" [id]="'bus-' + one.business_id"
+          [checked]="selectedBusinessIds.includes(one.business_id!)"
+          (change)="toggleBusiness(one.business_id!, $event)" />
+
+        <label class="form-check-label" [for]="'bus-' + one.business_id">
+          {{ one.business_name }}
+        </label>
+      </div>
+    </div>
+
+    <button [disabled]="loading" class="btn btn-primary" (click)="addService()">{{!serviceToEdit ? 'Add' :
+      'Edit'}}</button>
     <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
   </div>
 </div>

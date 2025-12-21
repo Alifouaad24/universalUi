@@ -33,7 +33,8 @@
           <td>{{ one.post_code }}</td>
           <td>{{ one.city }}</td>
           <td>
-            <button cButton color="primary" size="sm">
+            <button cButton color="primary" size="sm"
+             [routerLink]="['../add-edit-Address']" [queryParams]="{address: one | json}">
               <c-icon name="cil-pencil"></c-icon>
             </button>
             <button cButton (click)="confirmDelete(one)" color="danger" size="sm" class="ms-2">

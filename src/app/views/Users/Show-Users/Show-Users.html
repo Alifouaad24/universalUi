@@ -1,11 +1,11 @@
 <div class="m-2 p-2">
-  <button class="btn btn-primary" routerLink="./add-edit-service">
+  <button class="btn btn-primary" routerLink="./add-edit-user">
     Add
   </button>
 </div>
 <div class="card">
   <div class="card-header">
-    Services
+    Users
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -14,22 +14,23 @@
       </div>
     </div>
     <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
-    <table *ngIf="services.length > 0" class="table table-hover">
+    <table *ngIf="Users.length > 0" class="table table-hover">
       <thead class="table-light">
         <tr>
           <th>#</th>
-          <th>Description</th>
+          <th>User Name</th>
+          <th>Email</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let type of services; index as i">
+        <tr *ngFor="let type of Users; index as i">
           <td>{{ i + 1 }}</td>
-          <td>{{ type.description }}</td>
+          <td>{{ type.userName }}</td>
+          <td>{{ type.email }}</td>
           <td>
-            <ng-container *ngIf="services.length">
-              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-service']"
-                [queryParams]="{ service: type | json}">
+            <ng-container *ngIf="Users.length">
+              <button class="btn btn-sm btn-primary me-1">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
@@ -48,11 +49,11 @@
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.description }}?
+    Are you sure you want to delete {{ selectedType?.userName }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteBusinessType(selectedType)">Delete</button>
+    <button class="btn btn-danger" (click)="deleteUser(selectedType)">Delete</button>
   </c-modal-footer>
 </c-modal>
 

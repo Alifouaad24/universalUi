@@ -3,16 +3,16 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, FormControlDirective, RowComponent, TableDirective } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { BusinessType } from '../../Models/Business/BusinessType';
 import { AddressModel } from '../../Models/AddressModel';
 import { Country } from '../../Models/CountryModel';
+import { BusinessModel } from '../../Models/Business/BusinessModel';
 import { HttpConnectService } from '../../Services/http-connect.service';
 @Component({
   templateUrl: 'AddEditBusines.component.html',
   imports: [
     AsyncPipe,
-
     CardComponent,
     CardBodyComponent,
     CardHeaderComponent,
@@ -33,9 +33,27 @@ export class AddEditBusniessComponent implements OnInit {
   countries?: Country[]
   businessesType?: BusinessType[]
   addresses?: AddressModel[]
+  business?: BusinessModel;
+  address = {
+    line_1: '',
+    line_2: '',
+    state: '',
+    city: '',
+    postCode: ''
+  };
 
-  constructor(private fb: FormBuilder, private http: HttpConnectService
-    , private cdr: ChangeDetectorRef, private router: Router) {
+  services: {
+    description: string;
+    isPublic: boolean;
+  }[] = [];
+
+  Description?: String;
+
+  serviceDescription: string = '';
+  serviceVisibility: 'public' | 'local' | null = null;
+
+  constructor(private fb: FormBuilder, private http: HttpConnectService,
+    private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) {
     this.businessForm = this.fb.group({
       Business_name: ['', Validators.required],
       CountryId: [0, Validators.required],
@@ -49,16 +67,39 @@ export class AddEditBusniessComponent implements OnInit {
       Business_youtube: [''],
       Business_whatsapp: [''],
       Business_email: ['', Validators.email],
-      BusinessTypeId: [[]],
-      AddressId: [[]]
+      BusinessTypes: this.fb.array([]),
+      Addresses: this.fb.array([])
     });
   }
-
 
   ngOnInit(): void {
     this.getAllAddresses()
     this.getAllBusinessesTypes()
     this.getAllCountries()
+    this.route.queryParamMap.subscribe(param => {
+      const busFromQuery = param.get('bus')
+      if (busFromQuery) {
+        this.business = JSON.parse(busFromQuery);
+
+        this.businessForm.patchValue({
+          Business_name: this.business!.business_name,
+          CountryId: this.business!.countryId,
+          Is_active: this.business!.is_active,
+          Business_phone: this.business!.business_phone,
+          Business_webSite: this.business!.business_webSite,
+          Business_fb: this.business!.business_fb,
+          Business_instgram: this.business!.business_instgram,
+          Business_tiktok: this.business!.business_tiktok,
+          Business_google: this.business!.business_google,
+          Business_youtube: this.business!.business_youtube,
+          Business_whatsapp: this.business!.business_whatsapp,
+          Business_email: this.business!.business_email,
+          BusinessTypeId: this.business!.businessTypes,
+          AddressId: this.business!.businessAddresses
+        });
+        console.log(this.business)
+      }
+    })
   }
 
   getAllCountries() {
@@ -118,18 +159,22 @@ export class AddEditBusniessComponent implements OnInit {
       "business_youtube": this.businessForm.get('Business_youtube')?.value,
       "business_whatsapp": this.businessForm.get('Business_whatsapp')?.value,
       "business_email": this.businessForm.get('Business_email')?.value,
-      "businessTypeId": this.businessForm.get('BusinessTypeId')?.value,
-      "addressId": this.businessForm.get('AddressId')?.value,
+      "businessTypeId": this.businessForm.get('BusinessTypes')?.value,
+      "addressId": this.businessForm.get('Addresses')?.value,
+      "address": this.address,
+      "services": this.services
     }
-    if (this.businessForm.valid) {
-      console.log('Business Data:', payLoad);
-      this.http.posteData('Business', payLoad).subscribe(res => {
-      this.router.navigate(['Home/business'])
-      })
-    } else {
-      console.log('Form not valid');
-      this.businessForm.markAllAsTouched();
-    }
+
+    console.log(payLoad)
+    // if (this.businessForm.valid) {
+    //   console.log('Business Data:', payLoad);
+    //   this.http.posteData('Business', payLoad).subscribe(res => {
+    //     this.router.navigate(['Home/business'])
+    //   })
+    // } else {
+    //   console.log('Form not valid');
+    //   this.businessForm.markAllAsTouched();
+    // }
   }
 
   resetForm() {
@@ -139,4 +184,64 @@ export class AddEditBusniessComponent implements OnInit {
       AddressId: []
     });
   }
+
+  get BusinessTypesArray(): FormArray {
+    return this.businessForm.get('BusinessTypes') as FormArray;
+  }
+
+  get AddressesArray(): FormArray {
+    return this.businessForm.get('Addresses') as FormArray;
+  }
+
+  onBusinessTypeChange(event: any, id: number) {
+    const array = this.BusinessTypesArray;
+    const index = array.controls.findIndex(x => x.value === id);
+
+    if (event.target.checked) {
+      if (index === -1) {
+        array.push(this.fb.control(id));
+      }
+    } else {
+      if (index !== -1) {
+        array.removeAt(index);
+      }
+    }
+  }
+
+  onAddressChange(event: any, id: number) {
+    const array = this.AddressesArray;
+    const index = array.controls.findIndex(x => x.value === id);
+
+    if (event.target.checked) {
+      if (index === -1) {
+        array.push(this.fb.control(id));
+      }
+    } else {
+      if (index !== -1) {
+        array.removeAt(index);
+      }
+    }
+  }
+
+
+
+
+
+  addService() {
+    this.services.push({
+      description: this.serviceDescription,
+      isPublic: this.serviceVisibility == 'public' ? true : false!
+    });
+
+    this.serviceDescription = '';
+    this.serviceVisibility = null;
+    console.log(this.services)
+  }
+
+  removeService(index: number) {
+    this.services.splice(index, 1);
+  }
+
+
+
 }

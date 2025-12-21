@@ -43,6 +43,18 @@ export class BusinessComponent implements OnInit {
         country: el.country,
         is_active: el.is_active,
         business_whatsapp: el.business_whatsapp,
+        business_phone: el.business_phone,
+        business_webSite: el.business_webSite,
+        business_fb: el.business_fb,
+        business_instgram: el.business_instgram,
+        business_tiktok: el.business_tiktok,
+        business_google: el.business_google,
+        business_youtube: el.business_youtube,
+        business_email: el.business_email,
+        activities: el.activities,
+        businessTypes: el.businessTypes,
+        businessAddresses: el.businessAddresses,
+
       }))
       this.cdr.detectChanges()
     }, (error) => {

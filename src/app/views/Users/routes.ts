@@ -1,0 +1,32 @@
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  {
+    path: '',
+    data: {
+      title: 'Users'
+    },
+    children: [
+      {
+        path: '',
+        redirectTo: 'users',
+        pathMatch: 'full'
+      },
+      {
+        path: '',
+        loadComponent: () => import('./Show-Users/Show-Users').then(m => m.ShowUsersComponent),
+        data: {
+          title: 'Show'
+        }
+      },
+      {
+        path: 'add-edit-user',
+        loadComponent: () => import('./Add-User/Add-User').then(m => m.AddEditUserComponent),
+        data: {
+          title: 'Add/Edit'
+        }
+      },
+    ]
+  }
+];
+

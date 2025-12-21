@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { IconDirective } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -12,7 +12,8 @@ import {
   FormDirective,
   InputGroupComponent,
   InputGroupTextDirective,
-  RowComponent
+  RowComponent,
+  SpinnerComponent
 } from '@coreui/angular';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { HttpConnectService } from '../../../Services/http-connect.service';
@@ -22,7 +23,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-register',
   templateUrl: './register.component.html',
   imports: [ContainerComponent, RowComponent,
-    ColComponent, CardComponent, CardBodyComponent, CommonModule, FormsModule,
+    ColComponent, CardComponent, CardBodyComponent, CommonModule, FormsModule, SpinnerComponent,
     FormDirective, InputGroupComponent, InputGroupTextDirective, ReactiveFormsModule,
     IconDirective, FormControlDirective, ButtonDirective, RouterLink, RouterOutlet]
 })
@@ -30,8 +31,9 @@ export class RegisterComponent {
 
   registerForm!: FormGroup;
   confirmPassword?: string;
-
-  constructor(private fb: FormBuilder, private http: HttpConnectService, private router: Router) {
+  loading: boolean = false
+  constructor(private fb: FormBuilder, private http: HttpConnectService, private cdr: ChangeDetectorRef,
+     private router: Router) {
     this.registerForm = this.fb.group({
       userName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -50,7 +52,7 @@ export class RegisterComponent {
       console.log('Passwords do not match');
       return;
     }
-
+    this.loading = true
     const payload = {
       "userName": this.registerForm.value.userName.replace(' ', '-'),
       "email": this.registerForm.value.email,
@@ -65,9 +67,13 @@ export class RegisterComponent {
           console.log(response);
           localStorage.setItem('token', response.token);
           this.router.navigate(['/Home/dashboard']);
+          this.loading = false
         },
         error: (err) => {
           console.error(err);
+          this.loading = false
+          this.cdr.detectChanges()
+          alert("user name or email already exist...")
         }
       });
   }

@@ -28,7 +28,7 @@
           <td>{{ type.name }}</td>
           <td>
             <ng-container *ngIf="Countries.length">
-              <button class="btn btn-sm btn-primary me-1">
+              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-country']" [queryParams]="{ country: type | json}">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">

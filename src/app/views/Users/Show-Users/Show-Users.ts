@@ -32,10 +32,11 @@ import { CommonModule } from '@angular/common';
 import { IconModule } from '@coreui/icons-angular';
 import { Country } from '../../../Models/CountryModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
+import { UserModel } from '../../../Models/UserModel';
 
 @Component({
   selector: 'app-button-groups',
-  templateUrl: './Show-Services.html',
+  templateUrl: './Show-Users.html',
   imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule,
     CardHeaderComponent, CardBodyComponent, ButtonGroupComponent,
     ButtonDirective, RouterLink, ReactiveFormsModule,
@@ -52,13 +53,13 @@ import { ServiceModel } from '../../../Models/ServiceModel';
     
     ToastBodyComponent]
 })
-export class ShowServicesComponent implements OnInit {
+export class ShowUsersComponent implements OnInit {
 
-  services: ServiceModel[] = [];
+  Users: UserModel[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
-  selectedType?: ServiceModel;
+  selectedType?: UserModel;
   ///// for toastr ////////
   position = 'top-end';
   toastVisible = signal(false); 
@@ -69,17 +70,17 @@ export class ShowServicesComponent implements OnInit {
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.getAllServices()
+    this.getAllUsers()
   }
 
-  getAllServices() {
+  getAllUsers() {
     this.isLoading = true;
-    this.http.getAllData('Service').subscribe(
+    this.http.getAllData('Account/getAllUsers').subscribe(
       (res: any) => {
-        this.services = (res as any[]).map(item => new ServiceModel({
-          service_id: item.service_id,
-          description: item.description,
-          insert_on: item.insert_on
+        this.Users = (res as any[]).map(item => new UserModel({
+          id: item.id,
+          userName: item.userName,
+          email: item.email,
         }));
         this.isLoading = false;
 
@@ -93,20 +94,20 @@ export class ShowServicesComponent implements OnInit {
     );
   }
 
-  confirmDelete(type: ServiceModel) {
+  confirmDelete(type: UserModel) {
     this.selectedType = type;
     this.showDeleteModal = true;
   }
 
-  deleteBusinessType(type?: ServiceModel) {
+  deleteUser(type?: UserModel) {
     if (!type) return;
-    this.http.deleteData(`Service/${type.service_id}`,).subscribe(() => {
-      this.services = this.services.filter(t => t.service_id !== type.service_id);
+    this.http.deleteData(`Account/${type.id}`,).subscribe(() => {
+      this.Users = this.Users.filter(t => t.id !== type.id);
       this.showDeleteModal = false;
-      this.toastMessage.set(`${type.description} deleted successfully`);
+      this.toastMessage.set(`${type.userName} deleted successfully`);
       this.toastVisible.set(true);
     },(error) =>{
-      this.toastMessage.set(`An error occured during delete (${type.description})`);
+      this.toastMessage.set(`An error occured during delete (${type.userName})`);
       this.toastVisible.set(true);
     });
   }

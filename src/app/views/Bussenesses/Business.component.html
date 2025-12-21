@@ -34,7 +34,8 @@
           </td>
           <td>{{ bus.business_whatsapp }}</td>
           <td>
-            <button cButton color="primary" size="sm">
+            <button cButton color="primary" size="sm" [routerLink]="['../add-edit-business']"
+              [queryParams]="{ bus: bus | json}">
               <c-icon name="cil-pencil"></c-icon>
             </button>
             <button cButton color="danger" size="sm" (click)="toggleLiveDemo(bus.business_id)" class="ms-2">
@@ -46,6 +47,8 @@
     </table>
   </c-card-body>
 </c-card>
+
+
 
 
 

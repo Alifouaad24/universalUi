@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
+import { DashboardComponent } from './views/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>import('./views/pages/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () => import('./views/pages/login/login.component').then(m => m.LoginComponent),
   },
   {
     path: 'Home',
@@ -19,6 +20,10 @@ export const routes: Routes = [
       {
         path: 'business',
         loadChildren: () => import('./views/Bussenesses/routes').then((m) => m.routes)
+      },
+      {
+        path: 'users',
+        loadChildren: () => import('./views/Users/routes').then((m) => m.routes)
       },
       {
         path: 'business-types',
@@ -102,5 +107,6 @@ export const routes: Routes = [
       title: 'Register Page'
     }
   },
+ 
   { path: '**', redirectTo: 'dashboard' }
 ];

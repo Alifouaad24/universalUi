@@ -28,7 +28,8 @@
           <td>{{ type.description }}</td>
           <td>
             <ng-container *ngIf="businessTypes.length">
-              <button class="btn btn-sm btn-primary me-1">
+              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-business-types']"
+                [queryParams]="{ business: type | json }">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">

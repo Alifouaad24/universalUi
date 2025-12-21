@@ -58,8 +58,13 @@
               </div>
 
               <div class="d-grid">
-                <button cButton color="success" type="submit">
-                  Create Account
+                <button cButton color="success" type="submit" [disabled]="loading">
+                  
+                  <ng-container *ngIf="!loading">Create Account</ng-container>
+                      <ng-container *ngIf="loading">
+                        <c-spinner size="sm"></c-spinner>
+                        Creating...
+                      </ng-container>
                 </button>
               </div>
             </form>

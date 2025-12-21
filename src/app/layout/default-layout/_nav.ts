@@ -15,20 +15,25 @@ export const navItems: INavData[] = [
     name: 'Admin'
   },
   {
+    name: 'Users',
+    url: '/Home/users',
+    iconComponent: { name: 'cil-people' }
+  },
+  {
     name: 'Businesses',
     url: '/Home/business',
     iconComponent: { name: 'cil-task' }
   },
-    {
-    name: 'Business Types',
-    url: '/Home/business-types',
-    iconComponent: { name: 'cil-chart' }
-  },
-  {
-    name: 'Countries',
-    url: '/Home/countries',
-    iconComponent: { name: 'cil-location-pin' }
-  },
+  // {
+  //   name: 'Business Types',
+  //   url: '/Home/business-types',
+  //   iconComponent: { name: 'cil-chart' }
+  // },
+  // {
+  //   name: 'Countries',
+  //   url: '/Home/countries',
+  //   iconComponent: { name: 'cil-location-pin' }
+  // },
   {
     name: 'Addresses',
     url: '/Home/allAddresses',
@@ -44,18 +49,18 @@ export const navItems: INavData[] = [
     url: '/Home/activities',
     iconComponent: { name: 'cil-cursor' }
   },
-  {
-    name: 'Businesses_Addresses',
-    url: '/theme/typography',
-    linkProps: { fragment: 'headings' },
-    iconComponent: { name: 'cil-pencil' }
-  },
-    {
-    name: 'Business Business_Type',
-    url: '/theme/typography',
-    linkProps: { fragment: 'headings' },
-    iconComponent: { name: 'cil-star' }
-  },
+  // {
+  //   name: 'Businesses_Addresses',
+  //   url: '/theme/typography',
+  //   linkProps: { fragment: 'headings' },
+  //   iconComponent: { name: 'cil-pencil' }
+  // },
+  // {
+  //   name: 'Business Business_Type',
+  //   url: '/theme/typography',
+  //   linkProps: { fragment: 'headings' },
+  //   iconComponent: { name: 'cil-star' }
+  // },
   {
     name: 'Components',
     title: true

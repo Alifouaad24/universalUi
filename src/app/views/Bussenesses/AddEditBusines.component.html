@@ -31,19 +31,22 @@
 
         <c-col md="6">
           <label class="form-label">Phone number</label>
-          <input formControlName="Business_phone" cFormControl type="text" class="form-control" placeholder="+966xxxxxxxx" />
+          <input formControlName="Business_phone" cFormControl type="text" class="form-control"
+            placeholder="+966xxxxxxxx" />
         </c-col>
       </c-row>
 
       <c-row class="mb-3">
         <c-col md="6">
           <label class="form-label">Website</label>
-          <input formControlName="Business_webSite" cFormControl type="url" class="form-control" placeholder="https://example.com" />
+          <input formControlName="Business_webSite" cFormControl type="url" class="form-control"
+            placeholder="https://example.com" />
         </c-col>
 
         <c-col md="6">
           <label class="form-label">Email</label>
-          <input formControlName="Business_email" cFormControl type="email" class="form-control" placeholder="info@email.com" />
+          <input formControlName="Business_email" cFormControl type="email" class="form-control"
+            placeholder="info@email.com" />
         </c-col>
       </c-row>
 
@@ -84,21 +87,129 @@
       <c-row class="mb-4">
         <c-col md="6">
           <label class="form-label">Business type</label>
-          <select cSelect multiple class="form-select" formControlName="BusinessTypeId">
-            <option *ngFor="let bt of businessesType" [value]="bt.business_type_id">
-              {{ bt.description }}
-            </option>
-          </select>
+          <div *ngFor="let bt of businessesType">
+            <input type="checkbox" [checked]="BusinessTypesArray.value.includes(bt.business_type_id)"
+              (change)="onBusinessTypeChange($event, bt.business_type_id!)">
+            {{ bt.description }}
+          </div>
         </c-col>
+
         <c-col md="6">
           <label class="form-label">Addresses</label>
-          <select cSelect multiple class="form-select" formControlName="AddressId">
-            <option *ngFor="let ad of addresses" [value]="ad.address_id">
-              {{ ad.line_1 }} | {{ ad.line_2 }} | {{ ad.state }} | {{ ad.city }} | {{ ad.post_code }}
-            </option>
-          </select>
+          <div *ngFor="let ad of addresses">
+            <input type="checkbox" [checked]="AddressesArray.value.includes(ad.address_id)"
+              (change)="onAddressChange($event, ad.address_id!)">
+            {{ ad.line_1 }} | {{ ad.line_2 }} | {{ ad.state }} | {{ ad.city }} | {{ ad.post_code }}
+          </div>
         </c-col>
       </c-row>
+
+      <span *ngIf="!business" class="text-center">
+        <hr style="width: 1200px;" />
+      </span>
+      <div class="container card " *ngIf="!business">
+        <h5 *ngIf="!business"  class="text-info mt-1">New Address ?</h5>
+      <c-row *ngIf="!business" class="mb-3">
+        <c-col md="6">
+          <label class="form-label">Line 1</label>
+          <input type="text" class="form-control" [(ngModel)]="address.line_1" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter Line 1..." />
+        </c-col>
+        <c-col md="6">
+          <label class="form-label">Line 2</label>
+          <input type="text" class="form-control" [(ngModel)]="address.line_2" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter Line 2..." />
+        </c-col>
+      </c-row>
+      <c-row *ngIf="!business" class="mb-3">
+        <c-col md="6">
+          <label class="form-label">State</label>
+          <input type="text" class="form-control" [(ngModel)]="address.state" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter State..." />
+        </c-col>
+        <c-col md="6">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" [(ngModel)]="address.city" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter City..." />
+        </c-col>
+      </c-row>
+
+      <c-row class="mb-3" *ngIf="!business">
+        <c-col md="6">
+          <label class="form-label">Post Code</label>
+          <input type="text" class="form-control" [(ngModel)]="address.postCode" [ngModelOptions]="{standalone: true}"
+            placeholder="Enter Post Code..." />
+        </c-col>
+      </c-row>
+      </div>
+
+      
+      <!-- Add Service -->
+      <div class="container card mb-4 mt-4" *ngIf="!business" >
+        <h5 class="text-info mt-1">Services</h5>
+        <div class="card-body">
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="form-label">Service Description</label>
+            <input type="text" class="form-control" name="serviceDescription" [ngModelOptions]="{standalone: true}"
+              [(ngModel)]="serviceDescription" />
+          </div>
+
+          <!-- Service Type -->
+          <div class="mb-3">
+            <label class="form-label d-block">Service Type</label>
+
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" [ngModelOptions]="{standalone: true}"
+                name="serviceVisibility" id="public" value="public" [(ngModel)]="serviceVisibility" />
+              <label class="form-check-label" for="public">Public</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio"
+              [ngModelOptions]="{standalone: true}"
+              name="serviceVisibility" id="local" value="local"
+                [(ngModel)]="serviceVisibility" />
+              <label class="form-check-label" for="local">Local</label>
+            </div>
+          </div>
+
+          <!-- Add Button -->
+          <button type="button" class="btn btn-primary" (click)="addService()">
+            Add Service
+          </button>
+
+
+        </div>
+      </div>
+
+      <!-- Services List -->
+      <div class="card" *ngIf="services.length > 0">
+        <div class="card-body">
+
+          <h6 class="mb-3">Services List</h6>
+
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let s of services; let i = index">
+              <div>
+                <strong>{{ s.description }}</strong>
+                <span class="badge bg-secondary ms-2">
+                  {{ s.isPublic == true ? 'Public' : 'Local' }}
+                </span>
+              </div>
+
+              <button class="btn btn-sm btn-danger" (click)="removeService(i)">
+                ✕
+              </button>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+
+
 
       <div class="d-flex justify-content-end gap-2">
         <button cButton color="secondary" variant="outline">

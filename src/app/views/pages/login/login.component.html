@@ -18,20 +18,21 @@
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
-                  <input
-                    autoComplete="current-password"
-                    cFormControl
-                    formControlName="password"
-                    placeholder="Password"
-                    type="password"
-                  />
+                  <input autoComplete="current-password" cFormControl formControlName="password" placeholder="Password"
+                    type="password" />
                 </c-input-group>
                 <c-row>
-                  <c-col xs="6">
-                    <button type="submit" cButton class="px-4" color="primary">
-                      Login
+                  <c-col xs="6" class="d-flex align-items-center gap-2">
+                    <button type="submit" cButton class="px-4" color="primary" [disabled]="loading">
+                      <ng-container *ngIf="!loading">Login</ng-container>
+                      <ng-container *ngIf="loading">
+                        <c-spinner size="sm"></c-spinner>
+                        Logging in...
+                      </ng-container>
+
                     </button>
                   </c-col>
+
                   <c-col class="text-end" xs="6">
                     <button cButton class="px-0" color="link">
                       Forgot password?
@@ -39,6 +40,7 @@
                   </c-col>
                 </c-row>
               </form>
+              <!-- <h4 *ngIf="showError" class="text-danger m-2">{{ LoginResponse }}</h4> -->
             </c-card-body>
           </c-card>
           <c-card [style.minWidth.%]="44" class="text-white bg-primary py-5">

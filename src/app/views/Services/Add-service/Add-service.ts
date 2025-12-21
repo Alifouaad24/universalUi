@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { ActiviityModel } from '../../../Models/ActivityModel';
-
+import { ServiceModel } from '../../../Models/ServiceModel';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 @Component({
   selector: 'app-buttons',
   templateUrl: './Add-service.html',
@@ -14,31 +15,60 @@ import { ActiviityModel } from '../../../Models/ActivityModel';
     CardComponent, CardHeaderComponent,
     CardBodyComponent, CommonModule, FormsModule, RouterOutlet,
     ButtonDirective, IconDirective, RouterLink,
-    ]
+  ]
 })
 export class AddEditServiceComponent implements OnInit {
-  description: string = '';
+  description?: String;
   message: string = '';
   loading: boolean = false
   activities?: ActiviityModel[]
-  selectedActivityId?: number;
+  businesses?: BusinessModel[]
+  serviceToEdit?: ServiceModel
+  id?: number
+  visibility: 'public' | 'local' = 'public';
 
-  constructor(private http: HttpConnectService, private router: Router) { }
+  constructor(private http: HttpConnectService, private router: Router,
+    private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.getAllActivities()
+    this.getAllActivities();
+    this.getAllBusinesses();
+    this.route.queryParamMap.subscribe(param => {
+      const serFromQuery = param.get('service')
+      if (serFromQuery) {
+        console.log(serFromQuery)
+        this.serviceToEdit = JSON.parse(serFromQuery)
+        this.description = this.serviceToEdit!.description!
+        this.id = this.serviceToEdit!.service_id
+      }
+    })
   }
 
-  getAllActivities(){
+  getAllActivities() {
     this.http.getAllData('Activity').subscribe(res => {
-    this.activities = (res as ActiviityModel[]).map((el) => new ActiviityModel({
-      activity_id: el.activity_id,
-      description: el.description
-    }))
+      this.activities = (res as ActiviityModel[]).map((el) => new ActiviityModel({
+        activity_id: el.activity_id,
+        description: el.description
+      }))
     }, (error) => {
       console.error(error)
       this.loading = false
     })
+    this.cdr.detectChanges()
+  }
+
+  getAllBusinesses() {
+    this.http.getAllData('Business').subscribe(res => {
+      this.businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name
+      }))
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+    })
+    this.cdr.detectChanges()
   }
 
   addService() {
@@ -48,11 +78,13 @@ export class AddEditServiceComponent implements OnInit {
       this.loading = false
       return;
     }
-    
+
 
     const payLoad = {
       "description": this.description,
-      "activity_id": this.selectedActivityId
+      "isPublic": this.visibility === 'public' ? true : false,
+      "businessesId": this.selectedBusinessIds,
+      "activitiesId": this.selectedActivityIds,
     }
 
     this.http.posteData('Service', payLoad).subscribe(res => {
@@ -62,8 +94,29 @@ export class AddEditServiceComponent implements OnInit {
       console.error(error)
       this.loading = false
     })
-
-
-
   }
+
+  selectedActivityIds: number[] = [];
+
+  toggleActivity(id: number, event: any) {
+    if (event.target.checked) {
+      this.selectedActivityIds.push(id);
+    } else {
+      this.selectedActivityIds =
+        this.selectedActivityIds.filter(x => x !== id);
+    }
+  }
+
+  selectedBusinessIds: number[] = [];
+
+  toggleBusiness(id: number, event: any) {
+    if (event.target.checked) {
+      this.selectedBusinessIds.push(id);
+    } else {
+      this.selectedBusinessIds =
+        this.selectedBusinessIds.filter(x => x !== id);
+    }
+  }
+
+
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { IconDirective } from '@coreui/icons-angular';
 import {
   ButtonDirective,
@@ -11,18 +11,21 @@ import {
   FormDirective,
   InputGroupComponent,
   InputGroupTextDirective,
-  RowComponent
+  RowComponent,
+  SpinnerComponent,
+  SpinnerModule
 } from '@coreui/angular';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { LoginRequest } from '../../../Models/Auth/loginRequest';
 import { LoginResponse } from '../../../Models/Auth/loginResponse';
 import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  imports: [ContainerComponent, RowComponent, ColComponent,
+  imports: [ContainerComponent, RowComponent, ColComponent, SpinnerComponent, CommonModule,
     CardGroupComponent, CardComponent, CardBodyComponent,
     FormDirective, InputGroupComponent, InputGroupTextDirective, RouterLink, RouterModule, RouterOutlet,
     IconDirective, FormControlDirective, ButtonDirective, FormsModule, ReactiveFormsModule]
@@ -30,13 +33,16 @@ import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router'
 
 export class LoginComponent {
 
-  loginForm!: FormGroup<{
+  loading: boolean = false
+  showError: boolean = false
+  LoginResponse?: string
+  loginForm: FormGroup<{
     email: FormControl<string>;
     password: FormControl<string>;
   }>;
 
   constructor(
-    private fb: FormBuilder, private router: Router,
+    private fb: FormBuilder, private router: Router, private cdr: ChangeDetectorRef,
     private httpService: HttpConnectService
   ) {
     this.loginForm = this.fb.nonNullable.group({
@@ -46,23 +52,38 @@ export class LoginComponent {
   }
 
 
-  login(): void {
-    console.log(this.loginForm.getRawValue())
-    if (this.loginForm.invalid) return;
+    login(): void {
+      if (this.loginForm.invalid) return;
 
-    const payload: LoginRequest = this.loginForm.getRawValue();
+      this.loading = true;
+      this.showError = false;
 
+      const payload: LoginRequest = this.loginForm.getRawValue();
 
-    this.httpService.posteData('Account/Login', payload).subscribe({
-      next: (res: LoginResponse) => {
-        localStorage.setItem('token', res.token);
-        this.router.navigate(['/Home/dashboard']);
-        console.log('Login successful');
-      },
-      error: err => {
-        console.error('Login failed', err);
-      }
-    });
-  }
+      this.httpService.posteData('Account/Login', payload).subscribe({
+        next: (res: LoginResponse) => {
+          console.log(res)
+          localStorage.setItem('token', res.token);
+
+          if (res.businesses && res.businesses.length > 0) {
+            const safeBusinesses = JSON.parse(JSON.stringify(res.businesses));
+            localStorage.setItem('businesses', JSON.stringify(safeBusinesses));
+            localStorage.setItem('currentUser', JSON.stringify(res.user));
+          } else {
+            localStorage.removeItem('businesses');
+          }
+
+          this.router.navigate(['/Home/dashboard']);
+          this.loading = false;
+        },
+
+        error: err => {
+          this.showError = true;
+          this.loading = false;
+          alert(err.error.message);
+        }
+      });
+    }
+
 
 }
