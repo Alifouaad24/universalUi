@@ -84,6 +84,21 @@
         </c-col>
       </c-row>
 
+
+      <c-row class="mb-3">
+        <c-col md="4">
+          <label class="form-label">Logo</label>
+          <input type="file" class="form-control" (change)="onLogoChange($event)" accept="image/*" />
+        </c-col>
+
+        <c-col md="4">
+          <div class="d-flex justify-content-start mt-4" *ngIf="logoPreview">
+            <img [src]="logoPreview" height="40" width="40" alt="logo" />
+          </div>
+        </c-col>
+      </c-row>
+
+
       <c-row class="mb-4">
         <c-col md="6">
           <label class="form-label">Business type</label>
@@ -108,44 +123,44 @@
         <hr style="width: 1200px;" />
       </span>
       <div class="container card " *ngIf="!business">
-        <h5 *ngIf="!business"  class="text-info mt-1">New Address ?</h5>
-      <c-row *ngIf="!business" class="mb-3">
-        <c-col md="6">
-          <label class="form-label">Line 1</label>
-          <input type="text" class="form-control" [(ngModel)]="address.line_1" [ngModelOptions]="{standalone: true}"
-            placeholder="Enter Line 1..." />
-        </c-col>
-        <c-col md="6">
-          <label class="form-label">Line 2</label>
-          <input type="text" class="form-control" [(ngModel)]="address.line_2" [ngModelOptions]="{standalone: true}"
-            placeholder="Enter Line 2..." />
-        </c-col>
-      </c-row>
-      <c-row *ngIf="!business" class="mb-3">
-        <c-col md="6">
-          <label class="form-label">State</label>
-          <input type="text" class="form-control" [(ngModel)]="address.state" [ngModelOptions]="{standalone: true}"
-            placeholder="Enter State..." />
-        </c-col>
-        <c-col md="6">
-          <label class="form-label">City</label>
-          <input type="text" class="form-control" [(ngModel)]="address.city" [ngModelOptions]="{standalone: true}"
-            placeholder="Enter City..." />
-        </c-col>
-      </c-row>
+        <h5 *ngIf="!business" class="text-info mt-1">New Address ?</h5>
+        <c-row *ngIf="!business" class="mb-3">
+          <c-col md="6">
+            <label class="form-label">Line 1</label>
+            <input type="text" class="form-control" [(ngModel)]="address.Line_1" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter Line 1..." />
+          </c-col>
+          <c-col md="6">
+            <label class="form-label">Line 2</label>
+            <input type="text" class="form-control" [(ngModel)]="address.Line_2" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter Line 2..." />
+          </c-col>
+        </c-row>
+        <c-row *ngIf="!business" class="mb-3">
+          <c-col md="6">
+            <label class="form-label">State</label>
+            <input type="text" class="form-control" [(ngModel)]="address.State" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter State..." />
+          </c-col>
+          <c-col md="6">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" [(ngModel)]="address.City" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter City..." />
+          </c-col>
+        </c-row>
 
-      <c-row class="mb-3" *ngIf="!business">
-        <c-col md="6">
-          <label class="form-label">Post Code</label>
-          <input type="text" class="form-control" [(ngModel)]="address.postCode" [ngModelOptions]="{standalone: true}"
-            placeholder="Enter Post Code..." />
-        </c-col>
-      </c-row>
+        <c-row class="mb-3" *ngIf="!business">
+          <c-col md="6">
+            <label class="form-label">Post Code</label>
+            <input type="text" class="form-control" [(ngModel)]="address.PostCode" [ngModelOptions]="{standalone: true}"
+              placeholder="Enter Post Code..." />
+          </c-col>
+        </c-row>
       </div>
 
-      
+
       <!-- Add Service -->
-      <div class="container card mb-4 mt-4" *ngIf="!business" >
+      <div class="container card mb-4 mt-4" *ngIf="!business">
         <h5 class="text-info mt-1">Services</h5>
         <div class="card-body">
 
@@ -167,13 +182,25 @@
             </div>
 
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio"
-              [ngModelOptions]="{standalone: true}"
-              name="serviceVisibility" id="local" value="local"
-                [(ngModel)]="serviceVisibility" />
+              <input class="form-check-input" type="radio" [ngModelOptions]="{standalone: true}"
+                name="serviceVisibility" id="local" value="local" [(ngModel)]="serviceVisibility" />
               <label class="form-check-label" for="local">Local</label>
             </div>
           </div>
+          <div class="mb-1">Choose Icon</div>
+          <div class="row g-2 mb-3 mt-2" style="height: 200px; overflow: auto;">
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let icon of icons">
+              <div class="border rounded p-2 text-center h-100 cursor-pointer" (click)="selectIcon(icon)" [ngClass]="{
+        'border-primary bg-success': selectedIcon === icon
+      }" style="cursor: pointer;">
+                <c-icon [name]="icon" size="l"></c-icon>
+                <div class="small mt-1 text-muted">
+                </div>
+              </div>
+            </div>
+          </div>
+
+
 
           <!-- Add Button -->
           <button type="button" class="btn btn-primary" (click)="addService()">
@@ -198,6 +225,8 @@
                 <span class="badge bg-secondary ms-2">
                   {{ s.isPublic == true ? 'Public' : 'Local' }}
                 </span>
+                <span *ngIf="s.service_icon" class="ms-2">
+                  <c-icon [name]="s.service_icon" size="m"></c-icon></span>
               </div>
 
               <button class="btn btn-sm btn-danger" (click)="removeService(i)">

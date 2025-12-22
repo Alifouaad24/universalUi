@@ -1,5 +1,5 @@
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
 import { BusinessContextService } from '../../../core/Services/business-context.service';
@@ -40,9 +40,16 @@ import { IconDirective } from '@coreui/icons-angular';
 
 export class DefaultHeaderComponent extends HeaderComponent {
 
+  user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  userName = this.user?.userName || 'Guest';
+
+
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
   businesses: BusinessModel[] = [];
+  currentBusiness: any;
+
+
   readonly colorModes = [
     { name: 'light', text: 'Light', icon: 'cilSun' },
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
@@ -54,24 +61,31 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor(private businessCtx: BusinessContextService) {
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef) {
     super();
+
   }
 
-  currentBusiness: any;
 
 
   ngOnInit(): void {
     this.businesses = this.businessCtx.getBusinesses();
-
     this.businessCtx.getCurrentBusiness().subscribe(b => {
       this.currentBusiness = b;
     });
+
+
   }
 
   selectBusiness(b: any) {
     this.currentBusiness = b;
-    setTimeout(() => this.businessCtx.setCurrentBusiness(b), 0);
+    setTimeout(() => {
+      this.businessCtx.setCurrentBusiness(b)
+      this.cdr.detectChanges();
+
+    }
+      , 1
+    );
   }
 
   logout() {

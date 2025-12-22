@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { IconDirective } from '@coreui/icons-angular';
@@ -14,6 +14,7 @@ import {
   SidebarToggleDirective,
   SidebarTogglerDirective
 } from '@coreui/angular';
+import { iconSubset } from '../../icons/icon-subset';
 
 import { DefaultFooterComponent, DefaultHeaderComponent } from './';
 import { navItems } from './_nav';
@@ -54,10 +55,12 @@ export class DefaultLayoutComponent {
   business: any;
   public navItems?: any // = [...navItems];
 
-  constructor(private businessCtx: BusinessContextService) { }
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
-
+  user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  userName = this.user?.userName || 'Guest';
+  currBusiness?: any
   readonly colorModes = [
     { name: 'light', text: 'Light', icon: 'cilSun' },
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
@@ -65,8 +68,11 @@ export class DefaultLayoutComponent {
   ];
 
   ngOnInit() {
+    
     this.businessCtx.getCurrentBusiness().subscribe(business => {
       console.log('business :', business);
+      this.currBusiness = business;
+      
       if (!business || !business.business_Services) {
         this.navItems = [...navItems];
         return;
@@ -74,14 +80,19 @@ export class DefaultLayoutComponent {
 
       if (business.business_Services.some((s: any) => s.service.description.includes('APX'))) {
         this.navItems = [...navItems];
+        
       } else {
-        this.navItems = business.business_Services.map((s: any) => ({
-          name: s.service.description,
-          url: '',
-          iconComponent: { name: 'cil-layers' }
-        }));
+        this.navItems = business.business_Services.map((s: any) => {
+  const iconKey = s.service.icon as keyof typeof iconSubset;
+  const icon = iconSubset[iconKey] ?? null;
+  return {
+    name: s.service.description,
+    url: s.service.service_Route,
+    iconComponent: icon
+  };
+});
       }
-
+        this.cdr.detectChanges();
     });
   }
 

@@ -25,8 +25,22 @@ export class HttpConnectService {
     return this.http.get(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
-  posteData(finalUrl: string, data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${finalUrl}`, data, { headers: this.getHeaders() });
+  posteData(finalUrl: string, data: any, isFormData: boolean = false): Observable<any> {
+
+    let options: any = {};
+
+    if (!isFormData) {
+      options.headers = this.getHeaders();
+      // headers فيها Content-Type: application/json
+    }
+    // إذا FormData → لا نضع headers
+    // المتصفح يحدد boundary تلقائيًا
+
+    return this.http.post(
+      `${this.apiUrl}/${finalUrl}`,
+      data,
+      options
+    );
   }
 
   putData(finalUrl: string, data: any): Observable<any> {

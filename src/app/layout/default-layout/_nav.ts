@@ -49,6 +49,11 @@ export const navItems: INavData[] = [
     url: '/Home/activities',
     iconComponent: { name: 'cil-cursor' }
   },
+   {
+    name: 'Features',
+    url: '/Home/features',
+    iconComponent: { name: 'cil-cursor' }
+  },
   // {
   //   name: 'Businesses_Addresses',
   //   url: '/theme/typography',

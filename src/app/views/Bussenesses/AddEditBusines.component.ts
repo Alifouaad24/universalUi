@@ -9,6 +9,7 @@ import { AddressModel } from '../../Models/AddressModel';
 import { Country } from '../../Models/CountryModel';
 import { BusinessModel } from '../../Models/Business/BusinessModel';
 import { HttpConnectService } from '../../Services/http-connect.service';
+import { iconSubset } from '../../icons/icon-subset';
 @Component({
   templateUrl: 'AddEditBusines.component.html',
   imports: [
@@ -29,26 +30,36 @@ import { HttpConnectService } from '../../Services/http-connect.service';
 })
 export class AddEditBusniessComponent implements OnInit {
 
+  selectedIcon: string | null = null;
+  
+  icons: string[] = Object.keys(iconSubset);
+
+  selectIcon(icon: string) {
+    this.selectedIcon = icon;
+    console.log('Selected icon:', icon);
+  }
   businessForm: FormGroup;
   countries?: Country[]
   businessesType?: BusinessType[]
   addresses?: AddressModel[]
   business?: BusinessModel;
   address = {
-    line_1: '',
-    line_2: '',
-    state: '',
-    city: '',
-    postCode: ''
+    Line_1: '',
+    Line_2: '',
+    State: '',
+    City: '',
+    PostCode: ''
   };
 
   services: {
     description: string;
     isPublic: boolean;
+    service_icon?: string;
   }[] = [];
 
   Description?: String;
-
+  businessLogoFile!: File | null;
+  logoPreview: string | null = null;
   serviceDescription: string = '';
   serviceVisibility: 'public' | 'local' | null = null;
 
@@ -68,9 +79,11 @@ export class AddEditBusniessComponent implements OnInit {
       Business_whatsapp: [''],
       Business_email: ['', Validators.email],
       BusinessTypes: this.fb.array([]),
-      Addresses: this.fb.array([])
+      Addresses: this.fb.array([]),
+      businessLogo: [this.businessLogoFile]
     });
   }
+
 
   ngOnInit(): void {
     this.getAllAddresses()
@@ -146,36 +159,63 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
   submit() {
-    const payLoad = {
-      "business_name": this.businessForm.get('Business_name')?.value,
-      "countryId": Number.parseInt(this.businessForm.get('CountryId')?.value),
-      "is_active": this.businessForm.get('Is_active')?.value,
-      "business_phone": this.businessForm.get('Business_phone')?.value,
-      "business_webSite": this.businessForm.get('Business_webSite')?.value,
-      "business_fb": this.businessForm.get('Business_fb')?.value,
-      "business_instgram": this.businessForm.get('Business_instgram')?.value,
-      "business_tiktok": this.businessForm.get('Business_tiktok')?.value,
-      "business_google": this.businessForm.get('Business_google')?.value,
-      "business_youtube": this.businessForm.get('Business_youtube')?.value,
-      "business_whatsapp": this.businessForm.get('Business_whatsapp')?.value,
-      "business_email": this.businessForm.get('Business_email')?.value,
-      "businessTypeId": this.businessForm.get('BusinessTypes')?.value,
-      "addressId": this.businessForm.get('Addresses')?.value,
-      "address": this.address,
-      "services": this.services
-    }
+  const form = new FormData();
 
-    console.log(payLoad)
-    // if (this.businessForm.valid) {
-    //   console.log('Business Data:', payLoad);
-    //   this.http.posteData('Business', payLoad).subscribe(res => {
-    //     this.router.navigate(['Home/business'])
-    //   })
-    // } else {
-    //   console.log('Form not valid');
-    //   this.businessForm.markAllAsTouched();
-    // }
+  form.append('Business_name', this.businessForm.get('Business_name')?.value ?? '');
+  form.append('CountryId', String(this.businessForm.get('CountryId')?.value ?? 0));
+  form.append('Is_active', String(this.businessForm.get('Is_active')?.value ?? false));
+  form.append('Business_phone', this.businessForm.get('Business_phone')?.value ?? '');
+  form.append('Business_webSite', this.businessForm.get('Business_webSite')?.value ?? '');
+  form.append('Business_fb', this.businessForm.get('Business_fb')?.value ?? '');
+  form.append('Business_instgram', this.businessForm.get('Business_instgram')?.value ?? '');
+  form.append('Business_tiktok', this.businessForm.get('Business_tiktok')?.value ?? '');
+  form.append('Business_google', this.businessForm.get('Business_google')?.value ?? '');
+  form.append('Business_youtube', this.businessForm.get('Business_youtube')?.value ?? '');
+  form.append('Business_whatsapp', this.businessForm.get('Business_whatsapp')?.value ?? '');
+  form.append('Business_email', this.businessForm.get('Business_email')?.value ?? '');
+
+  if (this.businessLogoFile) {
+    form.append('BusinessLogo', this.businessLogoFile);
   }
+
+ (this.businessForm.get('BusinessTypes')?.value ?? []).forEach((id: number) => {
+  form.append('BusinessTypeId', id.toString());
+});
+
+(this.businessForm.get('Addresses')?.value ?? []).forEach((id: number) => {
+  form.append('AddressId', id.toString());
+});
+
+  const addressPayload = {
+    Line_1: this.address.Line_1 ?? '',
+    Line_2: this.address.Line_2 ?? '',
+    City: this.address.City ?? '',
+    State: this.address.State ?? '',
+    Post_code: this.address.PostCode ?? ''
+  };
+  form.append('address', JSON.stringify(addressPayload));
+
+  const servicesPayload = this.services.map(s => ({
+    description: s.description ?? '',
+    isPublic: s.isPublic ?? true,
+    service_icon: s.service_icon ?? '',
+
+  }));
+  form.append('Services', JSON.stringify(servicesPayload));
+
+
+  if (this.businessForm.valid) {
+    this.http.posteData('Business', form, true)
+      .subscribe({
+        next: res => this.router.navigate(['Home/business']),
+        error: err => console.error('Error:', err)
+      });
+  } else {
+    console.log('Form not valid');
+    this.businessForm.markAllAsTouched();
+  }
+}
+
 
   resetForm() {
     this.businessForm.reset({
@@ -223,14 +263,11 @@ export class AddEditBusniessComponent implements OnInit {
     }
   }
 
-
-
-
-
   addService() {
     this.services.push({
       description: this.serviceDescription,
-      isPublic: this.serviceVisibility == 'public' ? true : false!
+      isPublic: this.serviceVisibility == 'public' ? true : false!,
+      service_icon: this.selectedIcon ?? ''
     });
 
     this.serviceDescription = '';
@@ -242,6 +279,24 @@ export class AddEditBusniessComponent implements OnInit {
     this.services.splice(index, 1);
   }
 
+  onLogoChange(event: any) {
+    const file = event.target.files[0];
+
+    if (!file) {
+      this.businessLogoFile = null;
+      this.logoPreview = null;
+      return;
+    }
+
+    this.businessLogoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.logoPreview = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
 
 
 }

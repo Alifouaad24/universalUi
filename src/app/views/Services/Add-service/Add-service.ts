@@ -3,15 +3,16 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
-import { IconDirective } from '@coreui/icons-angular';
+import { IconComponent, IconDirective, IconModule } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { ActiviityModel } from '../../../Models/ActivityModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
+import { iconSubset } from '../../../icons/icon-subset';
 @Component({
   selector: 'app-buttons',
   templateUrl: './Add-service.html',
-  imports: [RowComponent, ColComponent,
+  imports: [RowComponent, ColComponent, IconModule, IconComponent,
     CardComponent, CardHeaderComponent,
     CardBodyComponent, CommonModule, FormsModule, RouterOutlet,
     ButtonDirective, IconDirective, RouterLink,
@@ -26,6 +27,14 @@ export class AddEditServiceComponent implements OnInit {
   serviceToEdit?: ServiceModel
   id?: number
   visibility: 'public' | 'local' = 'public';
+  selectedIcon: string | null = null;
+  
+  icons: string[] = Object.keys(iconSubset);
+
+    selectIcon(icon: string) {
+    this.selectedIcon = icon;
+    console.log('Selected icon:', icon);
+  }
 
   constructor(private http: HttpConnectService, private router: Router,
     private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
@@ -85,6 +94,7 @@ export class AddEditServiceComponent implements OnInit {
       "isPublic": this.visibility === 'public' ? true : false,
       "businessesId": this.selectedBusinessIds,
       "activitiesId": this.selectedActivityIds,
+      "service_icon": this.selectedIcon ?? ''
     }
 
     this.http.posteData('Service', payLoad).subscribe(res => {

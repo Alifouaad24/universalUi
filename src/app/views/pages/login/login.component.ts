@@ -64,11 +64,10 @@ export class LoginComponent {
         next: (res: LoginResponse) => {
           console.log(res)
           localStorage.setItem('token', res.token);
-
+          localStorage.setItem('currentUser', JSON.stringify(res.user));
           if (res.businesses && res.businesses.length > 0) {
             const safeBusinesses = JSON.parse(JSON.stringify(res.businesses));
             localStorage.setItem('businesses', JSON.stringify(safeBusinesses));
-            localStorage.setItem('currentUser', JSON.stringify(res.user));
           } else {
             localStorage.removeItem('businesses');
           }
