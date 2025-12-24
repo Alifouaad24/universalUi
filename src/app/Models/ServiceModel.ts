@@ -3,6 +3,8 @@ export class ServiceModel {
     description?: String
     activiity?: any
     insert_on?: string
+    service_icon?: string
+    isPublic?: boolean
 
     constructor(init?: Partial<ServiceModel>){
         Object.assign(this, init)

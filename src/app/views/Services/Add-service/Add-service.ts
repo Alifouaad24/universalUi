@@ -28,10 +28,10 @@ export class AddEditServiceComponent implements OnInit {
   id?: number
   visibility: 'public' | 'local' = 'public';
   selectedIcon: string | null = null;
-  
+
   icons: string[] = Object.keys(iconSubset);
 
-    selectIcon(icon: string) {
+  selectIcon(icon: string) {
     this.selectedIcon = icon;
     console.log('Selected icon:', icon);
   }
@@ -48,7 +48,9 @@ export class AddEditServiceComponent implements OnInit {
         console.log(serFromQuery)
         this.serviceToEdit = JSON.parse(serFromQuery)
         this.description = this.serviceToEdit!.description!
-        this.id = this.serviceToEdit!.service_id
+        this.id = this.serviceToEdit!.service_id,
+          this.visibility = this.serviceToEdit!.isPublic ? 'public' : 'local'
+        this.selectedIcon = this.serviceToEdit!.service_icon ?? null
       }
     })
   }

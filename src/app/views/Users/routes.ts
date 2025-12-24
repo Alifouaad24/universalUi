@@ -26,6 +26,13 @@ export const routes: Routes = [
           title: 'Add/Edit'
         }
       },
+      {
+        path: 'bind-user-to-business',
+        loadComponent: () => import('./BindUserToBusiness/Bind-User-to-business').then(m => m.BindUserToBusinessComponent),
+        data: {
+          title: 'Bind User To Business'
+        }
+      },
     ]
   }
 ];

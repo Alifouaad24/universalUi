@@ -76,10 +76,13 @@ export class ShowServicesComponent implements OnInit {
     this.isLoading = true;
     this.http.getAllData('Service').subscribe(
       (res: any) => {
+        console.log(res);
         this.services = (res as any[]).map(item => new ServiceModel({
           service_id: item.service_id,
           description: item.description,
-          insert_on: item.insert_on
+          insert_on: item.insert_on,
+          service_icon: item.service_icon,
+          isPublic: item.isPublic
         }));
         this.isLoading = false;
 

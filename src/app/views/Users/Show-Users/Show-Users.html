@@ -1,4 +1,4 @@
-<div class="m-2 p-2">
+<div class="m-2 p-2 d-flex justify-content-between align-items-center">
   <button class="btn btn-primary" routerLink="./add-edit-user">
     Add
   </button>
@@ -35,6 +35,10 @@
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-success ms-1" routerLink="./bind-user-to-business"
+               [queryParams]="{ userId: type.id, userName: type.userName, email: type.email }">
+                <c-icon name="cilLink"></c-icon>&nbsp;<c-icon name="cilBold"></c-icon>
               </button>
             </ng-container>
           </td>

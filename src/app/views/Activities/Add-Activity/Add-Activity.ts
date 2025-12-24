@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
@@ -24,7 +24,7 @@ export class AddEditActivityComponent implements OnInit {
   Businesses?: BusinessModel[]
   selectedBusinessId?: number;
 
-  constructor(private http: HttpConnectService, private router: Router) { }
+  constructor(private http: HttpConnectService, private router: Router, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.getAllBusinesses()
@@ -37,6 +37,7 @@ export class AddEditActivityComponent implements OnInit {
       business_name: el.business_name,
 
     }))
+    this.cdr.detectChanges();
     }, (error) => {
       console.error(error)
       this.loading = false

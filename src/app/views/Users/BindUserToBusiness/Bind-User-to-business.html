@@ -1,0 +1,30 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header">
+    Add User
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="userName" class="form-label">User Name</label>
+      <input readonly type="text" class="form-control" id="userName" [(ngModel)]="userName" placeholder="Enter user name">
+    </div>
+    <div class="mb-3">
+      <label for="Email" class="form-label">User Email</label>
+      <input readonly type="text" class="form-control" id="Email" [(ngModel)]="Email" placeholder="Enter user Email">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Businesses</label>
+      <div *ngIf="!loadingBusiness" style="height: 100px; overflow-y: auto;">
+        <div *ngFor="let one of Businesses" class="form-check">
+          <input type="checkbox" class="form-check-input" [checked]="selectedBusinessId.includes(one.business_id)"
+            (change)="AddRemoveBusiness(one.business_id)" />
+          <label class="form-check-label">
+            {{ one.business_name }}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button [disabled]="loading" class="btn btn-primary" (click)="BindUserToBusiness()">Add</button>
+  </div>
+</div>

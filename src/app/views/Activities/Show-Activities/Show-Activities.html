@@ -19,7 +19,6 @@
         <tr>
           <th>#</th>
           <th>Description</th>
-          <th>Business</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -27,7 +26,6 @@
         <tr *ngFor="let type of activities; index as i">
           <td>{{ i + 1 }}</td>
           <td>{{ type.description }}</td>
-          <td>{{ type.business.business_name }}</td>
           <td>
             <ng-container *ngIf="activities.length">
               <button class="btn btn-sm btn-primary me-1">

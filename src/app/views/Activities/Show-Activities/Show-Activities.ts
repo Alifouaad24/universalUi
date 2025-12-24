@@ -70,10 +70,10 @@ export class ShowActivitiesComponent implements OnInit {
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.getAllCountries()
+    this.getAllActivities()
   }
 
-  getAllCountries() {
+  getAllActivities() {
     this.isLoading = true;
     this.http.getAllData('Activity').subscribe(
       (res: any) => {
