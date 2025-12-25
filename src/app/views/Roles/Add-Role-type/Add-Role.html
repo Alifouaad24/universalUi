@@ -1,0 +1,16 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header">
+      {{ role ==null ? 'Add role' : 'Edit role' }}
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="description" class="form-label">Name</label>
+      <input type="text" class="form-control" id="description" [(ngModel)]="description" placeholder="enter role name ...">
+    </div>
+    <button [disabled]="loading" class="btn btn-primary" (click)="addRole()">
+      {{ role ==null ? 'Add' : 'Edit' }}
+    </button>
+    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+  </div>
+</div>
