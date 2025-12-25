@@ -54,8 +54,8 @@ import { Country } from '../../../Models/CountryModel';
 export class ShowCountriesComponent implements OnInit {
 
   Countries: Country[] = [];
-  message?: string
   isLoading: boolean = false;
+  message?: string
   showDeleteModal: boolean = false;
   selectedType?: Country;
   ///// for toastr ////////

@@ -2,9 +2,10 @@
 <c-sidebar #sidebar1="cSidebar" class="d-print-none sidebar sidebar-fixed border-end" [colorScheme]="colorScheme"
   id="sidebar1" visible>
   <c-sidebar-header class="border-bottom">
-    <c-sidebar-brand [routerLink]="[]">
+    <c-sidebar-brand [routerLink]="['/Home/dashboard']" style="cursor: default;">
       <!-- <svg [class]="{icon: false}" cIcon class="sidebar-brand-full" height="32" name="logo" title="CoreUI Logo"></svg> -->
-      <div class="d-flex align-items-center gap-2">
+ 
+        <div class="d-flex align-items-center gap-2">
         <img [src]="currBusiness?.business_LogoUrl || 'assets/images/avatars/fallback.jpg'" alt="logo" width="50" height="50"
           class="rounded-circle object-fit-cover" />
 
@@ -12,6 +13,7 @@
           {{ currBusiness?.business_name ? currBusiness?.business_name : 'No busseness' }}
         </h4>
       </div>
+      
 
     </c-sidebar-brand>
   </c-sidebar-header>

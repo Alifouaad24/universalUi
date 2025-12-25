@@ -105,9 +105,9 @@
       </li>
       <li></li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilUser"></svg>
-          Profile
+        <a cDropdownItem routerLink="/Home/business/add-edit-business" [queryParams]="{ bus: currentBusiness | json}">
+          <svg cIcon class="me-2" name="cilBold"></svg>
+          Manage Business
         </a>
       </li>
       <li>

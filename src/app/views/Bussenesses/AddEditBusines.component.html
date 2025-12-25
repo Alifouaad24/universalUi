@@ -6,38 +6,36 @@
   <c-card-body>
     <form [formGroup]="businessForm" (submit)="submit()" cform>
       <c-row class="mb-3">
-        <c-col md="6">
+        <c-col md="10">
           <label class="form-label">Business Name</label>
           <input cFormControl formControlName="Business_name" type="text" class="form-control" placeholder="name" />
         </c-col>
-
-        <c-col md="6">
-          <label class="form-label">Country</label>
-          <select formControlName="CountryId" cSelect class="form-select">
-            <option selected disabled value="">Choose country</option>
-            <option *ngFor="let one of countries" [value]="one.countryId">{{ one.name }}</option>
-          </select>
-        </c-col>
-      </c-row>
-
-      <c-row class="mb-3">
-        <c-col md="6">
-          <label class="form-label">Status</label>
+        <c-col md="1">
+          <label class="form-label text-danger">Status</label>
           <div class="form-check form-switch">
             <input formControlName="Is_active" class="form-check-input" type="checkbox" />
             <label class="form-check-label">Active</label>
           </div>
         </c-col>
+      </c-row>
 
+      <c-row class="mb-3">
         <c-col md="6">
           <label class="form-label">Phone number</label>
           <input formControlName="Business_phone" cFormControl type="text" class="form-control"
             placeholder="+966xxxxxxxx" />
         </c-col>
+        <c-col md="6">
+          <label class="form-label">Country</label>
+          <select formControlName="CountryId" (change)="onCountryChange($event)" cSelect class="form-select">
+            <option selected disabled value="">Choose country</option>
+            <option *ngFor="let one of countries" [ngValue]="one.countryId">{{ one.name }}</option>
+          </select>
+        </c-col>
       </c-row>
 
       <c-row class="mb-3">
-        <c-col md="6">
+        <c-col md="6" *ngIf="business">
           <label class="form-label">Website</label>
           <input formControlName="Business_webSite" cFormControl type="url" class="form-control"
             placeholder="https://example.com" />
@@ -50,7 +48,7 @@
         </c-col>
       </c-row>
 
-      <c-row class="mb-3">
+      <c-row class="mb-3" *ngIf="business">
         <c-col md="4">
           <label class="form-label">Facebook</label>
           <input formControlName="Business_fb" cFormControl type="text" class="form-control" />
@@ -67,7 +65,7 @@
         </c-col>
       </c-row>
 
-      <c-row class="mb-3">
+      <c-row class="mb-3" *ngIf="business">
         <c-col md="4">
           <label class="form-label">Google</label>
           <input formControlName="Business_google" cFormControl type="text" class="form-control" />
@@ -85,7 +83,7 @@
       </c-row>
 
 
-      <c-row class="mb-3">
+      <c-row class="mb-3" *ngIf="business">
         <c-col md="4">
           <label class="form-label">Logo</label>
           <input type="file" class="form-control" (change)="onLogoChange($event)" accept="image/*" />
@@ -99,7 +97,7 @@
       </c-row>
 
 
-      <c-row class="mb-4">
+      <c-row class="mb-4" *ngIf="business">
         <c-col md="6">
           <label class="form-label">Business type</label>
           <div *ngFor="let bt of businessesType">
@@ -119,48 +117,92 @@
         </c-col>
       </c-row>
 
-      <span *ngIf="!business" class="text-center">
+      <span *ngIf="business" class="text-center">
         <hr style="width: 1200px;" />
       </span>
-      <div class="container card " *ngIf="!business">
-        <h5 *ngIf="!business" class="text-info mt-1">New Address ?</h5>
-        <c-row *ngIf="!business" class="mb-3">
-          <c-col md="6">
-            <label class="form-label">Line 1</label>
-            <input type="text" class="form-control" [(ngModel)]="address.Line_1" [ngModelOptions]="{standalone: true}"
-              placeholder="Enter Line 1..." />
-          </c-col>
-          <c-col md="6">
-            <label class="form-label">Line 2</label>
-            <input type="text" class="form-control" [(ngModel)]="address.Line_2" [ngModelOptions]="{standalone: true}"
-              placeholder="Enter Line 2..." />
-          </c-col>
-        </c-row>
-        <c-row *ngIf="!business" class="mb-3">
-          <c-col md="6">
-            <label class="form-label">State</label>
-            <input type="text" class="form-control" [(ngModel)]="address.State" [ngModelOptions]="{standalone: true}"
-              placeholder="Enter State..." />
-          </c-col>
-          <c-col md="6">
-            <label class="form-label">City</label>
-            <input type="text" class="form-control" [(ngModel)]="address.City" [ngModelOptions]="{standalone: true}"
-              placeholder="Enter City..." />
-          </c-col>
-        </c-row>
-
-        <c-row class="mb-3" *ngIf="!business">
-          <c-col md="6">
-            <label class="form-label">Post Code</label>
-            <input type="text" class="form-control" [(ngModel)]="address.PostCode" [ngModelOptions]="{standalone: true}"
-              placeholder="Enter Post Code..." />
-          </c-col>
-        </c-row>
+      <div>
+        <div class="container card " *ngIf="business">
+          <h5 class="text-info mt-1">New Address ?</h5>
+          <div class="card-body" *ngIf="this.selectedCountry == 'USA'">
+            <c-row class="mb-3">
+              <c-col md="6">
+                <label class="form-label">Line 1</label>
+                <input type="text" class="form-control" [(ngModel)]="Line_1"
+                  [ngModelOptions]="{standalone: true}" placeholder="Enter Line 1..." />
+              </c-col>
+              <c-col md="6">
+                <label class="form-label">Line 2</label>
+                <input type="text" class="form-control" [(ngModel)]="Line_2"
+                  [ngModelOptions]="{standalone: true}" placeholder="Enter Line 2..." />
+              </c-col>
+            </c-row>
+            <c-row class="mb-3">
+              <c-col md="6">
+                <label class="form-label">State</label>
+                <select (change)="onStateChange($event)" 
+                  [(ngModel)]="selectedStateId" [ngModelOptions]="{standalone: true}"
+                  cSelect class="form-select">
+                  <option  selected disabled
+                    value="">
+                    Choose State</option>
+                  <option *ngFor="let one of statesByCountry" [ngValue]="one.stateId">{{ one.name }}</option>
+                </select>
+              </c-col>
+              <c-col md="6">
+                <label class="form-label">City</label>
+                <select (change)="onCityChange($event)" [(ngModel)]="selectedCityId" [ngModelOptions]="{standalone: true}"
+                  cSelect class="form-select">
+                  <option selected disabled value="">Choose City</option>
+                  <option *ngFor="let one of citiesByCountry" [ngValue]="one.cityId">{{ one.description }}</option>
+                </select>
+              </c-col>
+            </c-row>
+            <c-row class="mb-3">
+              <c-col md="6">
+                <label class="form-label">Post Code</label>
+                <input type="text" class="form-control" [(ngModel)]="PostCode"
+                  [ngModelOptions]="{standalone: true}" placeholder="Enter Post Code..." />
+              </c-col>
+            </c-row>
+          </div>
+        </div>
+        <div class="card-body" *ngIf="this.selectedCountry != 'USA' && this.selectedCountry != '' && business">
+          <c-row class="mb-3">
+            <c-col md="4">
+              <label class="form-label">City</label>
+              <select (change)="onCityChange($event)" [(ngModel)]="selectedCityId" [ngModelOptions]="{standalone: true}"
+                cSelect class="form-select">
+                <option selected disabled value="">Choose City</option>
+                <option *ngFor="let one of citiesByCountry" [ngValue]="one.cityId">{{ one.description }}</option>
+              </select>
+            </c-col>
+            <c-col md="4">
+              <label class="form-label">Area</label>
+              <select [(ngModel)]="selectedAreaId" [ngModelOptions]="{standalone: true}" (change)="onAreaChange($event)"
+                cSelect class="form-select">
+                <option selected disabled value="">Choose Area</option>
+                <option *ngFor="let one of areasByCity" [ngValue]="one.areaId">{{ one.description }}</option>
+              </select>
+            </c-col>
+            <c-col md="4">
+              <label class="form-label">Land Mark</label>
+              <input type="text" class="form-control" [(ngModel)]="landMark" [ngModelOptions]="{standalone: true}"
+                placeholder="Enter land Mark..." />
+            </c-col>
+          </c-row>
+        </div>
+        <div>
+        </div>
+        <div class="m-2 d-flex justify-content-start">
+          <button type="button" class="btn btn-primary mb-4" (click)="addNewAddress()">
+            Add Address
+          </button>
+        </div>
       </div>
 
 
       <!-- Add Service -->
-      <div class="container card mb-4 mt-4" *ngIf="!business">
+      <div *ngIf="business" class="container card mb-4 mt-4">
         <h5 class="text-info mt-1">Services</h5>
         <div class="card-body">
 

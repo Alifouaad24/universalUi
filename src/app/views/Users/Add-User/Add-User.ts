@@ -87,10 +87,11 @@ export class AddEditUserComponent implements OnInit {
     console.log(payLoad)
 
     this.http.posteData('Account/AddUsers', payLoad).subscribe(res => {
-      //this.router.navigate(['Home/users'])
+      this.router.navigate(['Home/users'])
       this.createdPassword = res.password
       this.loading = false
       alert(`User password: ${this.createdPassword}`)
+
     }, (error) => {
       console.error(error)
       this.loading = false

@@ -79,6 +79,7 @@ export class LoginComponent {
         error: err => {
           this.showError = true;
           this.loading = false;
+          this.cdr.detectChanges();
           alert(err.error.message);
         }
       });

@@ -1,6 +1,6 @@
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectorRef, Component, computed, inject, input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
 import { BusinessContextService } from '../../../core/Services/business-context.service';
 import {
@@ -61,7 +61,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef) {
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private router: Router) {
     super();
 
   }
@@ -94,8 +94,9 @@ export class DefaultHeaderComponent extends HeaderComponent {
     localStorage.removeItem('businesses');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentBusiness');
-    window.location.href = '/login';
-
+    this.router.navigate(['/login'], {
+      replaceUrl: true
+    });
   }
 
 

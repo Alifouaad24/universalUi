@@ -81,6 +81,7 @@ export class ShowUsersComponent implements OnInit {
           id: item.id,
           userName: item.userName,
           email: item.email,
+          userPassword: item.userPassword
         }));
         this.isLoading = false;
 
