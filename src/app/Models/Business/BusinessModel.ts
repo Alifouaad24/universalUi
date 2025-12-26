@@ -17,6 +17,7 @@ export class BusinessModel {
   business_whatsapp?: string;
   business_email?: string;
   business_LogoUrl?: string;
+  activites?: ActiviityModel[];
 
   activities?: ActiviityModel[];
   businessTypes?: any[];

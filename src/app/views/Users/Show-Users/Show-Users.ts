@@ -24,7 +24,13 @@ import {
   ToastBodyComponent,
   ToastComponent,
   ToasterComponent,
-  ToastHeaderComponent
+  ToastHeaderComponent,
+  ButtonCloseDirective,
+  ModalBodyComponent,
+  ModalComponent,
+  ModalFooterComponent,
+  ModalHeaderComponent,
+  ModalTitleDirective
 } from '@coreui/angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { BusinessType } from '../../../Models/Business/BusinessType';
@@ -49,21 +55,28 @@ import { UserModel } from '../../../Models/UserModel';
     ProgressComponent,
     ToasterComponent,
     ToastComponent,
-    ToastHeaderComponent,
-    
+    ToastHeaderComponent, ModalComponent,
+    ModalHeaderComponent,
+    ModalTitleDirective,
+    ButtonCloseDirective,
+    ModalBodyComponent,
+    ModalFooterComponent,
+    ButtonDirective,
+
     ToastBodyComponent]
 })
 export class ShowUsersComponent implements OnInit {
 
   Users: UserModel[] = [];
+  User: UserModel = new UserModel();
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
   selectedType?: UserModel;
   ///// for toastr ////////
   position = 'top-end';
-  toastVisible = signal(false); 
-  toastMessage = signal(''); 
+  toastVisible = signal(false);
+  toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
 
@@ -77,11 +90,15 @@ export class ShowUsersComponent implements OnInit {
     this.isLoading = true;
     this.http.getAllData('Account/getAllUsers').subscribe(
       (res: any) => {
+        console.log(res);
         this.Users = (res as any[]).map(item => new UserModel({
+
           id: item.id,
           userName: item.userName,
           email: item.email,
-          userPassword: item.userPassword
+          userPassword: item.userPassword,
+          roles: item.roles,
+          businesses: item.businesses,
         }));
         this.isLoading = false;
 
@@ -107,7 +124,7 @@ export class ShowUsersComponent implements OnInit {
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.userName} deleted successfully`);
       this.toastVisible.set(true);
-    },(error) =>{
+    }, (error) => {
       this.toastMessage.set(`An error occured during delete (${type.userName})`);
       this.toastVisible.set(true);
     });
@@ -120,6 +137,23 @@ export class ShowUsersComponent implements OnInit {
 
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
+  }
+
+  showUserRoles() {
+    alert("Feature coming soon!");
+  }
+
+   public visible = false;
+   reoles?: any[];
+
+  toggleLiveDemo(type: UserModel | null) {
+    console.log(type);
+    this.visible = !this.visible;
+    this.reoles = type?.roles;
+  }
+
+  handleLiveDemoChange(event: any) {
+    this.visible = event;
   }
 
 }

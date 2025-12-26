@@ -68,6 +68,9 @@ export class LoginComponent {
           if (res.businesses && res.businesses.length > 0) {
             const safeBusinesses = JSON.parse(JSON.stringify(res.businesses));
             localStorage.setItem('businesses', JSON.stringify(safeBusinesses));
+            if(localStorage.getItem('currentBusiness') == null){
+              localStorage.setItem('currentBusiness', JSON.stringify(safeBusinesses[0]));
+            }
           } else {
             localStorage.removeItem('businesses');
           }

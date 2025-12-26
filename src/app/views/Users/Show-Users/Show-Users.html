@@ -27,12 +27,13 @@
       <tbody>
         <tr *ngFor="let type of Users; index as i">
           <td>{{ i + 1 }}</td>
-          <td>{{ type.userName }}</td>
+          <td style="cursor: pointer;" (click)="toggleLiveDemo(type)">{{ type.userName }}</td>
           <td>{{ type.email }}</td>
           <td>{{ type?.userPassword }}</td>
           <td>
             <ng-container *ngIf="Users.length">
-              <button class="btn btn-sm btn-primary me-1">
+              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-user']"
+                [queryParams]="{ user: type | json }">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
@@ -76,3 +77,17 @@
     </c-toast-body>
   </c-toast>
 </c-toaster>
+
+<c-modal id="liveDemoModal" [visible]="visible" (visibleChange)="handleLiveDemoChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>User Roles:</h5>
+    <button (click)="toggleLiveDemo(User)" cButtonClose></button>
+  </c-modal-header>
+  <c-modal-body>
+    <ul>
+      <li *ngFor="let role of reoles;index as i">{{ role }}</li>
+    </ul>
+  </c-modal-body>
+  <c-modal-footer>
+  </c-modal-footer>
+</c-modal>

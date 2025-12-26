@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent, SpinnerComponent, SpinnerModule } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { RloeModel } from '../../../Models/RloeModel';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
-
+import { UserModel } from '../../../Models/UserModel';
 @Component({
   selector: 'app-buttons',
   templateUrl: './Add-User.html',
@@ -29,10 +29,25 @@ export class AddEditUserComponent implements OnInit {
   Businesses?: BusinessModel[]
   selectedBusinessId: number[] = [];
   loadingBusiness = true;
+  userToEdit?: UserModel;
+  userIdToEdit?: string;
 
-  constructor(private http: HttpConnectService, private router: Router, private cdr: ChangeDetectorRef) { }
+  constructor(private http: HttpConnectService, private router: Router, private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const userFromQuery = params.get('user');
+      if (userFromQuery) {
+        this.userToEdit = JSON.parse(userFromQuery);
+        console.log(this.userToEdit)
+        this.userIdToEdit = this.userToEdit!.id;
+        this.userName = this.userToEdit!.userName;
+        this.Email = this.userToEdit!.email;
+        this.selectedRoleId = this.userToEdit!.roles!.map(role => role);
+        this.selectedBusinessId = this.userToEdit!.businesses!.map(business => business.business_id);
+      }
+    });
     this.getAlRless()
     this.http.getAllData('Business').subscribe(res => {
       this.loadingBusiness = true;
@@ -82,20 +97,31 @@ export class AddEditUserComponent implements OnInit {
       "userName": this.userName.replace(' ', '-'),
       "email": this.Email,
       "roles": this.selectedRoleId,
-      "businessIds" : this.selectedBusinessId
+      "businessIds": this.selectedBusinessId
     }
     console.log(payLoad)
 
-    this.http.posteData('Account/AddUsers', payLoad).subscribe(res => {
-      this.router.navigate(['Home/users'])
-      this.createdPassword = res.password
-      this.loading = false
-      alert(`User password: ${this.createdPassword}`)
+    if (!this.userIdToEdit) {
+      this.http.posteData('Account/AddUsers', payLoad).subscribe(res => {
+        this.router.navigate(['Home/users'])
+        this.createdPassword = res.password
+        this.loading = false
+        alert(`User password: ${this.createdPassword}`)
 
-    }, (error) => {
-      console.error(error)
-      this.loading = false
-    })
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    } else {
+      this.http.putData(`Account/updateUser/${this.userIdToEdit}`, payLoad).subscribe(res => {
+        this.router.navigate(['Home/users'])
+        this.loading = false
+
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    }
   }
 
   AddRemoveRole(id: string) {

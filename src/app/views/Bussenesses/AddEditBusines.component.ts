@@ -1,6 +1,6 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, FormControlDirective, RowComponent, TableDirective } from '@coreui/angular';
+import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AccordionModule, BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, CollapseModule, FormControlDirective, RowComponent, SharedModule, SpinnerModule, TableDirective } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -13,6 +13,9 @@ import { iconSubset } from '../../icons/icon-subset';
 import { CityModel } from '../../Models/CityModel';
 import { AreaModel } from '../../Models/AreaModel';
 import { StateModel } from '../../Models/StateModel';
+import { GridModule, ButtonModule, FormModule } from '@coreui/angular';
+import { ActiviityModel } from '../../Models/ActivityModel';
+
 @Component({
   templateUrl: 'AddEditBusines.component.html',
   imports: [
@@ -22,19 +25,24 @@ import { StateModel } from '../../Models/StateModel';
     CardHeaderComponent,
     RowComponent,
     ColComponent,
-    ButtonDirective,
+    ButtonDirective, CollapseModule,
     BadgeComponent,
     TableDirective,
     FormControlDirective,
     IconComponent,
-    RouterLink,
-    RouterOutlet, CommonModule, FormsModule, ReactiveFormsModule
+    RouterLink, AccordionModule, AccordionComponent, AccordionItemComponent, AccordionButtonDirective,
+    GridModule,
+    FormModule,
+    ButtonModule,
+    RouterOutlet, CommonModule, FormsModule, ReactiveFormsModule, AccordionModule,
+    SharedModule,
+    SpinnerModule,
   ]
 })
 export class AddEditBusniessComponent implements OnInit {
 
   selectedIcon: string | null = null;
-
+  businessToShoowAccordion = true;
   icons: string[] = Object.keys(iconSubset);
   selectIcon(icon: string) {
     this.selectedIcon = icon;
@@ -45,23 +53,30 @@ export class AddEditBusniessComponent implements OnInit {
   businessesType?: BusinessType[]
   addresses?: AddressModel[]
   business?: BusinessModel;
-
+  showBasicInfoForm: boolean = false;
+  showAddessForm: boolean = false;
+  showServicesForm: boolean = false;
+  showActivitiessssForm: boolean = false;
   address: {
     Line_1: string,
     Line_2: string,
     LandMark: string,
     PostCode: string,
+    Us_City: string,
     CityId: number | null,
     StateId: number | null,
     CountryId: number | null,
     AreaId: number | null
   }[] = [];
 
+  UsCity: string = '';
+
   addNewAddress() {
     this.address.push({
       Line_1: this.Line_1,
       Line_2: this.Line_2,
       LandMark: this.landMark,
+      Us_City: this.UsCity,
       PostCode: this.PostCode,
       CityId: this.selectedCityId,
       StateId: this.selectedStateId,
@@ -71,7 +86,7 @@ export class AddEditBusniessComponent implements OnInit {
     console.log(this.address);
   }
 
-  
+
   citiesByCountry: CityModel[] = [];
   statesByCountry: StateModel[] = [];
   areasByCity: AreaModel[] = [];
@@ -84,7 +99,7 @@ export class AddEditBusniessComponent implements OnInit {
   selectedStateId: number | null = null;
   selectedAreaId: number | null = null;
   landMark: string = '';
-
+  Activites?: ActiviityModel[]
   services: {
     description: string;
     isPublic: boolean;
@@ -144,6 +159,8 @@ export class AddEditBusniessComponent implements OnInit {
           AddressId: this.business!.businessAddresses
         });
         this.BusinessTypesArray.clear();
+        this.Activites = this.business!.activities;
+        console.log(this.Activites);
 
         this.business?.businessTypes?.forEach(el => {
           this.BusinessTypesArray.push(
@@ -365,7 +382,7 @@ export class AddEditBusniessComponent implements OnInit {
     this.selectedStateId = null;
     this.selectedAreaId = null;
 
-    this.GetAllStatesByCountry(event.target.value);    
+    this.GetAllStatesByCountry(event.target.value);
     console.log(this.selectedCountry);
   }
 
