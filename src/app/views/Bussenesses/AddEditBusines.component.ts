@@ -15,6 +15,8 @@ import { AreaModel } from '../../Models/AreaModel';
 import { StateModel } from '../../Models/StateModel';
 import { GridModule, ButtonModule, FormModule } from '@coreui/angular';
 import { ActiviityModel } from '../../Models/ActivityModel';
+import { logo } from '../../icons/logo';
+import { set } from 'lodash-es';
 
 @Component({
   templateUrl: 'AddEditBusines.component.html',
@@ -44,10 +46,6 @@ export class AddEditBusniessComponent implements OnInit {
   selectedIcon: string | null = null;
   businessToShoowAccordion = true;
   icons: string[] = Object.keys(iconSubset);
-  selectIcon(icon: string) {
-    this.selectedIcon = icon;
-    console.log('Selected icon:', icon);
-  }
   businessForm: FormGroup;
   countries?: Country[]
   businessesType?: BusinessType[]
@@ -69,27 +67,30 @@ export class AddEditBusniessComponent implements OnInit {
     AreaId: number | null
   }[] = [];
 
+  addressToShow: {
+    countryName: string;
+    Line_1: string,
+    Line_2: string,
+    LandMark: string,
+    Statename: string | null,
+    PostCode: string,
+    Us_City: string,
+    CityNonUS: string | null,
+    StateId: number | null,
+    CountryId: number | null,
+    AreaNonUS: string | null
+  }[] = [];
+
+  servicesList: String[] = [];
+
+
+
+  selectedCountry: string = '';
   UsCity: string = '';
-
-  addNewAddress() {
-    this.address.push({
-      Line_1: this.Line_1,
-      Line_2: this.Line_2,
-      LandMark: this.landMark,
-      Us_City: this.UsCity,
-      PostCode: this.PostCode,
-      CityId: this.selectedCityId,
-      StateId: this.selectedStateId,
-      CountryId: this.businessForm.get('CountryId')?.value ?? null,
-      AreaId: this.selectedAreaId
-    });
-    console.log(this.address);
-  }
-
-
   citiesByCountry: CityModel[] = [];
   statesByCountry: StateModel[] = [];
   areasByCity: AreaModel[] = [];
+  hasStates = false;
 
   Line_1: string = ''
   Line_2: string = ''
@@ -100,6 +101,7 @@ export class AddEditBusniessComponent implements OnInit {
   selectedAreaId: number | null = null;
   landMark: string = '';
   Activites?: ActiviityModel[]
+
   services: {
     description: string;
     isPublic: boolean;
@@ -111,6 +113,9 @@ export class AddEditBusniessComponent implements OnInit {
   logoPreview: string | null = null;
   serviceDescription: string = '';
   serviceVisibility: 'public' | 'local' | null = null;
+  selectedCityNonUS: string | null = null;
+  selectedAreaNonUS: string | null = null;
+  selectedStateName: string | null = null;
 
   constructor(private fb: FormBuilder, private http: HttpConnectService,
     private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) {
@@ -127,51 +132,92 @@ export class AddEditBusniessComponent implements OnInit {
       Business_youtube: [''],
       Business_whatsapp: [''],
       Business_email: ['', Validators.email],
-      BusinessTypes: this.fb.array([]),
-      Addresses: this.fb.array([]),
+      BusinessTypeId: this.fb.array([]),
+      AddressId: this.fb.array([]),
       businessLogo: [this.businessLogoFile]
     });
   }
 
   ngOnInit(): void {
-    this.getAllAddresses()
-    this.getAllBusinessesTypes()
-    this.getAllCountries()
     this.route.queryParamMap.subscribe(param => {
       const busFromQuery = param.get('bus')
       if (busFromQuery) {
-        this.business = JSON.parse(busFromQuery);
+        this.getAllCountries()
+        this.getAllAddresses()
+        this.getAllBusinessesTypes()
+        setTimeout(() => {
+          this.business = JSON.parse(busFromQuery);
+          this.businessForm.patchValue({
+            Business_name: this.business!.business_name,
+            CountryId: this.business!.countryId,
+            Is_active: this.business!.is_active,
+            Business_phone: this.business!.business_phone,
+            Business_webSite: this.business!.business_webSite,
+            Business_fb: this.business!.business_fb,
+            Business_instgram: this.business!.business_instgram,
+            Business_tiktok: this.business!.business_tiktok,
+            Business_google: this.business!.business_google,
+            Business_youtube: this.business!.business_youtube,
+            Business_whatsapp: this.business!.business_whatsapp,
+            Business_email: this.business!.business_email
+          });
 
-        this.businessForm.patchValue({
-          Business_name: this.business!.business_name,
-          CountryId: this.business!.countryId,
-          Is_active: this.business!.is_active,
-          Business_phone: this.business!.business_phone,
-          Business_webSite: this.business!.business_webSite,
-          Business_fb: this.business!.business_fb,
-          Business_instgram: this.business!.business_instgram,
-          Business_tiktok: this.business!.business_tiktok,
-          Business_google: this.business!.business_google,
-          Business_youtube: this.business!.business_youtube,
-          Business_whatsapp: this.business!.business_whatsapp,
-          Business_email: this.business!.business_email,
-          BusinessTypeId: this.business!.businessTypes,
-          AddressId: this.business!.businessAddresses
-        });
-        this.BusinessTypesArray.clear();
-        this.Activites = this.business!.activities;
-        console.log(this.Activites);
+          this.logoPreview = this.business!.business_LogoUrl || ''
 
-        this.business?.businessTypes?.forEach(el => {
-          this.BusinessTypesArray.push(
-            this.fb.control(el.businessType.business_type_id)
-          );
-        });
+          this.Activites = this.business!.activities;
+          this.business?.businessTypes?.forEach(el => {
+            this.BusinessTypesArray.push(
+              this.fb.control(el.business_type_id)
+            );
+          });
 
-        console.log(this.business)
+        }, 50);
+      } else {
+        this.getAllAddresses()
+        this.getAllBusinessesTypes()
+        this.getAllCountries()
       }
     })
+
   }
+
+
+
+  selectIcon(icon: string) {
+    this.selectedIcon = icon;
+  }
+
+
+  addNewAddress() {
+    this.address.push({
+      Line_1: this.Line_1,
+      Line_2: this.Line_2,
+      LandMark: this.landMark,
+      Us_City: this.UsCity,
+      PostCode: this.PostCode,
+      CityId: this.selectedCityId,
+      StateId: this.selectedStateId,
+      CountryId: Number.parseInt(this.businessForm.get('CountryId')?.value ?? null),
+      AreaId: this.selectedAreaId
+    });
+
+    const newAddress = {
+      countryName: this.selectedCountry,
+      Line_1: this.Line_1,
+      Line_2: this.Line_2,
+      LandMark: this.landMark,
+      Statename: this.selectedStateName,
+      Us_City: this.UsCity,
+      PostCode: this.PostCode,
+      CityNonUS: this.selectedCityNonUS,
+      StateId: this.selectedStateId,
+      CountryId: this.businessForm.get('CountryId')?.value ?? null,
+      AreaNonUS: this.selectedAreaNonUS
+    };
+
+    this.addressToShow = [...this.addressToShow, newAddress];
+  }
+
 
   getAllCountries() {
     this.http.getAllData('Country').subscribe(res => {
@@ -179,7 +225,15 @@ export class AddEditBusniessComponent implements OnInit {
         countryId: el.countryId,
         name: el.name
       }))
-      this.selectedCountry = this.countries?.find(c => c.countryId === this.business?.countryId)?.name ?? '';
+      if (this.business) {
+
+        const Country = this.countries?.find(c => c.countryId === this.business!.countryId)
+        this.businessForm.patchValue({
+          CountryId: this.business!.countryId
+        });
+        this.GetAllStatesByCountry(this.business!.countryId);
+        this.selectedCountry = Country!.name ? Country!.name : ''
+      }
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
@@ -210,6 +264,16 @@ export class AddEditBusniessComponent implements OnInit {
         post_code: el.post_code,
         city: el.city
       }))
+      setTimeout(() => {
+        this.cdr.detectChanges()
+      }, 1000);
+      if (this.business) {
+        this.business?.businessAddresses?.forEach(el => {
+          this.AddressesArray.push(
+            this.fb.control(el!.address_id)
+          );
+        });
+      }
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
@@ -218,73 +282,65 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
   submit() {
+    if (!this.businessForm.valid) {
+      this.businessForm.markAllAsTouched();
+      return;
+    }
 
-    if (this.businessForm.get('Business_email')?.value === '' || (this.businessForm.get('Business_phone')?.value === '')) {
-      alert('Please provide at least an email or a phone number for the business.');
+    if (
+      !this.businessForm.get('Business_email')?.value &&
+      !this.businessForm.get('Business_phone')?.value
+    ) {
+      alert('Email or phone is required');
       return;
     }
 
     const form = new FormData();
 
-    form.append('Business_name', this.businessForm.get('Business_name')?.value ?? '');
-    form.append('CountryId', String(this.businessForm.get('CountryId')?.value ?? 0));
-    form.append('Is_active', String(this.businessForm.get('Is_active')?.value ?? false));
-    form.append('Business_phone', this.businessForm.get('Business_phone')?.value ?? '');
-    form.append('Business_webSite', this.businessForm.get('Business_webSite')?.value ?? '');
-    form.append('Business_fb', this.businessForm.get('Business_fb')?.value ?? '');
-    form.append('Business_instgram', this.businessForm.get('Business_instgram')?.value ?? '');
-    form.append('Business_tiktok', this.businessForm.get('Business_tiktok')?.value ?? '');
-    form.append('Business_google', this.businessForm.get('Business_google')?.value ?? '');
-    form.append('Business_youtube', this.businessForm.get('Business_youtube')?.value ?? '');
-    form.append('Business_whatsapp', this.businessForm.get('Business_whatsapp')?.value ?? '');
-    form.append('Business_email', this.businessForm.get('Business_email')?.value ?? '');
+    const simpleFields = [
+      'Business_name', 'CountryId', 'Is_active',
+      'Business_phone', 'Business_webSite', 'Business_fb',
+      'Business_instgram', 'Business_tiktok', 'Business_google',
+      'Business_youtube', 'Business_whatsapp', 'Business_email'
+    ];
+
+    simpleFields.forEach(key => {
+      const value = this.businessForm.get(key)?.value;
+      if (value !== null && value !== undefined) {
+        if (typeof value === 'boolean') {
+          form.append(key, value ? 'true' : 'false');
+        } else {
+          form.append(key, value.toString());
+        }
+      }
+    });
 
     if (this.businessLogoFile) {
       form.append('BusinessLogo', this.businessLogoFile);
     }
 
-    (this.businessForm.get('BusinessTypes')?.value ?? []).forEach((id: number) => {
-      form.append('BusinessTypeId', id.toString());
-    });
-
-    (this.businessForm.get('Addresses')?.value ?? []).forEach((id: number) => {
-      form.append('AddressId', id.toString());
-    });
-
-    const addressPayload = this.address.map(addr => ({
-      Line_1: addr.Line_1 ?? '',
-      Line_2: addr.Line_2 ?? '',
-      Post_code: addr.PostCode ?? '',
-      CityId: addr.CityId ?? this.selectedCityId,
-      StateId: this.selectedStateId ?? null,
-      AreaId: this.selectedAreaId ?? null,
-      CountryId: this.businessForm.get('CountryId')?.value ?? null,
-      LandMark: this.landMark ?? ''
-    }));
-
-    form.append('address', JSON.stringify(addressPayload));
-
-    const servicesPayload = this.services.map(s => ({
-      description: s.description ?? '',
-      isPublic: s.isPublic ?? true,
-      service_icon: s.service_icon ?? '',
-
-    }));
-    form.append('Services', JSON.stringify(servicesPayload));
-
-
-    if (this.businessForm.valid) {
-      this.http.posteData('Business', form, true)
-        .subscribe({
-          next: res => this.router.navigate(['Home/business']),
-          error: err => console.error('Error:', err)
-        });
-    } else {
-      console.log('Form not valid');
-      this.businessForm.markAllAsTouched();
+    if (this.business) {
+      // PUT
+      form.append('BusinessTypeId', JSON.stringify(this.businessForm.get('BusinessTypeId')?.value ?? []));
+      form.append('AddressId', JSON.stringify(this.businessForm.get('AddressId')?.value ?? []));
     }
-  }
 
+    form.append('address', JSON.stringify(this.address ?? []));
+    form.append('Services', JSON.stringify(this.services ?? []));
+
+    for (const pair of form.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    const request = this.business
+      ? this.http.putData(`Business/${this.business.business_id}`, form, true)
+      : this.http.posteData('Business', form, true);
+
+    request.subscribe({
+      next: _ => this.router.navigate(['Home/business']),
+      error: err => console.error(err)
+    });
+  }
 
   resetForm() {
     this.businessForm.reset({
@@ -295,11 +351,11 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
   get BusinessTypesArray(): FormArray {
-    return this.businessForm.get('BusinessTypes') as FormArray;
+    return this.businessForm.get('BusinessTypeId') as FormArray;
   }
 
   get AddressesArray(): FormArray {
-    return this.businessForm.get('Addresses') as FormArray;
+    return this.businessForm.get('AddressId') as FormArray;
   }
 
   onBusinessTypeChange(event: any, id: number) {
@@ -341,7 +397,6 @@ export class AddEditBusniessComponent implements OnInit {
 
     this.serviceDescription = '';
     this.serviceVisibility = null;
-    console.log(this.services)
   }
 
   removeService(index: number) {
@@ -368,35 +423,31 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
 
-  selectedCountry: string = '';
-  onCountryChange(event: any) {
 
-    const selectedIndex = event.target.selectedIndex;
-    this.selectedCountry = event.target.options[selectedIndex].text;
-    this.Line_1 = ''
-    this.Line_2 = ''
-    this.selectedStateId = null
-    this.PostCode = ''
-    this.landMark = ''
+  onCountryChange() {
+    const countryId = this.businessForm.get('CountryId')?.value as number;
+    this.Line_1 = '';
+    this.Line_2 = '';
+    this.PostCode = '';
+    this.landMark = '';
+    this.UsCity = '';
     this.selectedCityId = null;
     this.selectedStateId = null;
     this.selectedAreaId = null;
-
-    this.GetAllStatesByCountry(event.target.value);
-    console.log(this.selectedCountry);
+    this.GetAllStatesByCountry(countryId);
+    this.GetAllCitiesByCountry(countryId);
+    const country = this.countries!.find(c => c.countryId == countryId)
+    this.selectedCountry = country!.name;
   }
-
-
-
 
   GetAllCitiesByCountry(countryId: number) {
     this.http.getAllData(`City/GetAllCitiesByCountry/${countryId}`).subscribe(res => {
+
       this.citiesByCountry = (res as any[]).map((el: any) => new CityModel({
         cityId: el.cityId,
         description: el.description,
         countryId: el.countryId
       }))
-      console.log(res);
       this.cdr.detectChanges();
     }, (error) => {
       console.error(error)
@@ -408,11 +459,10 @@ export class AddEditBusniessComponent implements OnInit {
     this.http.getAllData(`State/GetAllStatesByCountry/${countryId}`).subscribe(res => {
       this.statesByCountry = (res as any[]).map((el: any) => new StateModel({
         stateId: el.stateId,
-        name: el.description,
+        name: el.name,
         countryId: el.countryId
       }))
-      console.log(res);
-      this.cdr.detectChanges();
+      this.hasStates = this.statesByCountry.length > 0;
     }, (error) => {
       console.error(error)
       this.cdr.detectChanges()
@@ -420,7 +470,7 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
   GetAllAreasByCity(cityId: number) {
-    this.http.getAllData(`Area/GetAllAreasByCity/${cityId}`).subscribe(res => {
+    this.http.getAllData(`Area/GetAlAreasByCity/${cityId}`).subscribe(res => {
       this.areasByCity = (res as any[]).map((el: any) => new AreaModel({
         areaId: el.areaId,
         description: el.description,
@@ -429,7 +479,6 @@ export class AddEditBusniessComponent implements OnInit {
         sector: el.sector,
         spec: el.spec
       }))
-      console.log(res);
       this.cdr.detectChanges();
     }, (error) => {
       console.error(error)
@@ -438,24 +487,23 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
   onStateChange(event: any) {
-    const selectedIndex = event.target.selectedIndex;
-    this.selectedStateId = event.target.options[selectedIndex].value;
-    console.log(this.selectedStateId);
-    this.GetAllCitiesByCountry(this.selectedStateId!);
+    this.selectedStateName = this.statesByCountry.find(s => s.stateId == this.selectedStateId)?.name || null;
   }
 
-  onCityChange(event: any) {
-    const selectedIndex = event.target.selectedIndex;
-    this.selectedCityId = event.target.options[selectedIndex].value;
-    console.log(this.selectedCityId);
+  onCityChange() {
+    this.selectedCityNonUS = this.citiesByCountry.find(c => c.cityId == this.selectedCityId)?.description || null;
     this.GetAllAreasByCity(this.selectedCityId!);
   }
 
-  onAreaChange(event: any) {
-    const selectedIndex = event.target.selectedIndex;
-    this.selectedAreaId = event.target.options[selectedIndex].value;
-    console.log(this.selectedAreaId);
+  onAreaChange() {
+    this.selectedAreaNonUS = this.areasByCity.find(a => a.areaId == this.selectedAreaId)?.description || null;
   }
 
+  removeAddress(i: number){
+    if(i > -1 && i < this.addressToShow.length){
+      this.addressToShow.splice(i, 1);
+      this.address.splice(i, 1);
+    }
+  }
 
 }

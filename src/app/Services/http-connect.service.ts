@@ -33,8 +33,7 @@ export class HttpConnectService {
       options.headers = this.getHeaders();
       // headers فيها Content-Type: application/json
     }
-    // إذا FormData → لا نضع headers
-    // المتصفح يحدد boundary تلقائيًا
+
 
     return this.http.post(
       `${this.apiUrl}/${finalUrl}`,
@@ -43,8 +42,14 @@ export class HttpConnectService {
     );
   }
 
-  putData(finalUrl: string, data: any): Observable<any> {
+  putData(finalUrl: string, data: any, isFormData: boolean = false): Observable<any> {
+     let options: any = {};
+    if (!isFormData) {
+      options.headers = this.getHeaders();
+      // headers فيها Content-Type: application/json
+    }
     return this.http.put(`${this.apiUrl}/${finalUrl}`, data, { headers: this.getHeaders() });
+
   }
 
   deleteData(finalUrl: string): Observable<any> {

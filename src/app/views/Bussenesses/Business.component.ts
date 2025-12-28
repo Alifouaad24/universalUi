@@ -41,6 +41,7 @@ export class BusinessComponent implements OnInit {
         business_id: el.business_id,
         business_name: el.business_name,
         country: el.country,
+        countryId: el.countryId,
         is_active: el.is_active,
         business_whatsapp: el.business_whatsapp,
         business_phone: el.business_phone,
@@ -54,6 +55,7 @@ export class BusinessComponent implements OnInit {
         activities: el.activities,
         businessTypes: el.businessTypes,
         businessAddresses: el.businessAddresses,
+        business_LogoUrl: el.business_LogoUrl,
 
       }))
       this.cdr.detectChanges()

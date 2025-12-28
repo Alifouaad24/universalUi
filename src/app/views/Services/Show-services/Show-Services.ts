@@ -82,7 +82,9 @@ export class ShowServicesComponent implements OnInit {
           description: item.description,
           insert_on: item.insert_on,
           service_icon: item.service_icon,
-          isPublic: item.isPublic
+          isPublic: item.isPublic,
+          business_Services: item.business_Services,
+          service_Activities: item.activity_Services
         }));
         this.isLoading = false;
 

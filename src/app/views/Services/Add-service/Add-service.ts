@@ -45,12 +45,13 @@ export class AddEditServiceComponent implements OnInit {
     this.route.queryParamMap.subscribe(param => {
       const serFromQuery = param.get('service')
       if (serFromQuery) {
-        console.log(serFromQuery)
         this.serviceToEdit = JSON.parse(serFromQuery)
         this.description = this.serviceToEdit!.description!
         this.id = this.serviceToEdit!.service_id,
           this.visibility = this.serviceToEdit!.isPublic ? 'public' : 'local'
         this.selectedIcon = this.serviceToEdit!.service_icon ?? null
+        this.selectedBusinessIds = this.serviceToEdit!.business_Services!.map((b: any) => b.business_id!) || []
+        this.selectedActivityIds = this.serviceToEdit!.service_Activities!.map((a: any) => a.activity_id!) || []
       }
     })
   }
@@ -61,6 +62,8 @@ export class AddEditServiceComponent implements OnInit {
         activity_id: el.activity_id,
         description: el.description
       }))
+      this.cdr.detectChanges()
+
     }, (error) => {
       console.error(error)
       this.loading = false
@@ -90,7 +93,6 @@ export class AddEditServiceComponent implements OnInit {
       return;
     }
 
-
     const payLoad = {
       "description": this.description,
       "isPublic": this.visibility === 'public' ? true : false,
@@ -99,13 +101,25 @@ export class AddEditServiceComponent implements OnInit {
       "service_icon": this.selectedIcon ?? ''
     }
 
-    this.http.posteData('Service', payLoad).subscribe(res => {
-      this.router.navigate(['Home/services'])
-      this.loading = false
-    }, (error) => {
-      console.error(error)
-      this.loading = false
-    })
+    console.log('Payload:', payLoad);
+
+    if (!this.serviceToEdit) {
+      this.http.posteData('Service', payLoad).subscribe(res => {
+        this.router.navigate(['Home/services'])
+        this.loading = false
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    } else {
+      this.http.putData(`Service/${this.id}`, payLoad).subscribe(res => {
+        this.router.navigate(['Home/services'])
+        this.loading = false
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    }
   }
 
   selectedActivityIds: number[] = [];

@@ -1,5 +1,5 @@
 export class Country {
-  countryId: number = 0;
+  countryId?: number;
   name: string = '';
   businesses?: any[]; 
   insert_on: string = ''; 

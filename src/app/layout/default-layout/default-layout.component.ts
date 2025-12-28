@@ -19,6 +19,8 @@ import { DefaultFooterComponent, DefaultHeaderComponent } from './';
 import { navItems } from './_nav';
 
 import { BusinessContextService } from '../../core/Services/business-context.service';
+import { HttpConnectService } from '../../Services/http-connect.service';
+import { ServiceModel } from '../../Models/ServiceModel';
 function isOverflown(element: HTMLElement) {
   return (
     element.scrollHeight > element.clientHeight ||
@@ -51,8 +53,9 @@ function isOverflown(element: HTMLElement) {
 export class DefaultLayoutComponent {
   business: any;
   public navItems: INavData[] = []// = [...navItems];
+  services: ServiceModel[] = [];
 
-  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef) { }
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private http: HttpConnectService) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
   user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -67,29 +70,69 @@ export class DefaultLayoutComponent {
   ngOnInit() {
 
     this.businessCtx.getCurrentBusiness().subscribe(business => {
-      console.log('business :', business);
       this.currBusiness = business;
+      console.log('Current Business in layout:', this.currBusiness);
 
       if (!business || !business.business_Services) {
         this.navItems = [...navItems];
         return;
       }
 
-      if (business.business_Services.some((s: any) => s.service.description.includes('APX'))) {
-        this.navItems = [...navItems];
-
-
-      } else {
-        this.navItems = business.business_Services.map((s: any) => {
-          return {
-            name: s.service.description,
-            url: s.service.service_Route,
-            iconComponent: { name: s.service.service_icon }
-          };
-        });
-      }
+      // this.navItems = business.business_Services.map((s: any) => {
+      //   return {
+      //     name: s.service.description,
+      //     url: s.service.service_Route,
+      //     iconComponent: { name: s.service.service_icon }
+      //   };
+      // });
+      this.getAllServices()
       this.cdr.detectChanges();
     });
+
+  }
+
+  getAllServices() {
+    this.http.getAllData('Service').subscribe(
+      (res: any) => {
+        console.log(res);
+        this.services = (res as any[]).map(item => new ServiceModel({
+          service_id: item.service_id,
+          description: item.description,
+          insert_on: item.insert_on,
+          service_icon: item.service_icon,
+          isPublic: item.isPublic,
+          business_Services: item.business_Services,
+          service_Activities: item.activity_Services,
+          service_Route: item.service_Route
+        }));
+        setTimeout(() => {
+          const businessServiceIds = this.currBusiness.business_Services
+            .map((bs: any) => bs.service_id);
+
+          console.log('Business Service IDs:', businessServiceIds);
+
+          this.services = this.services.filter(s =>
+            businessServiceIds.includes(s.service_id)
+          );
+
+          console.log('Filtered Services for Current Business:', this.services);
+
+          this.navItems = this.services
+            .map((bs: any) => ({
+              name: bs.description,
+              url: bs.service_Route,
+              iconComponent: { name: bs.service_icon }
+            }));
+
+          console.log('Navigation Items:', this.navItems);
+
+          this.cdr.detectChanges();
+        }, 100);
+
+      },
+      (err) => {
+      }
+    );
   }
 
   get colorScheme(): 'light' | 'dark' | undefined {

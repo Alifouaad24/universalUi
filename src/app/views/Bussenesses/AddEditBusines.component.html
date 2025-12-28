@@ -5,7 +5,106 @@
 
   <c-card-body>
     <form [formGroup]="businessForm" (submit)="submit()" cform>
-      <c-card>
+
+      <div *ngIf="!business" style="padding: 1rem;">
+        <c-row class="mb-3">
+          <c-col md="10">
+            <label class="form-label">Business Name</label>
+            <input cFormControl formControlName="Business_name" type="text" class="form-control" placeholder="name" />
+          </c-col>
+          <c-col md="2">
+            <label class="form-label text-danger">Status</label>
+            <div class="form-check form-switch">
+              <input formControlName="Is_active" class="form-check-input" type="checkbox" />
+              <label class="form-check-label">Active</label>
+            </div>
+          </c-col>
+        </c-row>
+        <c-row class="mb-3">
+          <c-col md="6">
+            <label class="form-label">Phone number</label>
+            <input formControlName="Business_phone" cFormControl type="text" class="form-control"
+              placeholder="+966xxxxxxxx" />
+          </c-col>
+          <c-col md="6">
+            <label class="form-label">Country</label>
+            <select formControlName="CountryId" (change)="onCountryChange()" cSelect class="form-select">
+              <option selected disabled value="">Choose country</option>
+              <option *ngFor="let one of countries" [ngValue]="one.countryId">{{ one.name }}</option>
+            </select>
+          </c-col>
+        </c-row>
+        <c-row class="mb-3">
+          <c-col md="6" *ngIf="business">
+            <label class="form-label">Website</label>
+            <input formControlName="Business_webSite" cFormControl type="url" class="form-control"
+              placeholder="https://example.com" />
+          </c-col>
+          <c-col md="6">
+            <label class="form-label">Email</label>
+            <input formControlName="Business_email" cFormControl type="email" class="form-control"
+              placeholder="info@email.com" />
+          </c-col>
+        </c-row>
+        <c-row class="mb-3" *ngIf="business">
+          <c-col md="4">
+            <label class="form-label">Facebook</label>
+            <input formControlName="Business_fb" cFormControl type="text" class="form-control" />
+          </c-col>
+          <c-col md="4">
+            <label class="form-label">Instagram</label>
+            <input formControlName="Business_instgram" cFormControl type="text" class="form-control" />
+          </c-col>
+          <c-col md="4">
+            <label class="form-label">TikTok</label>
+            <input formControlName="Business_tiktok" cFormControl type="text" class="form-control" />
+          </c-col>
+        </c-row>
+        <c-row class="mb-3" *ngIf="business">
+          <c-col md="4">
+            <label class="form-label">Google</label>
+            <input formControlName="Business_google" cFormControl type="text" class="form-control" />
+          </c-col>
+          <c-col md="4">
+            <label class="form-label">YouTube</label>
+            <input formControlName="Business_youtube" cFormControl type="text" class="form-control" />
+          </c-col>
+          <c-col md="4">
+            <label class="form-label">WhatsApp</label>
+            <input formControlName="Business_whatsapp" cFormControl type="text" class="form-control" />
+          </c-col>
+        </c-row>
+        <c-row class="mb-3" *ngIf="business">
+          <c-col md="4">
+            <label class="form-label">Logo</label>
+            <input type="file" class="form-control" (change)="onLogoChange($event)" accept="image/*" />
+          </c-col>
+          <c-col md="4">
+            <div class="d-flex justify-content-start mt-4" *ngIf="logoPreview">
+              <img [src]="logoPreview" height="40" width="40" alt="logo" />
+            </div>
+          </c-col>
+        </c-row>
+        <c-row class="mb-4" *ngIf="business">
+          <c-col md="6">
+            <label class="form-label">Business type</label>
+            <div *ngFor="let bt of businessesType">
+              <input type="checkbox" [checked]="BusinessTypesArray.value.includes(bt.business_type_id)"
+                (change)="onBusinessTypeChange($event, bt.business_type_id!)">
+              {{ bt.description }}
+            </div>
+          </c-col>
+          <c-col md="6">
+            <label class="form-label">Addresses</label>
+            <div *ngFor="let ad of addresses">
+              <input type="checkbox" [checked]="AddressesArray.value.includes(ad.address_id)"
+                (change)="onAddressChange($event, ad.address_id!)">
+              {{ ad.line_1 }} | {{ ad.line_2 }} | {{ ad.state }} | {{ ad.city }} | {{ ad.post_code }}
+            </div>
+          </c-col>
+        </c-row>
+      </div>
+      <c-card *ngIf="business">
         <c-card-header>
           <strong>Edit Business</strong>
         </c-card-header>
@@ -41,10 +140,9 @@
                     </c-col>
                     <c-col md="6">
                       <label class="form-label">Country</label>
-                      <select formControlName="CountryId" (change)="onCountryChange($event)" cSelect
-                        class="form-select">
+                      <select formControlName="CountryId" (change)="onCountryChange()" cSelect class="form-select">
                         <option selected disabled value="">Choose country</option>
-                        <option *ngFor="let one of countries" [ngValue]="one.countryId">{{ one.name }}</option>
+                        <option *ngFor="let one of countries" [value]="one.countryId">{{ one.name }}</option>
                       </select>
                     </c-col>
                   </c-row>
@@ -148,9 +246,9 @@
                         </c-col>
                       </c-row>
                       <c-row class="mb-3">
-                        <c-col md="6">
+                        <c-col md="6" *ngIf="hasStates">
                           <label class="form-label">State</label>
-                          <select (change)="onStateChange($event)" [(ngModel)]="selectedStateId"
+                          <select (change)="onStateChange($event)" id="stateId" [(ngModel)]="selectedStateId"
                             [ngModelOptions]="{standalone: true}" cSelect class="form-select">
                             <option selected disabled value="">
                               Choose State</option>
@@ -177,7 +275,7 @@
                     <c-row class="mb-3">
                       <c-col md="4">
                         <label class="form-label">City</label>
-                        <select (change)="onCityChange($event)" [(ngModel)]="selectedCityId"
+                        <select (change)="onCityChange()" [(ngModel)]="selectedCityId"
                           [ngModelOptions]="{standalone: true}" cSelect class="form-select">
                           <option selected disabled value="">Choose City</option>
                           <option *ngFor="let one of citiesByCountry" [ngValue]="one.cityId">{{ one.description }}
@@ -187,7 +285,7 @@
                       <c-col md="4">
                         <label class="form-label">Area</label>
                         <select [(ngModel)]="selectedAreaId" [ngModelOptions]="{standalone: true}"
-                          (change)="onAreaChange($event)" cSelect class="form-select">
+                          (change)="onAreaChange()" cSelect class="form-select">
                           <option selected disabled value="">Choose Area</option>
                           <option *ngFor="let one of areasByCity" [ngValue]="one.areaId">{{ one.description }}</option>
                         </select>
@@ -205,6 +303,30 @@
                     <button type="button" class="btn btn-primary mb-4" (click)="addNewAddress()">
                       Add Address
                     </button>
+                  </div>
+                </div>
+                <div>
+                  <div *ngIf="addressToShow.length > 0" class="m-3">
+                    <div class="mb-2 text-danger">Addresses</div>
+                    <div >
+                      <ul>
+                        <li *ngFor="let addr of addressToShow; index as i">
+                          <div *ngIf="addr.countryName == 'USA'" class="d-flex justify-content-between col-12 mb-1">
+                            {{ addr.Line_1 }} | {{ addr.Line_2 }} | {{ addr.Statename }} | {{ addr.Us_City }} | {{
+                            addr.PostCode }}
+                            <button type="button" class="btn btn-sm btn-danger ms-2" (click)="removeAddress(i)">
+                              <c-icon name="cil-trash"></c-icon>
+                            </button>
+                          </div>
+                          <div *ngIf="addr.countryName != 'USA'" class="d-flex justify-content-between col-4 mb-1">
+                            {{ addr.CityNonUS }} | {{ addr.AreaNonUS }} | {{ addr.LandMark }} | {{ addr.Us_City }}
+                            <button type="button" class="btn btn-sm btn-danger ms-2" (click)="removeAddress(i)">
+                              <c-icon name="cil-trash"></c-icon>
+                            </button>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </ng-template>
@@ -305,22 +427,22 @@
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
-                
-              <div *ngIf="Activites && Activites.length > 0" class="m-3">
-                <div class="mb-2 text-danger">Activities</div>
-                <ul>
-                  <li *ngFor="let one of Activites; index as i">
-                    {{ one.description }}
-                  </li>
-                </ul>
-              </div>
+
+                <div *ngIf="Activites && Activites.length > 0" class="m-3">
+                  <div class="mb-2 text-danger">Activities</div>
+                  <ul>
+                    <li *ngFor="let one of Activites; index as i">
+                      {{ one.description }}
+                    </li>
+                  </ul>
+                </div>
               </ng-template>
             </c-accordion-item>
           </c-accordion>
         </c-card-body>
       </c-card>
       <div class="d-flex justify-content-end gap-2 mt-3">
-        <button cButton color="secondary" variant="outline">
+        <button type="button" (click)="resetForm()" cButton color="secondary" variant="outline">
           Cancel
         </button>
         <button cButton color="primary" type="submit" [disabled]="businessForm.invalid">

@@ -18,7 +18,6 @@ export class BusinessModel {
   business_email?: string;
   business_LogoUrl?: string;
   activites?: ActiviityModel[];
-
   activities?: ActiviityModel[];
   businessTypes?: any[];
   businessAddresses?: any[];
