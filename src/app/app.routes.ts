@@ -32,6 +32,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Users/routes').then((m) => m.routes)
       },
       {
+        path: 'scraper',
+        loadChildren: () => import('./views/Scraper/routes').then((m) => m.routes)
+      },
+      {
         path: 'features',
         loadChildren: () => import('./views/Features/routes').then((m) => m.routes)
       },
@@ -117,6 +121,6 @@ export const routes: Routes = [
       title: 'Register Page'
     }
   },
- 
+
   { path: '**', redirectTo: 'dashboard' }
 ];

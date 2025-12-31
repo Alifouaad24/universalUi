@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { IconComponent, IconDirective } from '@coreui/icons-angular';
+import { AppConstants } from '../../shared/constant';
 import {
   ColorModeService,
   ContainerComponent,
@@ -54,7 +55,7 @@ export class DefaultLayoutComponent {
   business: any;
   public navItems: INavData[] = []// = [...navItems];
   services: ServiceModel[] = [];
-
+  defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private http: HttpConnectService) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -109,13 +110,9 @@ export class DefaultLayoutComponent {
           const businessServiceIds = this.currBusiness.business_Services
             .map((bs: any) => bs.service_id);
 
-          console.log('Business Service IDs:', businessServiceIds);
-
           this.services = this.services.filter(s =>
             businessServiceIds.includes(s.service_id)
           );
-
-          console.log('Filtered Services for Current Business:', this.services);
 
           this.navItems = this.services
             .map((bs: any) => ({
@@ -124,11 +121,9 @@ export class DefaultLayoutComponent {
               iconComponent: { name: bs.service_icon }
             }));
 
-          console.log('Navigation Items:', this.navItems);
-
           this.cdr.detectChanges();
         }, 100);
-
+        this.cdr.detectChanges();
       },
       (err) => {
       }

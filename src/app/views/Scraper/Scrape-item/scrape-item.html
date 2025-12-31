@@ -1,0 +1,143 @@
+<div class="container">
+  <div class="card p-3">
+    <div class="row align-items-start">
+      <div class="col-md-4">
+        <h4 class="mb-3">Scrape by:</h4>
+        <div class="d-flex flex-column gap-1">
+          <c-form-check>
+            <input checked cFormCheckInput type="radio" name="scrapeSource" value="HomeDepot"
+              (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;Home Depot</label>
+          </c-form-check>
+          <c-form-check>
+            <input cFormCheckInput type="radio" name="scrapeSource" value="Lowes" (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;Lowes</label>
+          </c-form-check>
+          <c-form-check>
+            <input cFormCheckInput type="radio" name="scrapeSource" value="Build" (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;Build</label>
+          </c-form-check>
+          <c-form-check>
+            <input cFormCheckInput type="radio" name="scrapeSource" value="Milwaukee" (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;Milwaukee</label>
+          </c-form-check>
+          <c-form-check>
+            <input cFormCheckInput type="radio" name="scrapeSource" value="Ryobi" (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;Ryobi</label>
+          </c-form-check>
+        </div>
+      </div>
+      <div *ngIf="useInput" class="col-md-4 d-flex justify-content-center mt-5">
+        <div class="d-flex flex-column align-items-start justify-content-start gap-1">
+          <label class="mb-1">Enter SKU to get data:</label>
+          <input type="text" class="form-control" [(ngModel)]="upc" placeholder="UPC..." />
+        </div>
+        <button class="btn btn-info mt-4 mx-1" (click)="GetPriceAndPhoto(upc)">
+          <span *ngIf="!isLoading">Get</span>
+          <c-spinner *ngIf="isLoading" size="sm"></c-spinner>
+        </button>
+      </div>
+      <div *ngIf="!useInput" class="col-md-4 d-flex justify-content-center mt-5">
+        <div class="d-flex flex-column align-items-start justify-content-start gap-1">
+          <label class="mb-1">Upload html file:</label>
+          <input type="file" class="form-control" placeholder="upload html file" (change)="onFile2Selected($event)" />
+        </div>
+        <button class="btn btn-info mt-4 mx-1" (click)="GetPriceAndPhotoForLowes()">
+          <span *ngIf="!isLoading">Get</span>
+          <c-spinner *ngIf="isLoading" size="sm"></c-spinner>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showHome" class="container mt-4">
+  <div class="card p-3">
+    <h4 class="text-center mb-5">Item info</h4>
+
+    <div class="row">
+      <div class="col-md-8">
+        <c-row class="mb-3">
+          <div class="col-md-4">
+            <label class="mb-1">Price</label>
+            <input class="form-control" [(ngModel)]="price"/>
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Quantity</label>
+            <input class="form-control" [(ngModel)]="Qty"/>
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Model</label>
+            <input class="form-control" [(ngModel)]="model" />
+          </div>
+        </c-row>
+
+        <c-row class="mb-3">
+          <div class="col-md-4">
+            <label class="mb-1">SKU</label>
+            <input class="form-control" [(ngModel)]="storeSku" />
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Company</label>
+            <input class="form-control" [(ngModel)]="Brand" />
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Internet Id</label>
+            <input class="form-control" [(ngModel)]="internet" />
+          </div>
+        </c-row>
+
+        <c-row class="mb-3">
+          <div class="col-md-4">
+            <label class="mb-1">Length</label>
+            <input class="form-control" [(ngModel)]="length" />
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Width</label>
+            <input class="form-control" [(ngModel)]="width" />
+          </div>
+          <div class="col-md-4">
+            <label class="mb-1">Height</label>
+            <input class="form-control" [(ngModel)]="height" />
+          </div>
+        </c-row>
+
+        <c-row class="mb-3">
+          <div class="col-md-12">
+            <label class="mb-1">Item name</label>
+            <input class="form-control" [(ngModel)]="title" />
+          </div>
+        </c-row>
+
+        <c-row class="mb-3">
+          <div class="col-md-12">
+            <label class="mb-1">Details</label>
+            <textarea class="form-control" [(ngModel)]="description2"></textarea>
+          </div>
+        </c-row>
+      </div>
+
+      <!-- الصور -->
+      <div class="col-md-4">
+        <div class="card p-3 h-100">
+          <div class="d-flex justify-content-center mb-2">
+            <img
+              [src]="imgUrl[currentIndex]"
+              class="img-fluid rounded"
+              style="max-height: 250px; object-fit: contain;"
+              alt="image"
+            />
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <button class="btn btn-outline-secondary" (click)="prev()">◀</button>
+
+            <span>{{ currentIndex + 1 }} / {{ imgUrl.length }}</span>
+
+            <button class="btn btn-outline-secondary" (click)="next()">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

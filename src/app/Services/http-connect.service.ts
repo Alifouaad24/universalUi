@@ -31,7 +31,6 @@ export class HttpConnectService {
 
     if (!isFormData) {
       options.headers = this.getHeaders();
-      // headers فيها Content-Type: application/json
     }
 
 

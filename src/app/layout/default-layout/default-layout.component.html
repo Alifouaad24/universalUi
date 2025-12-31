@@ -6,7 +6,7 @@
       <!-- <svg [class]="{icon: false}" cIcon class="sidebar-brand-full" height="32" name="logo" title="CoreUI Logo"></svg> -->
  
         <div class="d-flex align-items-center gap-2">
-        <img [src]="currBusiness?.business_LogoUrl || 'assets/images/avatars/fallback.jpg'" alt="logo" width="50" height="50"
+        <img [src]="currBusiness?.business_LogoUrl || defaultBusinessLogo" alt="logo" width="50" height="50"
           class="rounded-circle object-fit-cover" />
 
         <h4 class="text-danger mx-1">
@@ -37,7 +37,7 @@
     position="sticky" sidebarId="sidebar1" />
   <!--app-body-->
   <div class="body flex-grow-1">
-    <c-container breakpoint="lg" class="h-auto px-4">
+    <c-container breakpoint="lg" class="h-auto px-1">
       <router-outlet />
     </c-container>
   </div>

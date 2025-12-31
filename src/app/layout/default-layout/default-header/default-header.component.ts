@@ -50,6 +50,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
   currentBusiness: any;
 
 
+
   readonly colorModes = [
     { name: 'light', text: 'Light', icon: 'cilSun' },
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
@@ -66,15 +67,11 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   }
 
-
-
   ngOnInit(): void {
     this.businesses = this.businessCtx.getBusinesses();
     this.businessCtx.getCurrentBusiness().subscribe(b => {
       this.currentBusiness = b;
     });
-
-
   }
 
   selectBusiness(b: any) {
@@ -82,10 +79,8 @@ export class DefaultHeaderComponent extends HeaderComponent {
     setTimeout(() => {
       this.businessCtx.setCurrentBusiness(b)
       this.cdr.detectChanges();
-
-    }
-      , 1
-    );
+      this.router.navigate(['/Home/dashboard']);
+    }, 1);
   }
 
   logout() {
@@ -99,9 +94,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
     });
   }
 
-
   sidebarId = input('sidebar1');
-
   public newMessages = [
     {
       id: 0,

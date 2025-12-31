@@ -92,7 +92,7 @@
         </h6>
 
       <div *ngFor="let b of businesses">
-        <a cDropdownItem (click)="selectBusiness(b)">
+        <a style="cursor: pointer;" cDropdownItem (click)="selectBusiness(b)">
           {{ b.business_name }}
         </a>
       </div>
