@@ -36,6 +36,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Scraper/routes').then((m) => m.routes)
       },
       {
+        path: 'crm',
+        loadChildren: () => import('./views/crm/routes').then((m) => m.routes)
+      },
+      {
         path: 'features',
         loadChildren: () => import('./views/Features/routes').then((m) => m.routes)
       },

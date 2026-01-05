@@ -1,0 +1,61 @@
+<c-row class="g-3 m-2">
+  <c-col
+    *ngFor="let shipp of ShippingTypes"
+    md="3"
+    sm="6"
+  >
+    <c-card
+      class="text-center shadow-sm border-0 cursor-pointer"
+      [ngClass]="{ 'border-success': selectedShipping === shipp.shippingTypeId }"
+      (click)="getCustomersbyShippId(shipp.shippingTypeId); selectedShipping = shipp.shippingTypeId"
+    >
+      <c-card-body class="py-3">
+        <c-icon name="cil-truck" size="xl" class="text-success mb-2"></c-icon>
+        <h6 class="fw-bold text-dark m-0">
+          {{ shipp.description }}
+        </h6>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
+<c-card class="m-2">
+  <c-card-body class="bg-success text-light text-center p-3">
+    <h3 class="m-0">{{ labb }}</h3>
+  </c-card-body>
+</c-card>
+<c-card class="m-2">
+  <c-card-body>
+
+    <table
+      cTable
+      bordered
+      striped
+      class="text-center"
+    >
+      <thead>
+        <tr>
+          <th>رقم الجوال</th>
+          <th>اسم الزبون</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let customer of customers">
+          <td>
+            <a
+              [href]="getWhatsAppLink(customer.customer.custMob)"
+              target="_blank"
+              class="text-decoration-none fw-semibold"
+            >
+              {{ customer.customer.custMob }}
+            </a>
+          </td>
+          <td>
+            {{ customer.customer.custName }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </c-card-body>
+</c-card>

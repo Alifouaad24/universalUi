@@ -1,0 +1,66 @@
+<c-card class="m-3">
+  <c-card-body class="bg-warning text-light text-center">
+    <h4 class="m-0 fw-bold">ملاحظات الزبائن</h4>
+  </c-card-body>
+</c-card>
+<c-card class="m-3">
+  <c-card-body>
+
+    <table
+      cTable
+      bordered
+      striped
+      class="text-center align-middle"
+    >
+      <thead cTableColor="dark">
+        <tr>
+          <th>تمت المشاهدة</th>
+          <th>الملاحظة</th>
+          <th>اسم الزبون</th>
+          <th>#</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let note of allNotes; let i = index">
+
+          <td>
+            <button
+              cButton
+              size="sm"
+              color="warning"
+              (click)="SetNoteAsRead(note.id)"
+            >
+              <c-icon name="cil-eye"></c-icon>
+            </button>
+          </td>
+
+          <td>
+            <button
+              cButton
+              color="link"
+              class="p-0"
+              (click)="showNote(note.description)"
+            >
+              {{
+                note.description?.length > 30
+                  ? (note.description | slice:0:30) + '...'
+                  : note.description
+              }}
+            </button>
+          </td>
+
+          <td>
+            {{ note.customer?.custName }}
+          </td>
+
+          <td>
+            {{ i + 1 }}
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </c-card-body>
+</c-card>

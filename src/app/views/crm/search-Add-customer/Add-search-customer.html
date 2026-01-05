@@ -1,0 +1,168 @@
+<c-row class="mb-3">
+  <c-col class="text-center">
+    <h2 *ngIf="updated" class="fw-bold text-dark">
+      Updated successfuly
+    </h2>
+  </c-col>
+</c-row>
+
+<c-row class="mb-3">
+  <c-col>
+    <button cButton color="primary" (click)="toggleVisibility()">
+      <c-icon name="cilPlus"></c-icon>
+    </button>
+  </c-col>
+</c-row>
+<c-card *ngIf="isVisible" class="p-4" style="direction: rtl; text-align: right;">
+  <c-card-body>
+    <c-row class="g-3">
+      <c-col md="4">
+        <label cLabel>Name</label>
+        <input class="form-control" [(ngModel)]="customerName" />
+      </c-col>
+
+      <c-col md="4">
+        <label cLabel>Mobile</label>
+        <input class="form-control" [(ngModel)]="customerMobile" />
+      </c-col>
+      <!--  -->
+      <c-col md="4">
+        <label cLabel>Country</label>
+        <select cSelect [(ngModel)]="countryId" (change)="countryChanged($event)">
+          <option *ngFor="let one of countries" [value]="one.countryId">
+            {{ one.name }}
+          </option>
+        </select>
+      </c-col>
+
+      <c-col md="4" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
+        <label cLabel>City</label>
+        <select cSelect [(ngModel)]="cityId" (change)="cityChanged($event)">
+          <option *ngFor="let city of cities" [ngValue]="city.cityId">
+            {{ city.description }}
+          </option>
+        </select>
+      </c-col>
+
+      <c-col md="4" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
+        <label cLabel>Area</label>
+        <select [(ngModel)]="areaId" cSelect>
+          <option *ngFor="let area of areas" [ngValue]="area.areaId">
+            {{ area.description }}
+          </option>
+        </select>
+      </c-col>
+
+      <c-col md="4" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
+        <label cLabel>Land mark</label>
+        <input class="form-control" [(ngModel)]="LandMark" />
+      </c-col>
+
+      <c-col md="6" *ngIf="selectedCountry == 'USA'">
+        <label cLabel>Line 1</label>
+        <input class="form-control" [(ngModel)]="Line1" />
+      </c-col>
+
+      <c-col md="6" *ngIf="selectedCountry == 'USA'">
+        <label cLabel>Line 2</label>
+        <input class="form-control" [(ngModel)]="Line2" />
+      </c-col>
+
+      <c-col md="4" *ngIf="selectedCountry == 'USA'">
+        <label cLabel>State</label>
+        <select [(ngModel)]="stateId" cSelect>
+          <option *ngFor="let state of states" [ngValue]="state.stateId">
+            {{ state.name }}
+          </option>
+        </select>
+      </c-col>
+
+      <c-col md="4" *ngIf="selectedCountry == 'USA'">
+        <label cLabel>Post Code</label>
+        <input class="form-control" [(ngModel)]="PostCode" />
+      </c-col>
+      <c-col md="4" *ngIf="selectedCountry == 'USA'">
+        <label cLabel>City</label>
+        <input class="form-control" [(ngModel)]="UsCity" />
+      </c-col>
+
+      <c-col class="text-center mt-3">
+        <button cButton color="primary" (click)="AddCustomer()">
+          Add <c-spinner class="sm" *ngIf="addingLoad"></c-spinner>
+        </button>
+      </c-col>
+    </c-row>
+  </c-card-body>
+</c-card>
+<c-card *ngIf="!isVisible" class="p-3 text-center">
+  <input cFormControl #wordToseach (input)="filterSuggestions(wordToseach.value)"
+    placeholder="Enter name or phone to search..." />
+
+  <ul *ngIf="filteredSuggestions.length" class="list-group mt-2"
+    style="max-height:300px; overflow:auto; cursor:pointer;">
+    <li class="list-group-item" *ngFor="let s of filteredSuggestions" (click)="selectSuggestion(s)">
+      {{ s }}
+    </li>
+  </ul>
+</c-card>
+
+<c-card *ngIf="res1" class="mt-4 shadow-sm">
+  <c-card-header class="bg-primary text-light text-center fw-bold">
+     Customer info
+  </c-card-header>
+  <c-card-body>
+    <div class="table-responsive">
+      <table cTable striped hover bordered class="text-center align-middle w-100 mb-0">
+        <thead>
+          <tr>
+            <th style="width: 30%;">Country</th>
+            <th style="width: 35%;">Phone number</th>
+            <th style="width: 35%;">Name</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ res1.country.name }}</td>
+            <td>
+              <a [href]="'https://wa.me/' + res1.customerMobile" target="_blank" class="text-decoration-none text-primary">
+                {{ res1.customerMobile }}
+              </a>
+            </td>
+            <td>{{ res1.customerName }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </c-card-body>
+</c-card>
+
+
+<c-toaster placement="top-end" class="p-3">
+  <c-toast [visible]="showToast" [autohide]="true" [delay]="3000" (visibleChange)="onToastVisibleChange($event)">
+    <c-toast-body>
+      {{ toastMessage }}
+    </c-toast-body>
+  </c-toast>
+</c-toaster>
+
+
+<c-modal [visible]="showModal" (visibleChange)="showModal = $event" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle>From Ain Alfhd DB</h5>
+    <button cButtonClose (click)="showModal = false"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <strong>Name:&nbsp;{{ fromOldDbName }}</strong><br />
+    <strong>Mobile:&nbsp;{{ fromOldDbMobile }}</strong><br />
+    <strong>City:&nbsp;{{ fromOldDbCity }}</strong><br />
+    <strong>Area:&nbsp;{{ fromOldDbArea }}</strong><br />
+    <strong>Land Mark:&nbsp;{{ fromOldDbLandMark }}</strong><br />
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="showModal = false">
+      Close
+    </button>
+  </c-modal-footer>
+</c-modal>

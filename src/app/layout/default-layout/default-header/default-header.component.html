@@ -45,7 +45,25 @@
 
   </c-container>
   <c-container [fluid]="true" class="px-4">
-    <c-breadcrumb-router />
+    <c-breadcrumb-router></c-breadcrumb-router>
+    <div class="d-flex justify-content-between align-items-center">
+
+      <!-- actions -->
+      <div class="d-flex gap-2" *ngIf="showCRMActions">
+        <a class="btn btn-outline-primary border border-0" [routerLink]="['/Home/crm/show-customers']">
+          Show customers
+        </a><span class="text-center mt-1" style="color: beige;">|</span>
+        <a class="btn btn-outline-success border border-0" [routerLink]="['/Home/crm']">
+          Search & Add customer
+        </a>
+        <span class="text-center mt-1" style="color: beige;">|</span>
+        <a class="btn btn-outline-info border border-0" [routerLink]="['/Home/crm/show-add-note']">
+          Customers notes
+        </a>
+
+      </div>
+
+    </div>
   </c-container>
 </ng-container>
 <!--</c-header>-->
@@ -53,8 +71,9 @@
 <ng-template #userDropdown>
   <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
     <button [caret]="false" cDropdownToggle class="py-0 pe-0" aria-label="Open user menu">
-      <c-avatar shape="rounded-1" size="md" src="https://res.cloudinary.com/dianvimfq/image/upload/v1766569504/Inventory_uploads/Logo_f407d9e3-861a-440b-aa46-9dcca0e0ab1d_vmlt33.jpg" status="success"
-        textColor="primary" alt="User avatar" />
+      <c-avatar shape="rounded-1" size="md"
+        src="https://res.cloudinary.com/dianvimfq/image/upload/v1766569504/Inventory_uploads/Logo_f407d9e3-861a-440b-aa46-9dcca0e0ab1d_vmlt33.jpg"
+        status="success" textColor="primary" alt="User avatar" />
     </button>
     <ul cDropdownMenu class="pt-0 w-auto">
 
@@ -91,11 +110,11 @@
           Business
         </h6>
 
-      <div *ngFor="let b of businesses">
-        <a style="cursor: pointer;" cDropdownItem (click)="selectBusiness(b)">
-          {{ b.business_name }}
-        </a>
-      </div>
+        <div *ngFor="let b of businesses">
+          <a style="cursor: pointer;" cDropdownItem (click)="selectBusiness(b)">
+            {{ b.business_name }}
+          </a>
+        </div>
 
       </li>
       <li>

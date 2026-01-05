@@ -1,6 +1,6 @@
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectorRef, Component, computed, inject, input } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
 import { BusinessContextService } from '../../../core/Services/business-context.service';
 import {
@@ -31,7 +31,7 @@ import { IconDirective } from '@coreui/icons-angular';
   templateUrl: './default-header.component.html',
   imports: [ContainerComponent, HeaderTogglerDirective, CommonModule, FormsModule,
     SidebarToggleDirective, IconDirective, HeaderNavComponent,
-    NavItemComponent, NavLinkDirective, RouterLink,
+    NavItemComponent, NavLinkDirective, RouterLink, RouterOutlet,
     RouterLinkActive, NgTemplateOutlet, BreadcrumbRouterComponent,
     DropdownComponent, DropdownToggleDirective, AvatarComponent,
     DropdownMenuDirective, DropdownHeaderDirective,
@@ -48,7 +48,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
   readonly colorMode = this.#colorModeService.colorMode;
   businesses: BusinessModel[] = [];
   currentBusiness: any;
-
+  showCRMActions = false;
 
 
   readonly colorModes = [
@@ -64,6 +64,12 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private router: Router) {
     super();
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.showCRMActions =
+          event.url.includes('/crm') || event.url.includes('/show-customers') || event.url.includes('/show-add-note')
+      }
+    });
 
   }
 
