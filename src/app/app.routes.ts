@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Roles/routes').then((m) => m.routes)
       },
       {
+        path: 'finantial-items',
+        loadChildren: () => import('./views/Finantials/routes').then((m) => m.routes)
+      },
+      {
         path: 'users',
         loadChildren: () => import('./views/Users/routes').then((m) => m.routes)
       },
