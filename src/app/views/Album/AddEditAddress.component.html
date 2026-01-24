@@ -1,0 +1,49 @@
+<c-card>
+  <c-card-header>
+    <strong>{{ !addressToEdit ? 'Add Address' : 'Edit Address'}}</strong>
+  </c-card-header>
+
+  <c-card-body>
+    <form [formGroup]="AddressForm" (ngSubmit)="onSubmit()" cform>
+      <c-row class="mb-3">
+        <c-col md="6">
+          <label class="form-label">Line 1</label>
+          <input cFormControl formControlName="line_1" type="text" class="form-control" placeholder="Enter Line 1..." />
+        </c-col>
+
+        <c-col md="6">
+          <label class="form-label">Line 2</label>
+          <input cFormControl formControlName="line_2" type="text" class="form-control" placeholder="Enter Line 2..." />
+        </c-col>
+      </c-row>
+
+      <c-row class="mb-3">
+        <c-col md="6">
+          <label class="form-label">State</label>
+          <input cFormControl type="text" formControlName="state" class="form-control" placeholder="Enter State..." />
+        </c-col>
+
+        <c-col md="6">
+          <label class="form-label">City</label>
+          <input cFormControl type="text" formControlName="city" class="form-control" placeholder="Enter City..." />
+        </c-col>
+      </c-row>
+
+      <c-row class="mb-3">
+        <c-col md="6">
+          <label class="form-label">Post Code</label>
+          <input cFormControl type="text" formControlName="postCode" class="form-control" placeholder="Enter Post Code..." />
+        </c-col>
+      </c-row>
+      <div class="d-flex justify-content-end gap-2">
+        <button [disabled]="loading" cButton color="secondary" variant="outline">
+          Cancel
+        </button>
+        <button type="submit" cButton color="primary">
+          {{ !addressToEdit ? 'Add' : 'Edit'}}
+        </button>
+      </div>
+
+    </form>
+  </c-card-body>
+</c-card>

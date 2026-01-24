@@ -36,6 +36,12 @@ import { Country } from '../../../Models/CountryModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { ActiviityModel } from '../../../Models/ActivityModel';
 import { FeatureModel } from '../../../Models/FeatureModel';
+import { CategoryModel } from '../../../Models/CategoryModel';
+import { UnitModel } from '../../../Models/UnitModel';
+import { PlatformModel } from '../../../Models/platformModel';
+import { SizeModel } from '../../../Models/SizeModel';
+import { CurrencyModel } from '../../../Models/CurrencyModel';
+import { ColorModel } from '../../../Models/ColorModel';
 
 @Component({
   selector: 'app-button-groups',
@@ -59,7 +65,6 @@ import { FeatureModel } from '../../../Models/FeatureModel';
 export class ScrapeItemComponent implements OnInit {
 
   features: FeatureModel[] = [];
-  message?: string
   upc?: string
   imgUrl: string[] = []
   price?: number
@@ -70,7 +75,6 @@ export class ScrapeItemComponent implements OnInit {
   internet?: string
   Notes?: string
   CondId?: number
-  platformId?: number
   SysyemId?: number
   CategoryId?: number
   allCondetions: any = []
@@ -113,17 +117,72 @@ export class ScrapeItemComponent implements OnInit {
   selectedSource: string = 'HomeDepot';
   useInput?: boolean;
   showDeleteModal: boolean = false;
+  categories: CategoryModel[] = []
+  currencis: CurrencyModel[] = []
+  colors: ColorModel[] = []
+  platforms: PlatformModel[] = []
+  sizes: SizeModel[] = []
+  units: UnitModel[] = []
+  categoryId: number | null = null;
+  currencyId: number | null = null;
+  colorId: number | null = null;
+  platformId: number | null = null;
+  sizeId: number | null = null;
+  unitId: number | null = null;
+  visible = false
   ///// for toastr ////////
   position = 'top-end';
   toastVisible = signal(false);
   toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
-
+  message: string = ''
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.GetAllCategories()
+    this.GetAllCurrencies()
+    this.GetAllColors()
+    this.GetAllPlatforms()
+    this.GetAllUnites()
+    this.GetAllSizes()
+  }
 
+  GetAllColors() {
+    this.http.getAllData<ColorModel[]>('Color').subscribe((response: ColorModel[]) => {
+      this.colors = response.map(el => new ColorModel(el))
+    })
+  }
+
+
+  GetAllCategories() {
+    this.http.getAllData<CategoryModel[]>('Category').subscribe((response: CategoryModel[]) => {
+      this.categories = response.map(el => new CategoryModel(el))
+    })
+  }
+
+  GetAllSizes() {
+    this.http.getAllData<SizeModel[]>('Size').subscribe((response: SizeModel[]) => {
+      this.sizes = response.map(el => new SizeModel(el))
+    })
+  }
+
+  GetAllUnites() {
+    this.http.getAllData<UnitModel[]>('Unit').subscribe((response: UnitModel[]) => {
+      this.units = response.map(el => new UnitModel(el))
+    })
+  }
+
+  GetAllPlatforms() {
+    this.http.getAllData<PlatformModel[]>('Platform').subscribe((response: PlatformModel[]) => {
+      this.platforms = response.map(el => new PlatformModel(el))
+    })
+  }
+
+  GetAllCurrencies() {
+    this.http.getAllData<CurrencyModel[]>('Currency').subscribe((response: CurrencyModel[]) => {
+      this.currencis = response.map(el => new CurrencyModel(el))
+    })
   }
 
   GetPriceAndPhoto(upc: string | undefined): void {
@@ -210,20 +269,6 @@ export class ScrapeItemComponent implements OnInit {
             this.source = response.source;
             this.title = response.title;
             this.description2 = response.desc;
-            // if (response.upc.includes("Does not Apply") && upc.length === 12 && /^\d+$/.test(upc)) {
-            //   this.upc = upc
-            // } else {
-            //   this.upc = response.upc
-            // }
-            // if (this.imgUrl.length == 0) {
-            //   this.showNoImages = true
-            // }
-
-            // const matchedPlatform = this.Platforms.find((el: any) => el.desciption?.includes(this.source));
-            // if (matchedPlatform) {
-            //   this.platformId = matchedPlatform.platform_id;
-            // }
-
             this.showHome = true;
             this.showError = false;
             this.cdr.detectChanges()
@@ -235,6 +280,7 @@ export class ScrapeItemComponent implements OnInit {
           this.isLoading = false;
           this.showError = true;
           this.showHome = false;
+          this.onVisibleChange(true)
         }
       );
     } else if (this.selectedSource === 'Ryobi') {
@@ -254,19 +300,6 @@ export class ScrapeItemComponent implements OnInit {
             this.source = response.source;
             this.title = response.title;
             this.description2 = response.desc;
-            // if (response.upc.includes("Does not Apply") && upc.length === 12 && /^\d+$/.test(upc)) {
-            //   this.upc = upc
-            // } else {
-            //   this.upc = response.upc
-            // }
-            // if (this.imgUrl.length == 0) {
-            //   this.showNoImages = true
-            // }
-
-            // const matchedPlatform = this.Platforms.find((el: any) => el.desciption?.includes(this.source));
-            // if (matchedPlatform) {
-            //   this.platformId = matchedPlatform.platform_id;
-            // }
             this.showHome = true;
             this.showError = false;
             this.cdr.detectChanges()
@@ -278,6 +311,39 @@ export class ScrapeItemComponent implements OnInit {
           this.isLoading = false;
           this.showError = true;
           this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    }
+    else if (this.selectedSource === 'UPCItems') {
+      this.http.posteData(`Scraper/ByUPCItems/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
         }
       );
     }
@@ -286,7 +352,7 @@ export class ScrapeItemComponent implements OnInit {
   chooseType(event: any) {
     const type = event.target.value
     this.selectedSource = type;
-    if (type == 'Build' || type == 'Milwaukee' || type == 'Ryobi') {
+    if (type == 'Build' || type == 'Milwaukee' || type == 'Ryobi' || type == 'UPCItems') {
       this.useInput = true
     } else {
       this.useInput = false
@@ -371,6 +437,7 @@ export class ScrapeItemComponent implements OnInit {
               // }
               this.showHome = true;
               this.showError = false;
+              this.onVisibleChange(true)
               this.cdr.detectChanges()
             } else {
               this.showErrorForMe = true;
@@ -381,10 +448,10 @@ export class ScrapeItemComponent implements OnInit {
             this.isLoading = false;
             this.showError = true;
             this.showHome = false;
+            this.onVisibleChange(true)
           }
         );
       }
-
     } else {
       window.alert("Please choose html file to get data")
     }
@@ -398,12 +465,7 @@ export class ScrapeItemComponent implements OnInit {
   }
 
 
-  confirmDelete(type: FeatureModel) {
-    this.showDeleteModal = true;
-  }
-
   onVisibleChange(visible: boolean) {
-    this.showDeleteModal = false;
     this.toastVisible.set(visible);
     if (!visible) this.percentage.set(0);
   }
@@ -420,6 +482,55 @@ export class ScrapeItemComponent implements OnInit {
   prev() {
     this.currentIndex =
       (this.currentIndex - 1 + this.imgUrl.length) % this.imgUrl.length;
+  }
+
+
+  onFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i]);
+    }
+
+    this.http.posteData('Scraper', formData, true).subscribe({
+      next: (res: string[]) => {
+        this.imgUrl.push(...res);
+        this.image = res[0];
+        console.log(this.imgUrl);
+      },
+      error: () => {
+        // toaster error
+      }
+    });
+  }
+
+  SaveItemInDB() {
+    const payLoad = {
+      'itemDescription': this.title,
+      'itemDetails': this.description2,
+      'sKU': this.storeSku,
+      'internetId': this.internet,
+      'uPC': this.upc,
+      'model': this.model,
+      'platformId': this.platformId,
+      'height': this.height,
+      'width': this.width,
+      'length': this.length,
+      'unitId': this.unitId,
+      'unitValue': this.unitId,
+      'colorId': this.colorId,
+      'sizeId': this.sizeId,
+      'categoryId': this.categoryId,
+      'basePrice': this.price,
+      'currencyId': this.currencyId,
+      'images': this.images,
+    };
+
+    this.http.posteData('Item', payLoad).subscribe(res => {
+      console.log(res)
+    })
+
   }
 
 }

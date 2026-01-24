@@ -18,14 +18,7 @@ export const routes: Routes = [
         data: {
           title: 'Scrape item'
         }
-      },
-      {
-        path: 'add-edit-feature',
-        loadComponent: () => import('./Add-Feature/Add-Feature').then(m => m.AddEditFeatureComponent),
-        data: {
-          title: 'Add/Edit'
-        }
-      },
+      }
     ]
   }
 ];
