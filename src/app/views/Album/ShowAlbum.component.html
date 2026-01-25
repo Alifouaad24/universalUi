@@ -1,51 +1,26 @@
-
 <c-card>
   <c-card-body>
-    <c-card>
-  <c-card-body>
     <div class="row g-3">
-      <div
-        class="col-6 col-sm-4 col-md-3 col-lg-2"
-        *ngFor="let img of allAlbums"
-      >
-        <div class="ratio ratio-1x1 rounded overflow-hidden">
-          <img
-            [src]="img.imageUrl"
-            class="img-fluid object-fit-cover"
-            alt="photo"
-          />
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of allAlbums; let i = index">
+        <div class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
+          <img [src]="img.imageUrl" class="img-fluid object-fit-cover" alt="photo" />
         </div>
       </div>
     </div>
   </c-card-body>
 </c-card>
 
-  </c-card-body>
-</c-card>
-
-
-
-<!-- <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
-  <c-modal-header>Confirm Delete</c-modal-header>
-  <c-modal-body>
-    Are you sure you want to delete?
+<!-- Modal -->
+<c-modal [(visible)]="modalVisible" size="xl" alignment="center">
+  <c-modal-header>
+    <c-button class="btn-danger" style="cursor: pointer;" color="danger" (click)="deleteImage()"><c-icon name="cil-trash"></c-icon></c-button>
+    <c-button color="secondary" style="cursor: pointer;" class="ms-auto" (click)="closeModal()">X</c-button>
+  </c-modal-header>
+  <c-modal-body class="text-center">
+    <img [src]="allAlbums[currentIndex]?.imageUrl" class="img-fluid" style="max-height: 70vh; object-fit: contain;" />
   </c-modal-body>
-  <c-modal-footer>
-    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteAddress(selectedType)">Delete</button>
+  <c-modal-footer class="justify-content-between">
+    <c-button style="cursor: pointer;" color="primary" (click)="prevImage()" [disabled]="allAlbums.length <= 1">Prev</c-button>
+    <c-button style="cursor: pointer;" color="primary" (click)="nextImage()" [disabled]="allAlbums.length <= 1">Next</c-button>
   </c-modal-footer>
 </c-modal>
-
-Toaster -->
-<!-- <c-toaster placement="top-end" class="p-3">
-  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
-    [autohide]="autoHideToast()" [delay]="3000">
-    <c-toast-header>
-      Delete!
-    </c-toast-header>
-    <c-toast-body>
-      <p>{{ toastMessage() }}</p>
-      <c-progress thin [value]="percentage()" />
-    </c-toast-body>
-  </c-toast>
-</c-toaster> -->
