@@ -48,7 +48,9 @@ export class ShowAlbumComponent implements OnInit {
 
 
   getAlbum() {
-    this.http.getAllData('ImageUploader').subscribe((res: any) => {
+    var businessId = localStorage.getItem('businessId');
+    this.isLoading = true;
+    this.http.getAllData(`ImageUploader/${businessId}`).subscribe((res: any) => {
       this.allAlbums = (res as AlbumModel[]).map(el => new AlbumModel({
         userImagesId: el.userImagesId,
         imageUrl: el.imageUrl,

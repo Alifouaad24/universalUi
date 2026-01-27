@@ -1,6 +1,7 @@
 <c-card>
   <c-card-body>
     <div class="row g-3">
+      <div class="text-center" *ngIf="allAlbums.length === 0">No photos available</div>
       <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of allAlbums; let i = index">
         <div class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
           <img [src]="img.imageUrl" class="img-fluid object-fit-cover" alt="photo" />

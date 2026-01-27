@@ -32,6 +32,7 @@ export class BusinessContextService {
     if (!business) return;
     this.currentBusiness$.next(business);
     localStorage.setItem('currentBusiness', JSON.stringify(business));
+    localStorage.setItem('businessId', business.business_id);
   }
 
   getCurrentBusiness() {

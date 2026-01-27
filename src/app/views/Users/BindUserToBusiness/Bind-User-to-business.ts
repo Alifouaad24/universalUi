@@ -37,6 +37,7 @@ export class BindUserToBusinessComponent implements OnInit {
     });
 
     this.businesses = localStorage.getItem('businesses');
+    console.log(this.businesses)
     if (this.businesses) {
       const busObj = JSON.parse(this.businesses);
       if (busObj && Array.isArray(busObj)) {

@@ -78,14 +78,6 @@ export class DefaultLayoutComponent {
         this.navItems = [...navItems];
         return;
       }
-
-      // this.navItems = business.business_Services.map((s: any) => {
-      //   return {
-      //     name: s.service.description,
-      //     url: s.service.service_Route,
-      //     iconComponent: { name: s.service.service_icon }
-      //   };
-      // });
       this.getAllServices()
       this.cdr.detectChanges();
     });
