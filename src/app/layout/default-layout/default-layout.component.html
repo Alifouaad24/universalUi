@@ -44,3 +44,7 @@
   <!--app footer-->
   <app-default-footer />
 </div>
+
+<div class="page-loader" *ngIf="loader.loading | async">
+  <c-spinner color="primary"></c-spinner>
+</div>

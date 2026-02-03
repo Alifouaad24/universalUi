@@ -49,3 +49,14 @@ body.c-dark-theme .c-sidebar .nav-link { color: white; }
 //  --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
 //  --scrollbar-track-transition: height ease-out 150ms, width ease-out 150ms;
 //}
+
+.page-loader {
+  position: fixed;
+  inset: 0; // top:0 right:0 bottom:0 left:0
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

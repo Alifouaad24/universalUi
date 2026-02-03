@@ -1,0 +1,35 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header row justify-content-between align-items-center col-md-12 mx-1">
+    <p class="col-md-2">Add Item to inventory</p>
+    <p *ngIf="message" class="alert alert-info col-md-6">{{ message }}</p>
+  </div>
+
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3 col-md-6 justify-content-center align-items-center">
+          <label class="form-label">Platform</label>
+          <select class="form-select" [(ngModel)]="selectedPlatformId">
+            <option disabled [ngValue]="null">-- Select Platform --</option>
+            <option *ngFor="let one of Platforms" [ngValue]="one.platform_id">
+              {{ one.description }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3 col-md-6 justify-content-center align-items-center">
+          <label for="description" class="form-label text-center">UPC</label>
+          <input #upcInput type="text" class="form-control" id="UPC" [(ngModel)]="UPC" (change)="addListItems()"
+            placeholder="Enter UPC">
+        </div>
+      </div>
+      <div *ngIf="payLoadItem.length > 0" class="col-md-3">
+        <div class="mb-2" style="font-size: 20px; color: chartreuse;">Items List</div>
+        <div class="col-md-6">
+          <p *ngFor="let item of payLoadItem">* {{ item.upc }}</p>
+        </div>
+        <button [disabled]="loading" class="btn btn-primary" (click)="SaveItems()">Add To Inventory</button>
+      </div>
+    </div>
+  </div>
+</div>

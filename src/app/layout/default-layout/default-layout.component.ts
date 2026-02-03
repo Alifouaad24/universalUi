@@ -14,7 +14,9 @@ import {
   SidebarHeaderComponent,
   SidebarNavComponent,
   SidebarToggleDirective,
-  SidebarTogglerDirective
+  SidebarTogglerDirective,
+  SpinnerComponent,
+  SpinnerModule
 } from '@coreui/angular';
 import { DefaultFooterComponent, DefaultHeaderComponent } from './';
 import { navItems } from './_nav';
@@ -22,6 +24,8 @@ import { navItems } from './_nav';
 import { BusinessContextService } from '../../core/Services/business-context.service';
 import { HttpConnectService } from '../../Services/http-connect.service';
 import { ServiceModel } from '../../Models/ServiceModel';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { LoadingService } from '../../core/Services/LoadingService';
 function isOverflown(element: HTMLElement) {
   return (
     element.scrollHeight > element.clientHeight ||
@@ -38,25 +42,26 @@ function isOverflown(element: HTMLElement) {
     SidebarHeaderComponent,
     SidebarBrandComponent,
     SidebarNavComponent,
-    SidebarFooterComponent,
+    SidebarFooterComponent, CommonModule,
     SidebarToggleDirective,
     SidebarTogglerDirective,
     ContainerComponent,
     DefaultFooterComponent,
-    DefaultHeaderComponent,
+    DefaultHeaderComponent, SpinnerComponent, SpinnerModule,
     IconDirective,
     NgScrollbar,
-    RouterOutlet,
+    RouterOutlet, AsyncPipe,
     RouterLink,
     ShadowOnScrollDirective
   ]
 })
 export class DefaultLayoutComponent {
   business: any;
-  public navItems: INavData[] = []// = [...navItems];
+  public navItems: INavData[] = []
   services: ServiceModel[] = [];
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
-  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private http: HttpConnectService) { }
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef,
+     private http: HttpConnectService, public loader: LoadingService) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
   user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
