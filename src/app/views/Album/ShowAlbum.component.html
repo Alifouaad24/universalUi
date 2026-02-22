@@ -1,113 +1,84 @@
-<!-- <c-card>
-  <c-card-body>
-    <div class="row g-3">
-      <div class="text-center" *ngIf="allAlbums.length === 0">No photos available</div>
-      <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of allAlbums; let i = index">
-        <div class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
-          <img [src]="img.imageUrl" class="img-fluid object-fit-cover" alt="photo" />
-        </div>
-      </div>
-    </div>
-  </c-card-body>
-</c-card>
-
-<c-modal [(visible)]="modalVisible" size="xl" alignment="center">
-  <c-modal-header>
-    <c-button class="btn-danger" style="cursor: pointer;" color="danger" (click)="deleteImage()"><c-icon name="cil-trash"></c-icon></c-button>
-    <c-button color="secondary" style="cursor: pointer;" class="ms-auto" (click)="closeModal()">X</c-button>
-  </c-modal-header>
-  <c-modal-body class="text-center">
-    <img [src]="allAlbums[currentIndex]?.imageUrl" class="img-fluid" style="max-height: 70vh; object-fit: contain;" />
-  </c-modal-body>
-  <c-modal-footer class="justify-content-between">
-    <c-button style="cursor: pointer;" color="primary" (click)="prevImage()" [disabled]="allAlbums.length <= 1">Prev</c-button>
-    <c-button style="cursor: pointer;" color="primary" (click)="nextImage()" [disabled]="allAlbums.length <= 1">Next</c-button>
-  </c-modal-footer>
-</c-modal> -->
-
 <c-card>
   <c-card-body>
-
-    <!-- عرض المجلدات -->
     <div *ngIf="selectedFolderId === null">
       <div class="row g-3">
         <div class="text-center" *ngIf="groupedAlbums.length === 0">
           No folders available
         </div>
-
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let folder of groupedAlbums">
-
-          <div class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer border"
+          <div style="cursor: pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer border"
             (click)="openFolder(folder.folderId)">
-
             <div class="d-flex flex-column justify-content-center align-items-center h-100">
-              <div style="font-size:40px;">📁</div>
-              <div>folder{{folder.folderId}}</div>
+              <div class="position-relative w-100 h-100">
+                <img *ngIf="folder.images.length > 0" [src]="folder.images[0].imageUrl"
+                  class="w-100 h-100 object-fit-cover" />
+                <div class="position-absolute bottom-0 start-0 w-100 text-white p-1"
+                  style="background: rgba(0,0,0,0.5); font-size: 14px;">
+                  <small>{{folder.images.length}} images</small>
+                </div>
+                <div (click)="deleteFolder(folder.folderId); $event.stopPropagation()" 
+                    class="position-absolute top-0 end-0 mt-1 p-2" 
+                    style="font-size:30px; background: rgba(0,0,0,0.5); color: #ab0202; cursor:pointer; z-index:10;">
+                  <c-icon name="cil-trash"></c-icon>
+                </div>
+              </div>
+              <div class="m-1">folder-{{folder.folderId}}</div>
               <small>{{folder.images.length}} images</small>
             </div>
-
           </div>
         </div>
       </div>
     </div>
-
-    <!-- عرض الصور داخل المجلد -->
     <div *ngIf="selectedFolderId !== null">
-
-      <c-button color="secondary" (click)="goBack()">Back</c-button>
-
+      <c-button style="cursor: pointer;" color="secondary" (click)="goBack()">Back</c-button>
       <div class="row g-3 mt-2">
-
         <div class="text-center" *ngIf="folderImages.length === 0">
           No photos available
         </div>
-
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of folderImages; let i = index">
-
-          <div class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
-
+          <div style="cursor:pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
             <img [src]="img.imageUrl" class="img-fluid object-fit-cover" alt="photo" />
           </div>
-
         </div>
       </div>
-
     </div>
-
   </c-card-body>
 </c-card>
-
+<c-progress *ngIf="loadingService.loading | async" [value]="percentage()" max="100" animated>
+  {{percentage()}}%
+</c-progress>
 
 <!-- Modal -->
 <c-modal [(visible)]="modalVisible" size="xl" alignment="center">
   <c-modal-header>
-    <c-button class="btn-danger" color="danger" (click)="deleteImage()">
+    <c-button class="btn-danger" color="danger" style="cursor: pointer;" (click)="deleteImage()">
       <c-icon name="cil-trash"></c-icon>
     </c-button>
-    <c-button color="secondary" class="ms-auto" (click)="closeModal()">X</c-button>
+    <c-button color="secondary" class="ms-auto" style="cursor: pointer;" (click)="closeModal()">X</c-button>
   </c-modal-header>
-
   <c-modal-body class="text-center">
+    <div class="d-flex justify-content-between align-items-center">
+      <c-button class="btn btn-sm rounded bg-success m-1" color="primary" style="cursor: pointer;" (click)="prevImage()"
+        [disabled]="folderImages.length <= 1">
+        <</c-button>&nbsp;
+          <div style="height: 80vh;">
+            <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
+              [canvasRotation]="rotation" [transform]="{ scale: zoom }" format="png"
+              (imageCropped)="onImageCropped($event)">
+            </image-cropper>
+          </div>&nbsp;
+          <c-button class="btn btn-sm rounded bg-success m-1" color="primary" style="cursor: pointer;"
+            (click)="nextImage()" [disabled]="folderImages.length <= 1">></c-button>
 
-<image-cropper
-  [imageBase64]="currentImageBase64"
-  [maintainAspectRatio]="false"
-  [resizeToWidth]="800"
-  [canvasRotation]="rotation"
-  [transform]="{ scale: zoom }"
-  format="png"
-  (imageCropped)="onImageCropped($event)">
-</image-cropper>
-
-<c-button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</c-button>&nbsp; &nbsp;
-<c-button style="font-size: 20px;" class="btn btn-sm rounded bg-success" (click)="zoomOut()">-</c-button>
-
+    </div>
+    <c-button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</c-button>&nbsp;
+    &nbsp;
+    <c-button style="font-size: 20px;" class="btn btn-sm rounded bg-success" (click)="zoomOut()">-</c-button>
   </c-modal-body>
-
   <c-modal-footer class="justify-content-between">
-    <c-button color="primary" (click)="prevImage()" [disabled]="folderImages.length <= 1">Prev</c-button>
-    <c-button color="primary" (click)="nextImage()" [disabled]="folderImages.length <= 1">Next</c-button>
-    <c-button color="secondary" (click)="rotateImage()">Rotate</c-button>
-    <c-button color="success" (click)="saveCroppedImage()">Save</c-button>
+
+
+    <c-button color="secondary" style="cursor: pointer;" (click)="rotateImage()">Rotate</c-button>
+    <c-button color="success" style="cursor: pointer;" (click)="saveCroppedImage()">Save</c-button>
   </c-modal-footer>
 </c-modal>

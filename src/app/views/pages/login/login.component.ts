@@ -70,6 +70,7 @@ export class LoginComponent {
             localStorage.setItem('businesses', JSON.stringify(safeBusinesses));
             if(localStorage.getItem('currentBusiness') == null){
               localStorage.setItem('currentBusiness', JSON.stringify(safeBusinesses[0]));
+              localStorage.setItem('businessId', JSON.stringify(safeBusinesses[0].business_id));
             }
           } else {
             localStorage.removeItem('businesses');
