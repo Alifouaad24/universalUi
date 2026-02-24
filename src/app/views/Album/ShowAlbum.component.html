@@ -13,12 +13,12 @@
                 <img *ngIf="folder.images.length > 0" [src]="folder.images[0].imageUrl"
                   class="w-100 h-100 object-fit-cover" />
                 <div class="position-absolute bottom-0 start-0 w-100 text-white p-1"
-                  style="background: rgba(0,0,0,0.5); font-size: 14px;">
+                  [style.background]="getFolderBackground(folder)" style="font-size: 14px;">
                   <small>{{folder.images.length}} images</small>
                 </div>
-                <div (click)="deleteFolder(folder.folderId); $event.stopPropagation()" 
-                    class="position-absolute top-0 end-0 mt-1 p-2" 
-                    style="font-size:30px; background: rgba(0,0,0,0.5); color: #ab0202; cursor:pointer; z-index:10;">
+                <div (click)="deleteFolder(folder.folderId); $event.stopPropagation()"
+                  class="position-absolute top-0 end-0 mt-1 p-2"
+                  style="font-size:30px; background: rgba(0,0,0,0.5); color: #ab0202; cursor:pointer; z-index:10;">
                   <c-icon name="cil-trash"></c-icon>
                 </div>
               </div>
@@ -36,7 +36,8 @@
           No photos available
         </div>
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of folderImages; let i = index">
-          <div style="cursor:pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer" (click)="openModal(i)">
+          <div style="cursor:pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer"
+            (click)="openModal(i)">
             <img [src]="img.imageUrl" class="img-fluid object-fit-cover" alt="photo" />
           </div>
         </div>
@@ -51,10 +52,48 @@
 <!-- Modal -->
 <c-modal [(visible)]="modalVisible" size="xl" alignment="center">
   <c-modal-header>
-    <c-button class="btn-danger" color="danger" style="cursor: pointer;" (click)="deleteImage()">
-      <c-icon name="cil-trash"></c-icon>
-    </c-button>
-    <c-button color="secondary" class="ms-auto" style="cursor: pointer;" (click)="closeModal()">X</c-button>
+    <div class="d-flex align-items-center gap-2 col-md-12">
+      <c-button class="col-md-1 btn-danger" color="danger" style="cursor: pointer;" (click)="deleteImage()">
+        <c-icon name="cil-trash"></c-icon>
+      </c-button>
+
+      <div class="flex-grow-1 d-flex row g-2 align-items-center justify-content-center">
+        <div class="col">
+          <input class="form-control" [(ngModel)]="SKU" placeholder="SKU..." />
+        </div>
+        <div class="col">
+          <select class="form-select" [(ngModel)]="CategoryId">
+            <option  [ngValue]="null" disabled selected disabled>Category</option>
+            <option *ngFor="let category of Categories" [ngValue]="category.category_id">{{category.name}}</option>
+          </select>
+        </div>
+        <div class="col">
+          <select class="form-select" [(ngModel)]="SizeId">
+            <option [ngValue]="null" disabled selected disabled>Size</option>
+            <option *ngFor="let size of Sizes" [ngValue]="size.size_id">{{size.description}}</option>
+          </select>
+        </div>
+        <div class="col">
+          <select class="form-select" [(ngModel)]="PlatformId">
+            <option [ngValue]="null" disabled selected disabled>Platform</option>
+            <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}</option>
+          </select>
+        </div>
+        <div class="col">
+          <input class="form-control" [(ngModel)]="UPC" placeholder="UPC..." />
+        </div>
+        <div class="col">
+          <button class="btn btn-sm rounded bg-success" style="cursor: pointer;" (click)="SaveInInvAndItem()">
+            Save item
+          </button>
+        </div>
+      </div>
+
+      <c-button color="secondary" style="cursor: pointer;" (click)="closeModal()">
+        X
+      </c-button>
+
+    </div>
   </c-modal-header>
   <c-modal-body class="text-center">
     <div class="d-flex justify-content-between align-items-center">
@@ -79,6 +118,6 @@
 
 
     <c-button color="secondary" style="cursor: pointer;" (click)="rotateImage()">Rotate</c-button>
-    <c-button color="success" style="cursor: pointer;" (click)="saveCroppedImage()">Save</c-button>
+    <c-button color="success" style="cursor: pointer;" (click)="saveCroppedImage()">Save crop</c-button>
   </c-modal-footer>
 </c-modal>

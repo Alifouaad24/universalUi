@@ -1,9 +1,9 @@
 import { CommonModule, NgFor, NgIf } from '@angular/common';
-import { ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { BadgeComponent, ButtonDirective, ButtonModule, CardModule, FormModule, GridModule, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalModule, ProgressBarComponent, ProgressComponent, TableDirective, ToastBodyComponent, ToastCloseDirective, ToastComponent, ToastModule } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
-
+import { FormsModule } from '@angular/forms';
 import {
   CardBodyComponent,
   CardComponent,
@@ -14,11 +14,12 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { HttpConnectService } from '../../Services/http-connect.service';
 import { AlbumModel } from '../../Models/Album';
 import { LoadingService } from '../../core/Services/LoadingService';
+import { AlbumStateService } from '../../core/Services/countOfFolders';
 
 @Component({
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: 'ShowAlbum.component.html',
-  imports: [CardComponent, CardHeaderComponent, ToastComponent, ToastBodyComponent,
+  imports: [CardComponent, CardHeaderComponent, ToastComponent, ToastBodyComponent, FormsModule,
     ToastCloseDirective, ToastModule, ProgressComponent, CardModule,
     ButtonModule, ImageCropperComponent,
     ModalModule,
@@ -27,7 +28,7 @@ import { LoadingService } from '../../core/Services/LoadingService';
     CardBodyComponent, RowComponent, RouterLink, RouterOutlet,
     BadgeComponent, CommonModule, FormModule, IconComponent, TableDirective]
 })
-export class ShowAlbumComponent implements OnInit {
+export class ShowAlbumComponent implements OnInit, OnDestroy {
 
   allAlbums: AlbumModel[] = []
   message?: string
@@ -45,13 +46,63 @@ export class ShowAlbumComponent implements OnInit {
   selectedFolderId: number | null = null;
   folderImages: AlbumModel[] = [];
   userId?: string
+  PlatformId: number | null = null;
+  SizeId: number | null = null;
+  CategoryId: number | null = null;
+  Categories?: any[]
+  Sizes?: any[]
+  Platforms?: any[]
+  businessId?: number
+  UPC: string = '';
+  SKU: string = '';
+  currentImgUrl?: string;
 
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, public  loadingService: LoadingService,
-     private router: Router) { }
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef,
+     public loadingService: LoadingService, private albumState: AlbumStateService,
+    private router: Router) { }
+
+  ngOnDestroy(): void {
+    this.albumState.reset();
+  }
   Businesses?: any[]
   ngOnInit(): void {
+    this.businessId = Number(localStorage.getItem('businessId'));
     this.getAlbum()
+    this.getCategories()
+    this.getSizes()
+    this.getPlatforms()
   }
+
+  getFolderBackground(folder: { images: AlbumModel[] }): string {
+  if (!folder?.images) return 'rgba(255,0,0,0.5)';
+
+  const hasProcessed = folder.images.some(img => img.isProccessed);
+  return hasProcessed
+    ? 
+     'rgba(30, 204, 7, 0.5)' : 'rgba(0,0,0,0.5)';
+}
+
+  getCategories() {
+    this.http.getAllData('Category').subscribe((res: any) => {
+      console.log(res)
+      this.Categories = res;
+    })
+  }
+
+  getSizes() {
+    this.http.getAllData('Size').subscribe((res: any) => {
+      console.log(res)
+      this.Sizes = res;
+    })
+  }
+
+  getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+    })
+  }
+
 
   getAlbum() {
     const businessId = localStorage.getItem('businessId');
@@ -63,7 +114,8 @@ export class ShowAlbumComponent implements OnInit {
         this.allAlbums = (res as AlbumModel[]).map(el => new AlbumModel({
           userImagesId: el.userImagesId,
           imageUrl: el.imageUrl,
-          folderId: el.folderId
+          folderId: el.folderId,
+          isProccessed: el.isProccessed
         }));
 
         // Group by folderId
@@ -82,6 +134,7 @@ export class ShowAlbumComponent implements OnInit {
 
         this.isLoading = false;
         this.cdr.detectChanges();
+        this.albumState.setCount(this.groupedAlbums.length);
       },
         (err) => {
           this.isLoading = false;
@@ -135,6 +188,8 @@ export class ShowAlbumComponent implements OnInit {
 
   }
 
+
+
   deleteImage() {
     const images = this.selectedFolderId ? this.folderImages : this.allAlbums;
     const deletedImage = images[this.currentIndex];
@@ -168,6 +223,7 @@ export class ShowAlbumComponent implements OnInit {
   openModal(index: number) {
     this.currentIndex = index;
     const imgUrl = this.folderImages[this.currentIndex]?.imageUrl;
+    this.currentImgUrl = this.folderImages[this.currentIndex]?.imageUrl;
     if (!imgUrl) return;
 
     this.convertImageToBase64(imgUrl).then(base64 => {
@@ -225,77 +281,75 @@ export class ShowAlbumComponent implements OnInit {
     this.rotation = (this.rotation + 1) % 4;
   }
 
-//   saveCroppedImage() {
-//     if (!this.croppedImage) {
-//       console.error('No cropped image available');
-//       return;
-//     }
-// this.loadingService.show();
-// this.percentage.set(0);
-//     const original = this.folderImages[this.currentIndex];
-//     const businessId = localStorage.getItem('businessId');
-//     const files: File[] = [];
-//     const file = this.base64ToFile(this.croppedImage);
-//     files.push(file);
-//     const formData = new FormData();
+  //   saveCroppedImage() {
+  //     if (!this.croppedImage) {
+  //       console.error('No cropped image available');
+  //       return;
+  //     }
+  // this.loadingService.show();
+  // this.percentage.set(0);
+  //     const original = this.folderImages[this.currentIndex];
+  //     const businessId = localStorage.getItem('businessId');
+  //     const files: File[] = [];
+  //     const file = this.base64ToFile(this.croppedImage);
+  //     files.push(file);
+  //     const formData = new FormData();
 
-//     files.forEach(file => formData.append('Images', file));
-//     formData.append('FolderId', original.folderId!.toString());
-//     formData.append('BusinessId', businessId!);
+  //     files.forEach(file => formData.append('Images', file));
+  //     formData.append('FolderId', original.folderId!.toString());
+  //     formData.append('BusinessId', businessId!);
 
-//     this.http.posteData('ImageUploader', formData).subscribe((res: any) => {
+  //     this.http.posteData('ImageUploader', formData).subscribe((res: any) => {
 
-//       this.closeModal()
-//       this.goBack()
-//       this.getAlbum()
-//       this.zoom = 1;
-//       this.rotation = 0;
-//       this.croppedImage = null;
-//       this.modalVisible = false;
-// this.loadingService.hide();
-//       this.cdr.detectChanges();
-//     });
-//     this.loadingService.hide();
-//   }
-saveCroppedImage() {
-  if (!this.croppedImage) {
-    console.error('No cropped image available');
-    return;
+  //       this.closeModal()
+  //       this.goBack()
+  //       this.getAlbum()
+  //       this.zoom = 1;
+  //       this.rotation = 0;
+  //       this.croppedImage = null;
+  //       this.modalVisible = false;
+  // this.loadingService.hide();
+  //       this.cdr.detectChanges();
+  //     });
+  //     this.loadingService.hide();
+  //   }
+  saveCroppedImage() {
+    if (!this.croppedImage) {
+      console.error('No cropped image available');
+      return;
+    }
+
+    const original = this.folderImages[this.currentIndex];
+    const businessId = localStorage.getItem('businessId');
+    const files: File[] = [];
+    const file = this.base64ToFile(this.croppedImage);
+    files.push(file);
+
+    const formData = new FormData();
+    files.forEach(file => formData.append('Images', file));
+    formData.append('FolderId', original.folderId!.toString());
+    formData.append('BusinessId', businessId!);
+
+    // أظهر شريط التحميل
+    this.loadingService.show();
+    this.percentage.set(0);
+
+    this.http.posteData('ImageUploader', formData).subscribe((res: any) => {
+      this.closeModal();
+      this.goBack();
+      this.getAlbum();
+      this.zoom = 1;
+      this.rotation = 0;
+      this.croppedImage = null;
+      this.modalVisible = false;
+
+      this.loadingService.hide();
+      this.cdr.detectChanges();
+    }, (err) => {
+      this.loadingService.hide();
+      this.cdr.detectChanges();
+    });
   }
-
-  const original = this.folderImages[this.currentIndex];
-  const businessId = localStorage.getItem('businessId');
-  const files: File[] = [];
-  const file = this.base64ToFile(this.croppedImage);
-  files.push(file);
-
-  const formData = new FormData();
-  files.forEach(file => formData.append('Images', file));
-  formData.append('FolderId', original.folderId!.toString());
-  formData.append('BusinessId', businessId!);
-
-  // أظهر شريط التحميل
-  this.loadingService.show();
-  this.percentage.set(0);
-
-  this.http.posteData('ImageUploader', formData).subscribe((res: any) => {
-    this.closeModal();
-    this.goBack();
-    this.getAlbum();
-    this.zoom = 1;
-    this.rotation = 0;
-    this.croppedImage = null;
-    this.modalVisible = false;
-
-    // أخفي شريط التحميل بعد ما ينجح الطلب
-    this.loadingService.hide();
-    this.cdr.detectChanges();
-  }, (err) => {
-    // أخفي شريط التحميل لو صار خطأ
-    this.loadingService.hide();
-    this.cdr.detectChanges();
-  });
-}
 
   private base64ToFile(base64: string): File {
     const arr = base64.split(',');
@@ -309,8 +363,43 @@ saveCroppedImage() {
     return new File([u8arr], 'edited.png', { type: mime });
   }
 
-  deleteFolder(folderId: number) {
-    if (!confirm(`Are you sure you want to delete folder-${folderId} folder?`)) return;
+  deleteFolder(folderIdd: number) {
+    if (!confirm(`Are you sure you want to delete folder-${folderIdd} folder?`)) return;
+
+    this.http.deleteData(`ImageUploader/DeleteImageByFolderId/${folderIdd}`).subscribe((res: any) => {
+      this.groupedAlbums = this.groupedAlbums.filter(el => el.folderId != folderIdd)
+    }, (error) => {
+      alert(error)
+    })
 
   }
+
+  SaveInInvAndItem() {
+
+    this.isLoading = true;
+    const payload = {
+      categoryId: this.CategoryId,
+      sizeId: this.SizeId,
+      platformId: this.PlatformId,
+      upc: this.UPC,
+      sku: this.SKU,
+      imageUrl: this.currentImgUrl,
+      folderId: this.selectedFolderId,
+      businessId: this.businessId
+    }
+
+    console.log(payload)
+
+    this.http.posteData('Item/addItemAndInv', payload).subscribe((res: any) => {
+      this.isLoading = false;
+      alert('Data saved successfully')
+      this.closeModal();
+      this.getAlbum();
+    }, (err) => {
+      this.isLoading = false;
+      alert('Error saving data')
+    })
+
+  }
+
 }

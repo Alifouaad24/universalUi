@@ -21,6 +21,7 @@ import { LoginRequest } from '../../../Models/Auth/loginRequest';
 import { LoginResponse } from '../../../Models/Auth/loginResponse';
 import { Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { BusinessContextService } from '../../../core/Services/business-context.service';
 
 @Component({
   selector: 'app-login',
@@ -43,7 +44,7 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder, private router: Router, private cdr: ChangeDetectorRef,
-    private httpService: HttpConnectService
+    private httpService: HttpConnectService, private businessService: BusinessContextService,
   ) {
     this.loginForm = this.fb.nonNullable.group({
       email: ['', Validators.required],
@@ -63,6 +64,8 @@ export class LoginComponent {
       this.httpService.posteData('Account/Login', payload).subscribe({
         next: (res: LoginResponse) => {
           console.log(res)
+          //this.businessService.clearContext();
+          
           localStorage.setItem('token', res.token);
           localStorage.setItem('currentUser', JSON.stringify(res.user));
           if (res.businesses && res.businesses.length > 0) {

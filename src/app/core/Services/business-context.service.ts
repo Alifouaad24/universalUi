@@ -7,6 +7,14 @@ export class BusinessContextService {
   private businesses: any[] = [];
   private currentBusiness$ = new BehaviorSubject<any>(null);
 
+  clearContext() {
+    this.businesses = [];
+    this.currentBusiness$.next(null);
+    localStorage.removeItem('businesses');
+    localStorage.removeItem('currentBusiness');
+    localStorage.removeItem('businessId');
+  }
+
   constructor() {
     const savedBusinesses = localStorage.getItem('businesses');
     const savedCurrent = localStorage.getItem('currentBusiness');

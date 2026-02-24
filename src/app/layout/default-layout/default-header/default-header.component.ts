@@ -25,6 +25,8 @@ import {
 } from '@coreui/angular';
 import { FormsModule } from '@angular/forms';
 import { IconDirective } from '@coreui/icons-angular';
+import { set } from 'lodash-es';
+import { AlbumStateService } from '../../../core/Services/countOfFolders';
 
 @Component({
   selector: 'app-default-header',
@@ -49,7 +51,10 @@ export class DefaultHeaderComponent extends HeaderComponent {
   businesses: BusinessModel[] = [];
   currentBusiness: any;
   showCRMActions = false;
-
+  showCountOfFolders = false;
+  countOfFolders = computed(() =>
+    this.albumState.countOfFolders().toString()
+  );
 
   readonly colorModes = [
     { name: 'light', text: 'Light', icon: 'cilSun' },
@@ -62,12 +67,15 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
-  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private router: Router) {
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private albumState: AlbumStateService,
+     private router: Router) {
     super();
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.showCRMActions =
           event.url.includes('/crm') || event.url.includes('/show-customers') || event.url.includes('/show-add-note')
+
+          this.showCountOfFolders = event.url.includes('/album');
       }
     });
 

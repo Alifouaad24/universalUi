@@ -1,0 +1,69 @@
+<!-- <div class="m-2 p-2">
+  <button class="btn btn-primary" routerLink="./add-edit-activity">
+    Add
+  </button>
+</div> -->
+<div class="card">
+  <div class="card-header">
+    Inventory
+  </div>
+  <div class="card-body">
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
+    <table *ngIf="inventory.length > 0" class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>SKU</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let type of inventory; index as i">
+          <td>{{ i + 1 }}</td>
+          <td>{{ type.item?.sku }}</td>
+          <td>
+            <ng-container *ngIf="inventory.length">
+              <button class="btn btn-sm btn-primary me-1">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+            </ng-container>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
+  <c-modal-header>Confirm Delete</c-modal-header>
+  <c-modal-body>
+    Are you sure you want to delete {{ selectedType?.description }}?
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
+    <button class="btn btn-danger" (click)="deleteActivity(selectedType)">Delete</button>
+  </c-modal-footer>
+</c-modal>
+
+<c-toaster placement="top-end" class="p-3">
+  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
+    [autohide]="autoHideToast()" [delay]="3000">
+    <c-toast-header>
+      Delete!
+    </c-toast-header>
+    <c-toast-body>
+      <p>{{ toastMessage() }}</p>
+      <c-progress thin [value]="percentage()" />
+    </c-toast-body>
+  </c-toast>
+</c-toaster> -->
