@@ -56,9 +56,17 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   UPC: string = '';
   SKU: string = '';
   currentImgUrl?: string;
+  zoom = 1;
+  offsetX = 0;
+  offsetY = 0;
+  translateH = 0;
+  translateV = 0;
+  isDragging = false;
+  startX = 0;
+  startY = 0;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef,
-     public loadingService: LoadingService, private albumState: AlbumStateService,
+    public loadingService: LoadingService, private albumState: AlbumStateService,
     private router: Router) { }
 
   ngOnDestroy(): void {
@@ -74,13 +82,13 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   }
 
   getFolderBackground(folder: { images: AlbumModel[] }): string {
-  if (!folder?.images) return 'rgba(255,0,0,0.5)';
+    if (!folder?.images) return 'rgba(255,0,0,0.5)';
 
-  const hasProcessed = folder.images.some(img => img.isProccessed);
-  return hasProcessed
-    ? 
-     'rgba(30, 204, 7, 0.5)' : 'rgba(0,0,0,0.5)';
-}
+    const hasProcessed = folder.images.some(img => img.isProccessed);
+    return hasProcessed
+      ?
+      'rgba(30, 204, 7, 0.5)' : 'rgba(0,0,0,0.5)';
+  }
 
   getCategories() {
     this.http.getAllData('Category').subscribe((res: any) => {
@@ -255,13 +263,59 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     });
   }
 
-  zoom = 1;
 
-  zoomIn() { this.zoom += 0.1; }
+
+
+
+  transform = {
+    scale: this.zoom,
+    translateH: this.translateH,
+    translateV: this.translateV
+  };
+
+
+  updateTransform() {
+    this.transform = {
+      scale: this.zoom,
+      translateH: this.translateH,
+      translateV: this.translateV
+    };
+  }
+  onMouseDown(event: MouseEvent) {
+    this.isDragging = true;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+  }
+
+  onMouseMove(event: MouseEvent) {
+    if (!this.isDragging) return;
+
+    const dx = event.clientX - this.startX;
+    const dy = event.clientY - this.startY;
+
+    this.translateH += dx;
+    this.translateV += dy;
+
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+
+    this.updateTransform();
+  }
+
+  onMouseUp() {
+    this.isDragging = false;
+  }
+
+  zoomIn() {
+    this.zoom += 0.1;
+
+    this.updateTransform();
+  }
 
   zoomOut() {
-    if (this.zoom == 1) return
+    if (this.zoom == 1) return;
     this.zoom = Math.max(0.1, this.zoom - 0.1);
+    this.updateTransform();
   }
 
   onImageCropped(event: ImageCroppedEvent) {
@@ -281,38 +335,6 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     this.rotation = (this.rotation + 1) % 4;
   }
 
-  //   saveCroppedImage() {
-  //     if (!this.croppedImage) {
-  //       console.error('No cropped image available');
-  //       return;
-  //     }
-  // this.loadingService.show();
-  // this.percentage.set(0);
-  //     const original = this.folderImages[this.currentIndex];
-  //     const businessId = localStorage.getItem('businessId');
-  //     const files: File[] = [];
-  //     const file = this.base64ToFile(this.croppedImage);
-  //     files.push(file);
-  //     const formData = new FormData();
-
-  //     files.forEach(file => formData.append('Images', file));
-  //     formData.append('FolderId', original.folderId!.toString());
-  //     formData.append('BusinessId', businessId!);
-
-  //     this.http.posteData('ImageUploader', formData).subscribe((res: any) => {
-
-  //       this.closeModal()
-  //       this.goBack()
-  //       this.getAlbum()
-  //       this.zoom = 1;
-  //       this.rotation = 0;
-  //       this.croppedImage = null;
-  //       this.modalVisible = false;
-  // this.loadingService.hide();
-  //       this.cdr.detectChanges();
-  //     });
-  //     this.loadingService.hide();
-  //   }
   saveCroppedImage() {
     if (!this.croppedImage) {
       console.error('No cropped image available');
@@ -330,7 +352,6 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     formData.append('FolderId', original.folderId!.toString());
     formData.append('BusinessId', businessId!);
 
-    // أظهر شريط التحميل
     this.loadingService.show();
     this.percentage.set(0);
 
@@ -375,7 +396,6 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   }
 
   SaveInInvAndItem() {
-
     this.isLoading = true;
     const payload = {
       categoryId: this.CategoryId,
@@ -395,6 +415,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       alert('Data saved successfully')
       this.closeModal();
       this.getAlbum();
+      this.goBack();
     }, (err) => {
       this.isLoading = false;
       alert('Error saving data')

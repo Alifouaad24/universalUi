@@ -58,12 +58,12 @@
       </c-button>
 
       <div class="flex-grow-1 d-flex row g-2 align-items-center justify-content-center">
-        <div class="col">
+        <div style="width: 250px;" class="col-md-2">
           <input class="form-control" [(ngModel)]="SKU" placeholder="SKU..." />
         </div>
         <div class="col">
           <select class="form-select" [(ngModel)]="CategoryId">
-            <option  [ngValue]="null" disabled selected disabled>Category</option>
+            <option [ngValue]="null" disabled selected disabled>Category</option>
             <option *ngFor="let category of Categories" [ngValue]="category.category_id">{{category.name}}</option>
           </select>
         </div>
@@ -76,7 +76,8 @@
         <div class="col">
           <select class="form-select" [(ngModel)]="PlatformId">
             <option [ngValue]="null" disabled selected disabled>Platform</option>
-            <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}</option>
+            <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}
+            </option>
           </select>
         </div>
         <div class="col">
@@ -99,15 +100,17 @@
     <div class="d-flex justify-content-between align-items-center">
       <c-button class="btn btn-sm rounded bg-success m-1" color="primary" style="cursor: pointer;" (click)="prevImage()"
         [disabled]="folderImages.length <= 1">
-        <</c-button>&nbsp;
-          <div style="height: 80vh;">
+        <<</c-button>&nbsp;
+          <div style="height: 80vh;" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)"
+            (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
             <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
-              [canvasRotation]="rotation" [transform]="{ scale: zoom }" format="png"
+              [canvasRotation]="rotation" [transform]="transform" format="png"
+              
               (imageCropped)="onImageCropped($event)">
             </image-cropper>
           </div>&nbsp;
           <c-button class="btn btn-sm rounded bg-success m-1" color="primary" style="cursor: pointer;"
-            (click)="nextImage()" [disabled]="folderImages.length <= 1">></c-button>
+            (click)="nextImage()" [disabled]="folderImages.length <= 1">>></c-button>
 
     </div>
     <c-button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</c-button>&nbsp;
