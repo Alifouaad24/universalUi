@@ -5,7 +5,7 @@
 </div> -->
 <div class="card">
   <div class="card-header">
-    Inventory
+    Inventory: ({{inventory.length }}) item{{ inventory.length !== 1 ? 's' : '' }}
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -25,14 +25,21 @@
       <tbody>
         <tr *ngFor="let type of inventory; index as i">
           <td>{{ i + 1 }}</td>
-          <td>{{ type.item?.sku }}</td>
+          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
+              type.item?.sku }}</a></td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-primary me-1">
-                <c-icon name="cil-pencil"></c-icon>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
+              <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']" [queryParams]="{ folderSelected: type.folderImages }">
+                Go to album
+              </a>
+              <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
+              </button> -->
+              <button *ngIf="type.item?.images?.length === 0" class="btn btn-sm btn-warning me-1" (click)="ShowScrape(type.item?.itemId)">
+                Scrape item
+              </button>
+               <button *ngIf="type.item?.images?.length > 0" class="btn btn-sm btn-primary me-1" (click)="ShowFactoryImages(type.item?.itemId)">
+                Show images
               </button>
             </ng-container>
           </td>
@@ -44,14 +51,23 @@
 </div>
 
 
-<!-- <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
-  <c-modal-header>Confirm Delete</c-modal-header>
+<c-modal [(visible)]="showScrapeModal" [size]="'lg'">
+  <c-modal-header>Scrape Item</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.description }}?
+    Paste source code here to get images:
+    <br /><br />
+    <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
+    <br /><br />
+    <div *ngIf="ImagesUrlsFromScrape.length > 0">
+      <p>Extracted Image URLs:</p>
+      <img *ngFor="let url of ImagesUrlsFromScrape" [src]="url" alt="Scraped Image" class="img-thumbnail m-1"
+        style="max-width: 150px; max-height: 150px;">
+    </div>
   </c-modal-body>
   <c-modal-footer>
-    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteActivity(selectedType)">Delete</button>
+    <button class="btn btn-secondary" (click)="showScrapeModal = false">Cancel</button>
+    <button class="btn btn-primary" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' : 'Scrape' }}</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveImagesForItem()">Save</button>
   </c-modal-footer>
 </c-modal>
 
@@ -59,11 +75,35 @@
   <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
     [autohide]="autoHideToast()" [delay]="3000">
     <c-toast-header>
-      Delete!
+      Scrape!
     </c-toast-header>
     <c-toast-body>
       <p>{{ toastMessage() }}</p>
       <c-progress thin [value]="percentage()" />
     </c-toast-body>
   </c-toast>
-</c-toaster> -->
+</c-toaster>
+
+<c-modal [(visible)]="showFactoryImagesModal" [size]="'lg'">
+  <c-modal-header>Factory Images</c-modal-header>
+  <c-modal-body>
+      <img *ngFor="let url of factoryImages" [src]="url" alt="Factory Image" class="img-thumbnail m-1"
+        style="max-width: 150px; max-height: 150px;">
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showFactoryImagesModal = false">Close</button>
+  </c-modal-footer>
+</c-modal>
+
+<c-toaster placement="top-end" class="p-3">
+  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
+    [autohide]="autoHideToast()" [delay]="3000">
+    <c-toast-header>
+      Scrape!
+    </c-toast-header>
+    <c-toast-body>
+      <p>{{ toastMessage() }}</p>
+      <c-progress thin [value]="percentage()" />
+    </c-toast-body>
+  </c-toast>
+</c-toaster>

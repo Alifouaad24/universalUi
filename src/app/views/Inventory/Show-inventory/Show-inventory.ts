@@ -39,7 +39,7 @@ import { InventoryModel } from '../../../Models/InventoryModel';
   templateUrl: './Show-inventory.html',
   imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule,
     CardHeaderComponent, CardBodyComponent, ButtonGroupComponent,
-    ButtonDirective, RouterLink, ReactiveFormsModule,
+    ButtonDirective, ReactiveFormsModule,
     FormCheckLabelDirective, ButtonToolbarComponent,
     InputGroupComponent, InputGroupTextDirective, RouterLink, RouterOutlet,
     FormControlDirective, DropdownComponent, FormsModule, CommonModule,
@@ -58,8 +58,9 @@ export class ShowInventoryComponent implements OnInit {
   inventory: InventoryModel[] = [];
   message?: string
   isLoading: boolean = false;
-  showDeleteModal: boolean = false;
+  showScrapeModal: boolean = false;
   selectedType?: InventoryModel;
+  ImagesUrlsFromScrape: string[] = [];
   ///// for toastr ////////
   position = 'top-end';
   toastVisible = signal(false);
@@ -67,7 +68,7 @@ export class ShowInventoryComponent implements OnInit {
   percentage = signal(0);
   autoHideToast = signal(true);
   businessId?: number;
-
+  sourceCode: string = '';
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -82,7 +83,9 @@ export class ShowInventoryComponent implements OnInit {
         console.log(res);
         this.inventory = (res as any[]).map(item => new InventoryModel({
           inventory_id: item.inventory_id,
-          item: item.item 
+          item: item.item,
+          platform: item.platform,
+          folderImages: item.folderImages
         }));
         this.isLoading = false;
 
@@ -96,31 +99,87 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  confirmDelete(type: InventoryModel) {
-    this.selectedType = type;
-    this.showDeleteModal = true;
+  idItemForBindWithImages?: number;
+
+  ShowScrape(itemId?: number) {
+    this.idItemForBindWithImages = itemId;
+    console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+    this.showScrapeModal = true;
   }
 
-  // deleteActivity(type?: InventoryModel) {
-  //   if (!type) return;
-  //   this.http.deleteData(`Inventory/${type.inventory_id}`,).subscribe(() => {
-  //     this.inventory = this.inventory.filter(t => t.inventory_id !== type.inventory_id);
-  //     this.showDeleteModal = false;
-  //     this.toastMessage.set(`${type.description} deleted successfully`);
-  //     this.toastVisible.set(true);
-  //   }, (error) => {
-  //     this.toastMessage.set(`An error occured during delete (${type.description})`);
-  //     this.toastVisible.set(true);
-  //   });
-  // }
+
   onVisibleChange(visible: boolean) {
-    this.showDeleteModal = false;
+    this.showScrapeModal = false;
+    this.idItemForBindWithImages = undefined;
     this.toastVisible.set(visible);
     if (!visible) this.percentage.set(0);
   }
 
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
+  }
+
+  getImagesFromScrape() {
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('htmlFile', file);
+    this.http.posteData(`Scraper/getImagesFromShein`, formData, true).subscribe(
+      (res: any) => {
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  SaveImagesForItem() {
+    if (!this.idItemForBindWithImages) {
+      this.toastMessage.set('No item selected for binding images.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+
+    const payLoad = {
+      itemId: this.idItemForBindWithImages,
+      imagesUrls: this.ImagesUrlsFromScrape
+    }
+    this.http.posteData(`Item/BindImagesWithItem`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Images successfully bound to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error binding images to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+  showFactoryImagesModal = false;
+  factoryImages: string[] = [];
+
+  ShowFactoryImages(itemId?: number) {
+    this.factoryImages = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.images || [];
+    this.showFactoryImagesModal = true;
+
   }
 
 }

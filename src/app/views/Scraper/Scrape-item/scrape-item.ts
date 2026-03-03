@@ -38,10 +38,10 @@ import { ActiviityModel } from '../../../Models/ActivityModel';
 import { FeatureModel } from '../../../Models/FeatureModel';
 import { CategoryModel } from '../../../Models/CategoryModel';
 import { UnitModel } from '../../../Models/UnitModel';
-import { PlatformModel } from '../../../Models/platformModel';
 import { SizeModel } from '../../../Models/SizeModel';
 import { CurrencyModel } from '../../../Models/CurrencyModel';
 import { ColorModel } from '../../../Models/ColorModel';
+import { PlatformModel } from '../../../Models/PlatformModel';
 
 @Component({
   selector: 'app-button-groups',

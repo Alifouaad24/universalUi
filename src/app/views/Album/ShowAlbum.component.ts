@@ -10,7 +10,7 @@ import {
   CardHeaderComponent,
   RowComponent,
 } from '@coreui/angular';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { HttpConnectService } from '../../Services/http-connect.service';
 import { AlbumModel } from '../../Models/Album';
 import { LoadingService } from '../../core/Services/LoadingService';
@@ -65,7 +65,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   startX = 0;
   startY = 0;
 
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef,
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute,
     public loadingService: LoadingService, private albumState: AlbumStateService,
     private router: Router) { }
 
@@ -79,6 +79,13 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     this.getCategories()
     this.getSizes()
     this.getPlatforms()
+        this.route.queryParams.subscribe(params => {
+      const folderSelected = params['folderSelected'];
+      if (folderSelected) {
+        this.selectedFolderId = Number(folderSelected);
+        this.openFolder(this.selectedFolderId);
+      }
+    });
   }
 
   getFolderBackground(folder: { images: AlbumModel[] }): string {

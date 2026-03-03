@@ -6,8 +6,8 @@ import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent,
 import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { ActiviityModel } from '../../../Models/ActivityModel';
-import { PlatformModel } from '../../../Models/platformModel';
 import { LoadingService } from '../../../core/Services/LoadingService';
+import { PlatformModel } from '../../../Models/PlatformModel';
 
 @Component({
   selector: 'app-buttons',
