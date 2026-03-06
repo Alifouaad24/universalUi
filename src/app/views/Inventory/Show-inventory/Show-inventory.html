@@ -19,6 +19,7 @@
         <tr>
           <th>#</th>
           <th>SKU</th>
+          <th>Size</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -27,18 +28,22 @@
           <td>{{ i + 1 }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
+          <td>{{ type.size?.description }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']" [queryParams]="{ folderSelected: type.folderImages }">
+              <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
+                [queryParams]="{ folderSelected: type.folderImages }">
                 Go to album
               </a>
               <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
-              <button *ngIf="type.item?.images?.length === 0" class="btn btn-sm btn-warning me-1" (click)="ShowScrape(type.item?.itemId)">
+              <button *ngIf="type.item?.images?.length <= 1" class="btn btn-sm btn-warning me-1"
+                (click)="ShowScrape(type.item?.itemId)">
                 Scrape item
               </button>
-               <button *ngIf="type.item?.images?.length > 0" class="btn btn-sm btn-primary me-1" (click)="ShowFactoryImages(type.item?.itemId)">
+              <button *ngIf="type.item?.images?.length > 1" class="btn btn-sm btn-primary me-1"
+                (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
               </button>
             </ng-container>
@@ -56,12 +61,19 @@
   <c-modal-body>
     Paste source code here to get images:
     <br /><br />
+    <button class="btn btn-sm btn-secondary mb-2" (click)="scrapeItemFromAinAlfhd()">Screape by AinAlfhd</button>
     <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
     <br /><br />
     <div *ngIf="ImagesUrlsFromScrape.length > 0">
       <p>Extracted Image URLs:</p>
-      <img *ngFor="let url of ImagesUrlsFromScrape" [src]="url" alt="Scraped Image" class="img-thumbnail m-1"
-        style="max-width: 150px; max-height: 150px;">
+      <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
+        <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+          (click)="removeImage(i)">
+          <svg cIcon name="cilTrash"></svg>
+        </button>
+        <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+      </div>
+      <div class="p-2" *ngIf="showMsg">{{ Msg }}</div>
     </div>
   </c-modal-body>
   <c-modal-footer>
@@ -87,8 +99,8 @@
 <c-modal [(visible)]="showFactoryImagesModal" [size]="'lg'">
   <c-modal-header>Factory Images</c-modal-header>
   <c-modal-body>
-      <img *ngFor="let url of factoryImages" [src]="url" alt="Factory Image" class="img-thumbnail m-1"
-        style="max-width: 150px; max-height: 150px;">
+    <img *ngFor="let url of factoryImages" [src]="url" alt="Factory Image" class="img-thumbnail m-1"
+      style="max-width: 150px; max-height: 150px;">
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showFactoryImagesModal = false">Close</button>

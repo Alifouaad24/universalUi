@@ -85,7 +85,9 @@ export class ShowInventoryComponent implements OnInit {
           inventory_id: item.inventory_id,
           item: item.item,
           platform: item.platform,
-          folderImages: item.folderImages
+          folderImages: item.folderImages,
+          size_id: item.size_id,
+          size: item.size
         }));
         this.isLoading = false;
 
@@ -102,7 +104,9 @@ export class ShowInventoryComponent implements OnInit {
   idItemForBindWithImages?: number;
 
   ShowScrape(itemId?: number) {
+    this.ImagesUrlsFromScrape = [];
     this.idItemForBindWithImages = itemId;
+    this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
     console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
     this.showScrapeModal = true;
   }
@@ -156,11 +160,15 @@ export class ShowInventoryComponent implements OnInit {
 
     const payLoad = {
       itemId: this.idItemForBindWithImages,
-      imagesUrls: this.ImagesUrlsFromScrape
+      ImagesUrls: this.ImagesUrlsFromScrape
     }
+
+    console.log('Payload for binding images:', payLoad);
     this.http.posteData(`Item/BindImagesWithItem`, payLoad).subscribe(
       (res: any) => {
         this.isLoading = false;
+        console.log('res: ', res);
+
         this.toastMessage.set('Images successfully bound to the item.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
@@ -177,9 +185,39 @@ export class ShowInventoryComponent implements OnInit {
   factoryImages: string[] = [];
 
   ShowFactoryImages(itemId?: number) {
-    this.factoryImages = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.images || [];
+    const factoryImagesTemp = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.images || [];
+    this.factoryImages = factoryImagesTemp.map((img: any) => img.imageUrl);
+    console.log('Factory Images for Item ID', itemId, ':', this.factoryImages);
     this.showFactoryImagesModal = true;
 
   }
 
+  removeImage(index: number) {
+    this.ImagesUrlsFromScrape.splice(index, 1);
+  }
+
+  skuToScrapeByAinAlfhd: string = '';
+  Msg: string = 'No results found for the provided SKU.';
+  showMsg: boolean = false;
+  scrapeItemFromAinAlfhd() {
+    this.showMsg = false;
+    const skuSubstring = this.skuToScrapeByAinAlfhd.slice(-4);
+    console.log('Scraping SKU from AinAlfhd:', skuSubstring);
+    this.isLoading = true;
+    this.http.getAllData(`Item/getItemFromAinAlfhdDB/${skuSubstring}`).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.ImagesUrlsFromScrape = res as string[];
+        console.log('Scraped Images from AinAlfhd:', this.ImagesUrlsFromScrape);
+        this.showMsg = true
+        this.cdr.detectChanges();
+      },(error) =>{
+        this.isLoading = false;
+        
+        console.error('Error scraping from AinAlfhd:', error);
+        this.cdr.detectChanges();
+
+      }
+    );
+  }
 }
