@@ -201,10 +201,9 @@ export class ShowInventoryComponent implements OnInit {
   showMsg: boolean = false;
   scrapeItemFromAinAlfhd() {
     this.showMsg = false;
-    const skuSubstring = this.skuToScrapeByAinAlfhd.slice(-4);
-    console.log('Scraping SKU from AinAlfhd:', skuSubstring);
+    console.log('Scraping SKU from AinAlfhd:', this.skuToScrapeByAinAlfhd);
     this.isLoading = true;
-    this.http.getAllData(`Item/getItemFromAinAlfhdDB/${skuSubstring}`).subscribe(
+    this.http.getAllData(`Item/getItemFromAinAlfhdDB/${this.skuToScrapeByAinAlfhd}`).subscribe(
       (res: any) => {
         this.isLoading = false;
         this.ImagesUrlsFromScrape = res as string[];
@@ -217,6 +216,27 @@ export class ShowInventoryComponent implements OnInit {
         console.error('Error scraping from AinAlfhd:', error);
         this.cdr.detectChanges();
 
+      }
+    );
+  }
+
+  removeImageFromDb(imageUrl: string) {
+    this.isLoading = true;
+    const imageName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+    this.http.deleteData(`ItemImages/${imageName}`).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.factoryImages = this.factoryImages.filter(url => url !== imageUrl);
+        this.toastMessage.set('Image successfully removed from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error removing image from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
       }
     );
   }

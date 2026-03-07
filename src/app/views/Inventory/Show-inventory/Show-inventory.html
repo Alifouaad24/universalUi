@@ -61,7 +61,12 @@
   <c-modal-body>
     Paste source code here to get images:
     <br /><br />
-    <button class="btn btn-sm btn-secondary mb-2" (click)="scrapeItemFromAinAlfhd()">Screape by AinAlfhd</button>
+    <div class="input-group mb-3 d-flex gap-2">
+      <button class="btn btn-outline-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">Scrape from
+        AinAlfhd</button>
+      <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
+        [(ngModel)]="skuToScrapeByAinAlfhd">
+    </div>
     <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
     <br /><br />
     <div *ngIf="ImagesUrlsFromScrape.length > 0">
@@ -99,8 +104,13 @@
 <c-modal [(visible)]="showFactoryImagesModal" [size]="'lg'">
   <c-modal-header>Factory Images</c-modal-header>
   <c-modal-body>
-    <img *ngFor="let url of factoryImages" [src]="url" alt="Factory Image" class="img-thumbnail m-1"
-      style="max-width: 150px; max-height: 150px;">
+    <div class="position-relative d-inline-block m-2" *ngFor="let url of factoryImages; let i = index">
+      <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+        (click)="removeImageFromDb(url)">
+        <svg cIcon name="cilTrash"></svg>
+      </button>
+      <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+    </div>
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showFactoryImagesModal = false">Close</button>
