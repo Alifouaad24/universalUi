@@ -79,13 +79,6 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     this.getCategories()
     this.getSizes()
     this.getPlatforms()
-        this.route.queryParams.subscribe(params => {
-      const folderSelected = params['folderSelected'];
-      if (folderSelected) {
-        this.selectedFolderId = Number(folderSelected);
-        this.openFolder(this.selectedFolderId);
-      }
-    });
   }
 
   getFolderBackground(folder: { images: AlbumModel[] }): string {
@@ -150,6 +143,14 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.cdr.detectChanges();
         this.albumState.setCount(this.groupedAlbums.length);
+        this.route.queryParams.subscribe(params => {
+          const folderSelected = params['folderSelected'];
+          if (folderSelected) {
+            this.selectedFolderId = Number(folderSelected);
+            this.openFolder(this.selectedFolderId);
+            this.cdr.detectChanges();
+          }
+        });
       },
         (err) => {
           this.isLoading = false;
@@ -159,6 +160,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   }
 
   openFolder(folderId: number) {
+    console.log('Opening folder:', folderId);
     this.selectedFolderId = folderId;
     this.folderImages = this.groupedAlbums
       .find(f => f.folderId === folderId)?.images || [];
@@ -428,6 +430,17 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       alert('Error saving data')
     })
 
+  }
+
+  filterAlbum(event: any) {
+    const filterValue = event.target.value;
+    if (filterValue === 'Unprocessed') {
+      this.groupedAlbums = this.groupedAlbums.filter(album => album.images.some(img => !img.isProccessed));
+    } else {
+      this.groupedAlbums = [];
+      this.getAlbum();
+      this.cdr.detectChanges();
+    }
   }
 
 }

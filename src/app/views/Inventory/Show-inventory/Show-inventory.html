@@ -4,8 +4,17 @@
   </button>
 </div> -->
 <div class="card">
-  <div class="card-header">
-    Inventory: ({{inventory.length }}) item{{ inventory.length !== 1 ? 's' : '' }}
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="">
+      Inventory: ({{inventory.length }}) item{{ inventory.length !== 1 ? 's' : '' }}
+    </div>
+    <div>
+      <select name="" id="" class="form-select form-select-sm" style="width: auto; display: inline-block;"
+        (change)="filterInventory($event)">
+        <option value="All">All</option>
+        <option value="Unprocessed">Un processed</option>
+      </select>
+    </div>
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -57,20 +66,25 @@
 
 
 <c-modal [(visible)]="showScrapeModal" [size]="'lg'">
-  <c-modal-header>Scrape Item</c-modal-header>
+  <c-modal-header>Scrape Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd }}</strong></c-modal-header>
   <c-modal-body>
-    Paste source code here to get images:
-    <br /><br />
     <div class="input-group mb-3 d-flex gap-2">
-      <button class="btn btn-outline-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">Scrape from
+      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">Scrape from
         AinAlfhd</button>
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
     </div>
+    <hr />
+    Or paste source code here to get data:
+    <br /><br />
     <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
     <br /><br />
+    <div *ngIf="priceFromScrape.length > 0" class="">
+      <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
+      <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
+    </div>
     <div *ngIf="ImagesUrlsFromScrape.length > 0">
-      <p>Extracted Image URLs:</p>
+      <p class="text-success">Extracted Image URLs:</p>
       <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
         <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
           (click)="removeImage(i)">
@@ -83,7 +97,7 @@
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showScrapeModal = false">Cancel</button>
-    <button class="btn btn-primary" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' : 'Scrape' }}</button>
+    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' : 'Scrape' }}</button>
     <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveImagesForItem()">Save</button>
   </c-modal-footer>
 </c-modal>

@@ -69,6 +69,9 @@ export class ShowInventoryComponent implements OnInit {
   autoHideToast = signal(true);
   businessId?: number;
   sourceCode: string = '';
+  priceFromScrape: string = '';
+  productNameFromScrape: string = '';
+
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -102,11 +105,13 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   idItemForBindWithImages?: number;
-
+  fullFkuToScrapeByAinAlfhd?: string;
   ShowScrape(itemId?: number) {
     this.ImagesUrlsFromScrape = [];
     this.idItemForBindWithImages = itemId;
+    this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
     this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
+
     console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
     this.showScrapeModal = true;
   }
@@ -123,6 +128,8 @@ export class ShowInventoryComponent implements OnInit {
     this.percentage.set(value * 25);
   }
 
+
+
   getImagesFromScrape() {
     if (!this.sourceCode.trim()) {
       this.toastMessage.set('Please paste the source code to scrape.');
@@ -137,6 +144,8 @@ export class ShowInventoryComponent implements OnInit {
       (res: any) => {
         this.sourceCode = '';
         this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.productNameFromScrape = res.name;
         console.log(this.ImagesUrlsFromScrape);
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -169,6 +178,7 @@ export class ShowInventoryComponent implements OnInit {
         this.isLoading = false;
         console.log('res: ', res);
 
+        this.getInventory()
         this.toastMessage.set('Images successfully bound to the item.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
@@ -210,9 +220,9 @@ export class ShowInventoryComponent implements OnInit {
         console.log('Scraped Images from AinAlfhd:', this.ImagesUrlsFromScrape);
         this.showMsg = true
         this.cdr.detectChanges();
-      },(error) =>{
+      }, (error) => {
         this.isLoading = false;
-        
+
         console.error('Error scraping from AinAlfhd:', error);
         this.cdr.detectChanges();
 
@@ -239,5 +249,15 @@ export class ShowInventoryComponent implements OnInit {
         this.cdr.detectChanges();
       }
     );
+  }
+  filterInventory(event: any) {
+    const filterValue = event.target.value;
+    if (filterValue === 'Unprocessed') {
+      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);
+    } else {
+      this.inventory = [];
+      this.getInventory();
+      this.cdr.detectChanges();
+    }
   }
 }
