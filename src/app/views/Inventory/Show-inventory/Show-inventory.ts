@@ -90,7 +90,8 @@ export class ShowInventoryComponent implements OnInit {
           platform: item.platform,
           folderImages: item.folderImages,
           size_id: item.size_id,
-          size: item.size
+          size: item.size,
+          notFound: item.notFound
         }));
         this.isLoading = false;
 
@@ -106,13 +107,16 @@ export class ShowInventoryComponent implements OnInit {
 
   idItemForBindWithImages?: number;
   fullFkuToScrapeByAinAlfhd?: string;
-  ShowScrape(itemId?: number) {
+  currentInventoryId?: number;
+  ShowScrape(itemId?: number, inventoryId?: number) {
     this.ImagesUrlsFromScrape = [];
     this.idItemForBindWithImages = itemId;
     this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
     this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
 
     console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+    console.log('Selected Inventory ID for Scraping:', inventoryId);
+    this.currentInventoryId = inventoryId;
     this.showScrapeModal = true;
   }
 
@@ -259,5 +263,35 @@ export class ShowInventoryComponent implements OnInit {
       this.getInventory();
       this.cdr.detectChanges();
     }
+  }
+
+  setInvItemNotFound() {
+    if (!this.currentInventoryId) {
+      this.toastMessage.set('No item selected to set as not found.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    this.http.putData(`Inventory/${this.currentInventoryId}`, {}).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Item successfully set as not found.');
+        this.toastVisible.set(true);
+        this.inventory.map(inv => {
+          if (inv.inventory_id === this.currentInventoryId) {
+            inv.notFound = true;
+          } return inv;
+        });
+        this.currentInventoryId = undefined;
+        this.showScrapeModal = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error setting item as not found.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
   }
 }

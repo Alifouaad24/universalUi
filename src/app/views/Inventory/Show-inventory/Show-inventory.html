@@ -48,7 +48,7 @@
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
               <button *ngIf="type.item?.images?.length <= 1" class="btn btn-sm btn-warning me-1"
-                (click)="ShowScrape(type.item?.itemId)">
+                (click)="ShowScrape(type.item?.itemId, type.inventory_id)" [disabled]="type.notFound">
                 Scrape item
               </button>
               <button *ngIf="type.item?.images?.length > 1" class="btn btn-sm btn-primary me-1"
@@ -73,6 +73,7 @@
         AinAlfhd</button>
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
+        <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
     </div>
     <hr />
     Or paste source code here to get data:

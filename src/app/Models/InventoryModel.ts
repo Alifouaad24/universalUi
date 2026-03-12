@@ -7,6 +7,7 @@ export class InventoryModel {
     item?: any;
     platform?: PlatformModel;
     folderImages?: number;
+    notFound?: boolean;
     size?: any;
 
 
