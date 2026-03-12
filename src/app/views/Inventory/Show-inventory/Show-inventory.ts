@@ -71,14 +71,32 @@ export class ShowInventoryComponent implements OnInit {
   sourceCode: string = '';
   priceFromScrape: string = '';
   productNameFromScrape: string = '';
-
+  SizeId: number | null = null;
+  CategoryId: number | null = null;
+  Categories?: any[]
+  Sizes?: any[]
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'));
     this.getInventory()
+    this.getCategories()
+    this.getSizes()
   }
 
+  getCategories() {
+    this.http.getAllData('Category').subscribe((res: any) => {
+      console.log(res)
+      this.Categories = res;
+    })
+  }
+
+  getSizes() {
+    this.http.getAllData('Size').subscribe((res: any) => {
+      console.log(res)
+      this.Sizes = res;
+    })
+  }
   getInventory() {
     this.isLoading = true;
     this.http.getAllData(`Inventory/${this.businessId}`).subscribe(
@@ -181,8 +199,7 @@ export class ShowInventoryComponent implements OnInit {
       (res: any) => {
         this.isLoading = false;
         console.log('res: ', res);
-
-        this.getInventory()
+        this.AddPriceAndTitle()
         this.toastMessage.set('Images successfully bound to the item.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
@@ -195,8 +212,43 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+
+  AddPriceAndTitle() {
+    if (!this.currentInventoryId) {
+      this.toastMessage.set('No item selected for adding price and title.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    const payLoad = {
+      Price: this.priceFromScrape,
+      Title: this.productNameFromScrape
+    }
+
+    console.log('Payload for adding price and title:', payLoad);
+    this.http.posteData(`Item/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.getInventory()
+        this.toastMessage.set('Price and title successfully added to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error adding price and title to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+
   showFactoryImagesModal = false;
   factoryImages: string[] = [];
+
+
 
   ShowFactoryImages(itemId?: number) {
     const factoryImagesTemp = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.images || [];
@@ -289,6 +341,50 @@ export class ShowInventoryComponent implements OnInit {
       (err) => {
         this.isLoading = false;
         this.toastMessage.set('Error setting item as not found.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  ShowEditModal(inventoryId?: number) {
+    this.currentInventoryId = inventoryId;
+    this.showEditModal = true;
+  }
+
+
+  showEditModal = false;
+  EditInventoryItem() {
+    if (!this.currentInventoryId) {
+      this.toastMessage.set('No inventory item selected for editing.');
+      this.toastVisible.set(true);
+      return;
+    }
+    if (!this.CategoryId || !this.SizeId) {
+      this.toastMessage.set('Please select both category and size.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    const payload = {
+      CategoryId: this.CategoryId,
+      SizeId: this.SizeId
+    };
+    console.log('Payload for editing inventory item:', payload);
+    this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Inventory item successfully updated.');
+        this.toastVisible.set(true);
+        this.showEditModal = false;
+        this.CategoryId = null;
+        this.SizeId = null;
+        this.cdr.detectChanges();
+        this.getInventory();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error updating inventory item.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
       }

@@ -40,10 +40,14 @@
           <td>{{ type.size?.description }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
+              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id)">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
                 [queryParams]="{ folderSelected: type.folderImages }">
                 Go to album
               </a>
+
               <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
@@ -55,6 +59,7 @@
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
               </button>
+
             </ng-container>
           </td>
 
@@ -66,14 +71,15 @@
 
 
 <c-modal [(visible)]="showScrapeModal" [size]="'lg'">
-  <c-modal-header>Scrape Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd }}</strong></c-modal-header>
+  <c-modal-header>Scrape Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd
+      }}</strong></c-modal-header>
   <c-modal-body>
     <div class="input-group mb-3 d-flex gap-2">
       <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">Scrape from
         AinAlfhd</button>
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
-        <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
+      <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
     </div>
     <hr />
     Or paste source code here to get data:
@@ -98,7 +104,8 @@
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showScrapeModal = false">Cancel</button>
-    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' : 'Scrape' }}</button>
+    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' :
+      'Scrape' }}</button>
     <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveImagesForItem()">Save</button>
   </c-modal-footer>
 </c-modal>
@@ -144,3 +151,30 @@
     </c-toast-body>
   </c-toast>
 </c-toaster>
+
+
+<c-modal [(visible)]="showEditModal" [size]="'lg'">
+  <c-modal-header>Edit Inventory</c-modal-header>
+  <c-modal-body>
+    <br /><br />
+    <div class="d-flex col-md-12 gap-3">
+      <div class="col-md-5">
+        <select class="form-control" [(ngModel)]="CategoryId">
+          <option value="null">Select Category</option>
+          <option *ngFor="let cat of Categories" [value]="cat.categoryId">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <select class="form-control" [(ngModel)]="SizeId">
+          <option value="null">Select size</option>
+          <option *ngFor="let size of Sizes" [value]="size.sizeId">{{ size.description }}</option>
+        </select>
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
+    <button class="btn btn-primary" (click)="EditInventoryItem()"> {{ isLoading ? 'Updating...' :
+      'Update' }}</button>
+  </c-modal-footer>
+</c-modal>
