@@ -40,7 +40,7 @@
           <td>{{ type.size?.description }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id)">
+              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
@@ -159,15 +159,17 @@
     <br /><br />
     <div class="d-flex col-md-12 gap-3">
       <div class="col-md-5">
+        <p>Category:</p>
         <select class="form-control" [(ngModel)]="CategoryId">
           <option value="null">Select Category</option>
-          <option *ngFor="let cat of Categories" [value]="cat.categoryId">{{ cat.name }}</option>
+          <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
         </select>
       </div>
       <div class="col-md-5">
+        <p>Size:</p>
         <select class="form-control" [(ngModel)]="SizeId">
           <option value="null">Select size</option>
-          <option *ngFor="let size of Sizes" [value]="size.sizeId">{{ size.description }}</option>
+          <option *ngFor="let size of Sizes" [value]="size.size_id">{{ size.description }}</option>
         </select>
       </div>
     </div>

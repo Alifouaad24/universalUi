@@ -5,6 +5,7 @@ export class InventoryModel {
     product_name?: string;
     size_id?: number;
     item?: any;
+    category_id?: number;
     platform?: PlatformModel;
     folderImages?: number;
     notFound?: boolean;

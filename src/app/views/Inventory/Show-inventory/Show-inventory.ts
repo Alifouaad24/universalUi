@@ -108,6 +108,7 @@ export class ShowInventoryComponent implements OnInit {
           platform: item.platform,
           folderImages: item.folderImages,
           size_id: item.size_id,
+          category_id: item.category_id,
           size: item.size,
           notFound: item.notFound
         }));
@@ -347,8 +348,10 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  ShowEditModal(inventoryId?: number) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number) {
     this.currentInventoryId = inventoryId;
+    this.SizeId = sizeId || null;
+    this.CategoryId = categoryId || null;
     this.showEditModal = true;
   }
 
