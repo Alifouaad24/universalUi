@@ -29,15 +29,17 @@
           <th>#</th>
           <th>SKU</th>
           <th>Size</th>
+          <th>Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let type of inventory; index as i">
-          <td>{{ i + 1 }}</td>
+          <td>{{type.inventory_id}}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
           <td>{{ type.size?.description }}</td>
+          <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
               <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id)">
