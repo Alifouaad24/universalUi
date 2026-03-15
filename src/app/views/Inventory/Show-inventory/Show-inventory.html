@@ -13,6 +13,7 @@
         (change)="filterInventory($event)">
         <option value="All">All</option>
         <option value="Unprocessed">Un processed</option>
+        <option value="NotFound">Not found</option>
       </select>
     </div>
   </div>
@@ -27,22 +28,25 @@
       <thead class="table-light">
         <tr>
           <th>#</th>
-          <th>SKU</th>
-          <th>Size</th>
-          <th>Folder</th>
+          <th style="width: 20%;">SKU</th>
+          <th style="width: 15%;">UPC</th>
+          <th style="width: 10%;">Size</th>
+          <th style="width: 10%;">Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let type of inventory; index as i">
-          <td>{{type.inventory_id}}</td>
+        <tr *ngFor="let type of inventory; index as i" [ngClass]="{'table-warning': type.notFound}">
+          <td>{{ i + 1 }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
+          <td>{{ type.item?.upc }}</td>
           <td>{{ type.size?.description }}</td>
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id)">
+              <button class="btn btn-sm btn-warning me-1"
+                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, type.item?.sku)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
@@ -82,6 +86,7 @@
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
       <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
+      <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
     </div>
     <hr />
     Or paste source code here to get data:
@@ -92,6 +97,7 @@
       <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
       <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
     </div>
+    <div class="p-2 text-danger text-center" *ngIf="showMsg">{{ Msg }}</div>
     <div *ngIf="ImagesUrlsFromScrape.length > 0">
       <p class="text-success">Extracted Image URLs:</p>
       <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
@@ -101,7 +107,6 @@
         </button>
         <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
       </div>
-      <div class="p-2" *ngIf="showMsg">{{ Msg }}</div>
     </div>
   </c-modal-body>
   <c-modal-footer>
@@ -175,10 +180,47 @@
         </select>
       </div>
     </div>
+    <div class="col-md-12 mb-3 mt-3">
+      <div class="col-md-5">
+        <label class="form-label">SKU</label>
+        <input type="text" [(ngModel)]="SKUFOREDIT" class="form-control" />
+      </div>
+    </div>
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
     <button class="btn btn-primary" (click)="EditInventoryItem()"> {{ isLoading ? 'Updating...' :
       'Update' }}</button>
+  </c-modal-footer>
+</c-modal>
+
+
+<!-- gggggggggggggggggggggggggggggggggggggggggggggggggggggg -->
+
+<!-- image Modal -->
+<c-modal [(visible)]="modalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <div class="d-flex align-items-center gap-2 col-md-12">
+      <button color="secondary" style="cursor: pointer;" (click)="closeModal()">
+        X
+      </button>
+    </div>
+  </c-modal-header>
+  <c-modal-body class="text-center">
+    <div class="d-flex justify-content-center align-items-center">
+      <div style="height: 80vh;" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)"
+            (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+            <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
+              [canvasRotation]="rotation" [transform]="transform" format="png"
+              
+              (imageCropped)="onImageCropped($event)">
+            </image-cropper>
+          </div>
+    </div>
+    <button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</button>&nbsp;
+    &nbsp;
+    <button style="font-size: 20px;" class="btn btn-sm rounded bg-success" (click)="zoomOut()">-</button>
+  </c-modal-body>
+  <c-modal-footer class="justify-content-between">
   </c-modal-footer>
 </c-modal>

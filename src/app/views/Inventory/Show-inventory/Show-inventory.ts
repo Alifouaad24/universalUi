@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import {
   ButtonDirective,
@@ -24,7 +24,8 @@ import {
   ToastBodyComponent,
   ToastComponent,
   ToasterComponent,
-  ToastHeaderComponent
+  ToastHeaderComponent,
+  ButtonModule
 } from '@coreui/angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { BusinessType } from '../../../Models/Business/BusinessType';
@@ -33,6 +34,7 @@ import { IconModule } from '@coreui/icons-angular';
 import { Country } from '../../../Models/CountryModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { InventoryModel } from '../../../Models/InventoryModel';
+import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
 
 @Component({
   selector: 'app-button-groups',
@@ -45,9 +47,9 @@ import { InventoryModel } from '../../../Models/InventoryModel';
     FormControlDirective, DropdownComponent, FormsModule, CommonModule,
     DropdownToggleDirective, DropdownMenuDirective,
     DropdownItemDirective, DropdownDividerDirective,
-    ButtonDirective,
+    ButtonDirective,ImageCropperComponent ,
     ProgressComponent,
-    ToasterComponent,
+    ToasterComponent, ButtonModule,
     ToastComponent,
     ToastHeaderComponent,
 
@@ -75,6 +77,10 @@ export class ShowInventoryComponent implements OnInit {
   CategoryId: number | null = null;
   Categories?: any[]
   Sizes?: any[]
+  notFound: boolean = false;
+  notFoundMsg: string = 'Item not found. You can try to scrape it or set it as not found.';
+  tempInventory: InventoryModel[] = [];
+
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -112,6 +118,7 @@ export class ShowInventoryComponent implements OnInit {
           size: item.size,
           notFound: item.notFound
         }));
+        this.tempInventory = [...this.inventory];
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -128,6 +135,7 @@ export class ShowInventoryComponent implements OnInit {
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
   ShowScrape(itemId?: number, inventoryId?: number) {
+    this.showMsg = false
     this.ImagesUrlsFromScrape = [];
     this.idItemForBindWithImages = itemId;
     this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
@@ -227,7 +235,7 @@ export class ShowInventoryComponent implements OnInit {
     }
 
     console.log('Payload for adding price and title:', payLoad);
-    this.http.posteData(`Item/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
+    this.http.putData(`Item/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
       (res: any) => {
         this.isLoading = false;
         console.log('res: ', res);
@@ -266,6 +274,8 @@ export class ShowInventoryComponent implements OnInit {
   skuToScrapeByAinAlfhd: string = '';
   Msg: string = 'No results found for the provided SKU.';
   showMsg: boolean = false;
+  SKUFOREDIT: string = '';
+
   scrapeItemFromAinAlfhd() {
     this.showMsg = false;
     console.log('Scraping SKU from AinAlfhd:', this.skuToScrapeByAinAlfhd);
@@ -275,12 +285,17 @@ export class ShowInventoryComponent implements OnInit {
         this.isLoading = false;
         this.ImagesUrlsFromScrape = res as string[];
         console.log('Scraped Images from AinAlfhd:', this.ImagesUrlsFromScrape);
-        this.showMsg = true
+        if (this.ImagesUrlsFromScrape.length == 0) {
+          this.showMsg = true
+          this.Msg = 'No results found for the provided SKU.';
+        }
+
         this.cdr.detectChanges();
       }, (error) => {
         this.isLoading = false;
-
         console.error('Error scraping from AinAlfhd:', error);
+        this.showMsg = true
+        this.Msg = 'Error scraping from AinAlfhd. Please try again later.';
         this.cdr.detectChanges();
 
       }
@@ -307,11 +322,17 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+
+
   filterInventory(event: any) {
+    this.inventory = [...this.tempInventory];
     const filterValue = event.target.value;
     if (filterValue === 'Unprocessed') {
       this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);
-    } else {
+    } else if (filterValue === 'NotFound') {
+      this.inventory = this.inventory.filter(inv => inv.notFound);
+    }
+    else {
       this.inventory = [];
       this.getInventory();
       this.cdr.detectChanges();
@@ -348,10 +369,11 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
+    this.SKUFOREDIT = sku || '';
     this.showEditModal = true;
   }
 
@@ -382,6 +404,7 @@ export class ShowInventoryComponent implements OnInit {
         this.showEditModal = false;
         this.CategoryId = null;
         this.SizeId = null;
+        this.SKUFOREDIT = '';
         this.cdr.detectChanges();
         this.getInventory();
       },
@@ -393,4 +416,132 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+  imagesForCurrentAlbum: string = '';
+  showAlbumImages() {
+    const albumImages = this.inventory.find(inv => inv.item?.itemId === this.idItemForBindWithImages)?.item?.images || [];
+    this.imagesForCurrentAlbum = albumImages[0]?.imageUrl || '';
+    this.openModal(this.imagesForCurrentAlbum);
+  }
+  modalVisible: boolean = false;
+  closeModal() {
+    this.modalVisible = false;
+  }
+
+  zoom = 1;
+  offsetX = 0;
+  offsetY = 0;
+  translateH = 0;
+  translateV = 0;
+  isDragging = false;
+  startX = 0;
+  startY = 0;
+  currentImageBase64: string = '';
+  croppedImage: string | null = null;
+  rotation = 0;
+  
+ openModal(url: string) {
+    const imgUrl = url;
+    if (!imgUrl) return;
+
+    this.convertImageToBase64(imgUrl).then(base64 => {
+      this.currentImageBase64 = base64;
+      this.croppedImage = base64;
+      this.modalVisible = true;
+
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 0);
+    });
+  }
+
+  convertImageToBase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) reject('Cannot get canvas context');
+        ctx!.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = err => reject(err);
+      img.src = url;
+    });
+  }
+
+
+
+
+
+  transform = {
+    scale: this.zoom,
+    translateH: this.translateH,
+    translateV: this.translateV
+  };
+
+
+  updateTransform() {
+    this.transform = {
+      scale: this.zoom,
+      translateH: this.translateH,
+      translateV: this.translateV
+    };
+  }
+  onMouseDown(event: MouseEvent) {
+    this.isDragging = true;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+  }
+
+  onMouseMove(event: MouseEvent) {
+    if (!this.isDragging) return;
+
+    const dx = event.clientX - this.startX;
+    const dy = event.clientY - this.startY;
+
+    this.translateH += dx;
+    this.translateV += dy;
+
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+
+    this.updateTransform();
+  }
+
+  onMouseUp() {
+    this.isDragging = false;
+  }
+
+  zoomIn() {
+    this.zoom += 0.1;
+
+    this.updateTransform();
+  }
+
+  zoomOut() {
+    if (this.zoom == 1) return;
+    this.zoom = Math.max(0.1, this.zoom - 0.1);
+    this.updateTransform();
+  }
+
+  onImageCropped(event: ImageCroppedEvent) {
+    if (event.base64) {
+      this.croppedImage = event.base64;
+    } else if (event.blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.croppedImage = reader.result as string;
+      };
+      reader.readAsDataURL(event.blob);
+    }
+  }
+
+  rotateImage() {
+    console.log('rotate');
+    this.rotation = (this.rotation + 1) % 4;
+  }
+
 }
