@@ -47,7 +47,7 @@ import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
     FormControlDirective, DropdownComponent, FormsModule, CommonModule,
     DropdownToggleDirective, DropdownMenuDirective,
     DropdownItemDirective, DropdownDividerDirective,
-    ButtonDirective,ImageCropperComponent ,
+    ButtonDirective, ImageCropperComponent,
     ProgressComponent,
     ToasterComponent, ButtonModule,
     ToastComponent,
@@ -80,6 +80,11 @@ export class ShowInventoryComponent implements OnInit {
   notFound: boolean = false;
   notFoundMsg: string = 'Item not found. You can try to scrape it or set it as not found.';
   tempInventory: InventoryModel[] = [];
+  skuToScrapeByAinAlfhd: string = '';
+  Msg: string = 'No results found for the provided SKU.';
+  showMsg: boolean = false;
+  SKUFOREDIT: string = '';
+  isLoadingScrape = false;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -116,6 +121,7 @@ export class ShowInventoryComponent implements OnInit {
           size_id: item.size_id,
           category_id: item.category_id,
           size: item.size,
+          qty: item.qty,
           notFound: item.notFound
         }));
         this.tempInventory = [...this.inventory];
@@ -235,13 +241,16 @@ export class ShowInventoryComponent implements OnInit {
     }
 
     console.log('Payload for adding price and title:', payLoad);
-    this.http.putData(`Item/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
+    this.http.putData(`Inventory/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
       (res: any) => {
         this.isLoading = false;
         console.log('res: ', res);
         this.getInventory()
         this.toastMessage.set('Price and title successfully added to the item.');
         this.toastVisible.set(true);
+        this.priceFromScrape = '';
+        this.productNameFromScrape = '';
+        this.showScrapeModal = false;
         this.cdr.detectChanges();
       },
       (err) => {
@@ -271,28 +280,23 @@ export class ShowInventoryComponent implements OnInit {
     this.ImagesUrlsFromScrape.splice(index, 1);
   }
 
-  skuToScrapeByAinAlfhd: string = '';
-  Msg: string = 'No results found for the provided SKU.';
-  showMsg: boolean = false;
-  SKUFOREDIT: string = '';
-
   scrapeItemFromAinAlfhd() {
     this.showMsg = false;
     console.log('Scraping SKU from AinAlfhd:', this.skuToScrapeByAinAlfhd);
-    this.isLoading = true;
+    this.isLoadingScrape = true;
     this.http.getAllData(`Item/getItemFromAinAlfhdDB/${this.skuToScrapeByAinAlfhd}`).subscribe(
       (res: any) => {
-        this.isLoading = false;
+        this.isLoadingScrape = false;
         this.ImagesUrlsFromScrape = res as string[];
         console.log('Scraped Images from AinAlfhd:', this.ImagesUrlsFromScrape);
         if (this.ImagesUrlsFromScrape.length == 0) {
           this.showMsg = true
           this.Msg = 'No results found for the provided SKU.';
+          this.cdr.detectChanges();
         }
-
         this.cdr.detectChanges();
       }, (error) => {
-        this.isLoading = false;
+        this.isLoadingScrape = false;
         console.error('Error scraping from AinAlfhd:', error);
         this.showMsg = true
         this.Msg = 'Error scraping from AinAlfhd. Please try again later.';
@@ -438,8 +442,8 @@ export class ShowInventoryComponent implements OnInit {
   currentImageBase64: string = '';
   croppedImage: string | null = null;
   rotation = 0;
-  
- openModal(url: string) {
+
+  openModal(url: string) {
     const imgUrl = url;
     if (!imgUrl) return;
 

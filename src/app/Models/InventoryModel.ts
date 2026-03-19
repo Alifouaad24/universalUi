@@ -2,6 +2,7 @@ import { PlatformModel } from './PlatformModel';
 
 export class InventoryModel {
     inventory_id?: number;
+    qty?: number;
     product_name?: string;
     size_id?: number;
     item?: any;

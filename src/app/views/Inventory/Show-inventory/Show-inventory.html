@@ -31,17 +31,19 @@
           <th style="width: 20%;">SKU</th>
           <th style="width: 15%;">UPC</th>
           <th style="width: 10%;">Size</th>
+          <th style="width: 10%;">Quantity</th>
           <th style="width: 10%;">Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let type of inventory; index as i" [ngClass]="{'table-warning': type.notFound}">
-          <td>{{ i + 1 }}</td>
+          <td>{{ type.inventory_id }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
           <td>{{ type.item?.upc }}</td>
           <td>{{ type.size?.description }}</td>
+          <td>{{ type.qty }}</td>
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
@@ -81,8 +83,10 @@
       }}</strong></c-modal-header>
   <c-modal-body>
     <div class="input-group mb-3 d-flex gap-2">
-      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">Scrape from
-        AinAlfhd</button>
+      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">{{
+      isLoadingScrape ? 'Scraping...' : 'Scrape from
+        Local DBs'  
+      }}</button>
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
       <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
