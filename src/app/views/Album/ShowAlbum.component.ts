@@ -108,6 +108,9 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
       console.log(res)
       this.Platforms = res;
+      if (this.Platforms && this.Platforms.length > 0) {
+        this.PlatformId = this.Platforms[0].platform_id;
+      }
     })
   }
 
@@ -421,9 +424,18 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
     this.http.posteData('Item/addItemAndInv', payload).subscribe((res: any) => {
       this.isLoading = false;
-      alert('Data saved successfully')
       this.closeModal();
       this.getAlbum();
+      this.SKU = '';
+      this.UPC = '';
+      this.CategoryId = null;
+      this.SizeId = null;
+      
+      // const album = this.groupedAlbums.find(s => s.folderId == this.selectedFolderId);
+      // if (album?.images?.length) {
+      //   album.images[0].isProccessed = true;
+      // }
+      
       this.goBack();
     }, (err) => {
       this.isLoading = false;

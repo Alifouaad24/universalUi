@@ -98,7 +98,7 @@
         </div>
         <div class="col">
           <button class="btn btn-sm rounded bg-success" style="cursor: pointer;" (click)="SaveInInvAndItem()">
-            Save item
+           {{isLoading ? 'Saving...' : 'Save item' }}
           </button>
         </div>
       </div>

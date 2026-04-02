@@ -28,10 +28,11 @@
       <thead class="table-light">
         <tr>
           <th>#</th>
-          <th style="width: 20%;">SKU</th>
-          <th style="width: 15%;">UPC</th>
-          <th style="width: 10%;">Size</th>
-          <th style="width: 10%;">Quantity</th>
+          <th style="width: 10%;">SKU</th>
+          <th style="width: 10%;">Image</th>
+          <th style="width: 10%;">UPC</th>
+          <th style="width: 5%;">Size</th>
+          <th style="width: 5%;">Quantity</th>
           <th style="width: 10%;">Folder</th>
           <th>Actions</th>
         </tr>
@@ -41,6 +42,7 @@
           <td>{{ type.inventory_id }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
+          <td><img [src]="type.item?.images?.length > 1 ? type.item?.images?.[1]?.imageUrl : defaultBusinessLogo" alt="Image" style="width: 60px; height: 75px;"></td>
           <td>{{ type.item?.upc }}</td>
           <td>{{ type.size?.description }}</td>
           <td>{{ type.qty }}</td>
@@ -204,10 +206,11 @@
 <!-- image Modal -->
 <c-modal [(visible)]="modalVisible" size="lg" alignment="center">
   <c-modal-header>
-    <div class="d-flex align-items-center gap-2 col-md-12">
+    <div class="d-flex align-items-center justify-content-between gap-2 col-md-12">
       <button color="secondary" style="cursor: pointer;" (click)="closeModal()">
         X
       </button>
+      <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd }}</strong>
     </div>
   </c-modal-header>
   <c-modal-body class="text-center">

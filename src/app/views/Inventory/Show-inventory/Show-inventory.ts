@@ -35,6 +35,7 @@ import { Country } from '../../../Models/CountryModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { InventoryModel } from '../../../Models/InventoryModel';
 import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
+import { AppConstants } from '../../../shared/constant';
 
 @Component({
   selector: 'app-button-groups',
@@ -85,6 +86,7 @@ export class ShowInventoryComponent implements OnInit {
   showMsg: boolean = false;
   SKUFOREDIT: string = '';
   isLoadingScrape = false;
+  defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -385,19 +387,22 @@ export class ShowInventoryComponent implements OnInit {
   showEditModal = false;
   EditInventoryItem() {
     if (!this.currentInventoryId) {
+        
       this.toastMessage.set('No inventory item selected for editing.');
       this.toastVisible.set(true);
       return;
     }
-    if (!this.CategoryId || !this.SizeId) {
-      this.toastMessage.set('Please select both category and size.');
-      this.toastVisible.set(true);
-      return;
-    }
+    // if (!this.CategoryId || !this.SizeId) {
+
+    //   this.toastMessage.set('Please select both category and size.');
+    //   this.toastVisible.set(true);
+    //   return;
+    // }
     this.isLoading = true;
     const payload = {
       CategoryId: this.CategoryId,
-      SizeId: this.SizeId
+      SizeId: this.SizeId,
+      SKU: this.SKUFOREDIT
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
