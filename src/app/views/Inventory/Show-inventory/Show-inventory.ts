@@ -90,15 +90,16 @@ export class ShowInventoryComponent implements OnInit {
   isLoadingScrape = false;
   CategoryIdForScrape?: number;
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
-  height?: string
-  width?: string
-  length?: string
+  height: string = ''
+  width: string = ''
+  length: string = ''
   desc?: string
   Model?: string
   Internet?: string
   Brand?: string
   Dimention?: string
   SKU?: string
+  weight: string = ''
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -172,6 +173,7 @@ export class ShowInventoryComponent implements OnInit {
     } else if (platform == 'Home Depot') {
       this.showScrapeDutyModal = true;
       this.showMsg = false
+      this.currentInventoryId = inventoryId;
       this.ImagesUrlsFromScrape = [];
       this.idItemForBindWithImages = itemId;
       this.fullUPCToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.upc ?? 'no upc';
@@ -510,10 +512,6 @@ export class ShowInventoryComponent implements OnInit {
     });
   }
 
-
-
-
-
   transform = {
     scale: this.zoom,
     translateH: this.translateH,
@@ -602,6 +600,7 @@ export class ShowInventoryComponent implements OnInit {
         this.width = res.width
         this.length = res.length
         this.desc = res.desc
+        this.weight = res.weight
         this.Model = res.model
         this.Internet = res.internet
         this.Brand = res.brand
@@ -618,6 +617,7 @@ export class ShowInventoryComponent implements OnInit {
         this.cdr.detectChanges();
       }
     );
+    this.cdr.detectChanges();
   }
 
   SaveItemForDuty() {
@@ -634,34 +634,35 @@ export class ShowInventoryComponent implements OnInit {
       title: this.productNameFromScrape,
       description: this.desc,
       brand: this.Brand,
-      price: this.priceFromScrape,
-      height: this.height,
-      width: this.width,
-      length: this.length,
+      price: parseFloat(this.priceFromScrape) ?? 0,
+      height: parseFloat(this.height) ?? 0,
+      width: parseFloat(this.width) ?? 0,
+      length: parseFloat(this.length) ?? 0,
       model: this.Model,
+      weight: parseFloat(this.weight) ?? 0,
       internet: this.Internet,
-      dimention: this.Dimention,
       sKU: this.SKU,
+      currentInventoryId: this.currentInventoryId
 
     }
 
     console.log('Payload for binding images:', payLoad);
-    // this.http.posteData(`Item/BindImagesWithItem`, payLoad).subscribe(
-    //   (res: any) => {
-    //     this.isLoading = false;
-    //     console.log('res: ', res);
-    //     this.AddPriceAndTitle()
-    //     this.toastMessage.set('Images successfully bound to the item.');
-    //     this.toastVisible.set(true);
-    //     this.cdr.detectChanges();
-    //   },
-    //   (err) => {
-    //     this.isLoading = false;
-    //     this.toastMessage.set('Error binding images to the item.');
-    //     this.toastVisible.set(true);
-    //     this.cdr.detectChanges();
-    //   }
-    // );
+    this.http.posteData(`Item/BindImagesWithItemForDuty`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.toastMessage.set('Images successfully bound to the item.');
+        this.toastVisible.set(true);
+        this.showScrapeDutyModal = false
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error binding images to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
   }
 
 }

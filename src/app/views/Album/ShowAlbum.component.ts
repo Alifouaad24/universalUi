@@ -422,7 +422,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
     console.log(payload)
 
-    this.http.posteData('Item/addItemAndInv', payload).subscribe((res: any) => {
+    this.http.posteData('Item/addDutyItemAndInv', payload).subscribe((res: any) => {
       this.isLoading = false;
       this.closeModal();
       this.getAlbum();
