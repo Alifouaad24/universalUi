@@ -74,10 +74,12 @@ export class SearchAddCustomerComponent implements OnInit {
   states: StateModel[] = []
   CustomerId?: number;
   showModal = false;
+  BusinessId?: number;
 
   constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.BusinessId = Number(localStorage.getItem('businessId'));
     this.api.getAllData("Country").subscribe((response: any) => {
       console.log("Countries", response)
       this.countries = response;
@@ -163,6 +165,7 @@ export class SearchAddCustomerComponent implements OnInit {
     const mainPayLoad = {
       customerName: this.customerName,
       customerMobile: this.customerMobile,
+      businessId: this.BusinessId,
       country_id: Number(this.countryId),
       address: addressPayload
     };

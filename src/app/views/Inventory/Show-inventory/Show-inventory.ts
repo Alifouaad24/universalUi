@@ -21,6 +21,7 @@ import {
   ModalModule,
   RowComponent,
   ProgressComponent,
+
   ToastBodyComponent,
   ToastComponent,
   ToasterComponent,
@@ -62,6 +63,7 @@ export class ShowInventoryComponent implements OnInit {
   message?: string
   isLoading: boolean = false;
   showScrapeModal: boolean = false;
+  showScrapeDutyModal: boolean = false;
   selectedType?: InventoryModel;
   ImagesUrlsFromScrape: string[] = [];
   ///// for toastr ////////
@@ -86,8 +88,17 @@ export class ShowInventoryComponent implements OnInit {
   showMsg: boolean = false;
   SKUFOREDIT: string = '';
   isLoadingScrape = false;
+  CategoryIdForScrape?: number;
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
-
+  height?: string
+  width?: string
+  length?: string
+  desc?: string
+  Model?: string
+  Internet?: string
+  Brand?: string
+  Dimention?: string
+  SKU?: string
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -139,20 +150,37 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
+
+
   idItemForBindWithImages?: number;
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
-  ShowScrape(itemId?: number, inventoryId?: number) {
-    this.showMsg = false
-    this.ImagesUrlsFromScrape = [];
-    this.idItemForBindWithImages = itemId;
-    this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
-    this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
+  fullUPCToScrapeByAinAlfhd?: string
+  ShowScrape(itemId?: number, inventoryId?: number, platform?: string) {
+    console.log(platform);
+    if (platform == 'SHEIN') {
+      this.showMsg = false
+      this.ImagesUrlsFromScrape = [];
+      this.idItemForBindWithImages = itemId;
+      this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || 'no sku';
+      this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
 
-    console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
-    console.log('Selected Inventory ID for Scraping:', inventoryId);
-    this.currentInventoryId = inventoryId;
-    this.showScrapeModal = true;
+      console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+      console.log('Selected Inventory ID for Scraping:', inventoryId);
+      this.currentInventoryId = inventoryId;
+      this.showScrapeModal = true;
+    } else if (platform == 'Home Depot') {
+      this.showScrapeDutyModal = true;
+      this.showMsg = false
+      this.ImagesUrlsFromScrape = [];
+      this.idItemForBindWithImages = itemId;
+      this.fullUPCToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.upc ?? 'no upc';
+      this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.upc || 'no upc';
+      console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+      console.log('Selected Inventory ID for Scraping:', inventoryId);
+    }
+
+
   }
 
 
@@ -239,7 +267,8 @@ export class ShowInventoryComponent implements OnInit {
     this.isLoading = true;
     const payLoad = {
       Price: this.priceFromScrape,
-      Title: this.productNameFromScrape
+      Title: this.productNameFromScrape,
+      categoryId: this.CategoryIdForScrape,
     }
 
     console.log('Payload for adding price and title:', payLoad);
@@ -387,7 +416,7 @@ export class ShowInventoryComponent implements OnInit {
   showEditModal = false;
   EditInventoryItem() {
     if (!this.currentInventoryId) {
-        
+
       this.toastMessage.set('No inventory item selected for editing.');
       this.toastVisible.set(true);
       return;
@@ -551,6 +580,88 @@ export class ShowInventoryComponent implements OnInit {
   rotateImage() {
     console.log('rotate');
     this.rotation = (this.rotation + 1) % 4;
+  }
+
+  getImagesFromScrapeForDuty() {
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('file', file);
+    this.http.posteData(`Scraper/HomeDepotFileHtmlAnalyse`, formData, true).subscribe(
+      (res: any) => {
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.productNameFromScrape = res.title;
+        this.height = res.height
+        this.width = res.width
+        this.length = res.length
+        this.desc = res.desc
+        this.Model = res.model
+        this.Internet = res.internet
+        this.Brand = res.brand
+        this.Dimention = res.dimention
+        this.SKU = res.sKU
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  SaveItemForDuty() {
+    if (!this.idItemForBindWithImages) {
+      this.toastMessage.set('No item selected for binding images.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+
+    const payLoad = {
+      itemId: this.idItemForBindWithImages,
+      ImagesUrls: this.ImagesUrlsFromScrape,
+      title: this.productNameFromScrape,
+      description: this.desc,
+      brand: this.Brand,
+      price: this.priceFromScrape,
+      height: this.height,
+      width: this.width,
+      length: this.length,
+      model: this.Model,
+      internet: this.Internet,
+      dimention: this.Dimention,
+      sKU: this.SKU,
+
+    }
+
+    console.log('Payload for binding images:', payLoad);
+    // this.http.posteData(`Item/BindImagesWithItem`, payLoad).subscribe(
+    //   (res: any) => {
+    //     this.isLoading = false;
+    //     console.log('res: ', res);
+    //     this.AddPriceAndTitle()
+    //     this.toastMessage.set('Images successfully bound to the item.');
+    //     this.toastVisible.set(true);
+    //     this.cdr.detectChanges();
+    //   },
+    //   (err) => {
+    //     this.isLoading = false;
+    //     this.toastMessage.set('Error binding images to the item.');
+    //     this.toastVisible.set(true);
+    //     this.cdr.detectChanges();
+    //   }
+    // );
   }
 
 }

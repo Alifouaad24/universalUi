@@ -31,8 +31,8 @@
           <th style="width: 10%;">SKU</th>
           <th style="width: 10%;">Image</th>
           <th style="width: 10%;">UPC</th>
-          <th style="width: 5%;">Size</th>
-          <th style="width: 5%;">Quantity</th>
+          <th style="width: 8%;">Size</th>
+          <th style="width: 8%;">Quantity</th>
           <th style="width: 10%;">Folder</th>
           <th>Actions</th>
         </tr>
@@ -42,8 +42,10 @@
           <td>{{ type.inventory_id }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
-          <td><img [src]="type.item?.images?.length > 1 ? type.item?.images?.[1]?.imageUrl : defaultBusinessLogo" alt="Image" style="width: 60px; height: 75px;"></td>
-          <td>{{ type.item?.upc }}</td>
+          <td><img [src]="type.item?.images?.length > 1 ? type.item?.images?.[1]?.imageUrl : defaultBusinessLogo"
+              alt="Image" style="width: 60px; height: 75px;"></td>
+          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
+              type.item?.upc }}</a></td>
           <td>{{ type.size?.description }}</td>
           <td>{{ type.qty }}</td>
           <td>{{ type.folderImages }}</td>
@@ -62,7 +64,8 @@
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
               <button *ngIf="type.item?.images?.length <= 1" class="btn btn-sm btn-warning me-1"
-                (click)="ShowScrape(type.item?.itemId, type.inventory_id)" [disabled]="type.notFound">
+                (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
+                [disabled]="type.notFound">
                 Scrape item
               </button>
               <button *ngIf="type.item?.images?.length > 1" class="btn btn-sm btn-primary me-1"
@@ -81,14 +84,14 @@
 
 
 <c-modal [(visible)]="showScrapeModal" [size]="'lg'">
-  <c-modal-header>Scrape Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd
+  <c-modal-header>Scrape FHD Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd
       }}</strong></c-modal-header>
   <c-modal-body>
     <div class="input-group mb-3 d-flex gap-2">
       <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">{{
-      isLoadingScrape ? 'Scraping...' : 'Scrape from
-        Local DBs'  
-      }}</button>
+        isLoadingScrape ? 'Scraping...' : 'Scrape from
+        Local DBs'
+        }}</button>
       <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
         [(ngModel)]="skuToScrapeByAinAlfhd">
       <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
@@ -102,6 +105,13 @@
     <div *ngIf="priceFromScrape.length > 0" class="">
       <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
       <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
+    </div>
+    <div *ngIf="priceFromScrape.length > 0" class="col-md-5">
+      <p>Category:</p>
+      <select class="form-control" [(ngModel)]="CategoryIdForScrape">
+        <option value="null">Select Category</option>
+        <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+      </select>
     </div>
     <div class="p-2 text-danger text-center" *ngIf="showMsg">{{ Msg }}</div>
     <div *ngIf="ImagesUrlsFromScrape.length > 0">
@@ -216,18 +226,135 @@
   <c-modal-body class="text-center">
     <div class="d-flex justify-content-center align-items-center">
       <div style="height: 80vh;" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)"
-            (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
-            <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
-              [canvasRotation]="rotation" [transform]="transform" format="png"
-              
-              (imageCropped)="onImageCropped($event)">
-            </image-cropper>
-          </div>
+        (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+        <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
+          [canvasRotation]="rotation" [transform]="transform" format="png" (imageCropped)="onImageCropped($event)">
+        </image-cropper>
+      </div>
     </div>
     <button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</button>&nbsp;
     &nbsp;
     <button style="font-size: 20px;" class="btn btn-sm rounded bg-success" (click)="zoomOut()">-</button>
   </c-modal-body>
   <c-modal-footer class="justify-content-between">
+  </c-modal-footer>
+</c-modal>
+
+<!-- show duty scrape model -->
+
+<c-modal [(visible)]="showScrapeDutyModal" [size]="'lg'">
+  <c-modal-header>
+    <h4>Scrape Duty Item:</h4> &nbsp; &nbsp; <strong class="text-danger">{{ fullUPCToScrapeByAinAlfhd
+      }}</strong>
+  </c-modal-header>
+  <c-modal-body>
+    <!-- <div class="input-group mb-3 d-flex gap-2">
+      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">{{
+        isLoadingScrape ? 'Scraping...' : 'Scrape from
+        Local DBs'
+        }}</button>
+      <input type="text" class="form-control" placeholder="Enter UPC to scrape from local DBs"
+        [(ngModel)]="skuToScrapeByAinAlfhd">
+      <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
+      <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
+    </div>
+    <hr /> -->
+    paste source code here to get data:
+    <br /><br />
+    <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
+    <br /><br />
+    <div *ngIf="priceFromScrape.length > 0" class="">
+      <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
+      <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
+    </div>
+    <div *ngIf="priceFromScrape.length > 0" class="col-md-5">
+      <p>Category:</p>
+      <select class="form-control" [(ngModel)]="CategoryIdForScrape">
+        <option value="null">Select Category</option>
+        <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+      </select>
+    </div>
+    <div class="p-2 text-danger text-center" *ngIf="showMsg">{{ Msg }}</div>
+    <div *ngIf="ImagesUrlsFromScrape.length > 0">
+      <p class="text-success">Extracted Image URLs:</p>
+      <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
+        <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+          (click)="removeImage(i)">
+          <svg cIcon name="cilTrash"></svg>
+        </button>
+        <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+      </div>
+    </div>
+    <div *ngIf="ImagesUrlsFromScrape.length > 0" class="card shadow-sm p-3 mb-4">
+
+  <h5 class="mb-3 text-primary">Product Details</h5>
+  <br />
+  <div class="row mb-2">
+    <div class="col-md-6">
+      <strong>💲 Price:</strong>
+      <span class="text-success ms-2">{{ priceFromScrape }}$</span>
+    </div>
+    <div class="col-md-6">
+      <strong>🛍 Name:</strong>
+      <span class="ms-2">{{ productNameFromScrape }}</span>
+    </div>
+  </div>
+
+  <!-- Dimensions -->
+  <!-- <div class="row mb-2">
+    <div class="col-md-4">
+      <strong>📏 Height:</strong> {{ height }}
+    </div>
+    <div class="col-md-4">
+      <strong>📐 Width:</strong> {{ width }}
+    </div>
+    <div class="col-md-4">
+      <strong>📦 Length:</strong> {{ length }}
+    </div>
+  </div> -->
+
+  <!-- Description -->
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <strong>📝 Description:</strong>
+      <div class="text-muted mt-1" style="line-height: 1.6;">
+        {{ desc }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Extra Info -->
+  <div class="row mb-2">
+    <div class="col-md-4">
+      <strong>📱 Model:</strong> {{ Model }}
+    </div>
+    <div class="col-md-4">
+      <strong>🌐 Internet:</strong> {{ Internet }}
+    </div>
+    <div class="col-md-4">
+      <strong>🏷 Brand:</strong> {{ Brand }}
+    </div>
+  </div>
+
+  <!-- More Details
+  <div class="row">
+    <div class="col-md-6">
+      <strong>📊 Dimension:</strong> {{ Dimention }}
+    </div>
+    <div class="col-md-6">
+      <strong>🔖 SKU:</strong> 
+      <span class="badge bg-dark ms-2">{{ SKU }}</span>
+    </div>
+  </div> -->
+
+</div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showScrapeDutyModal = false">Cancel</button>
+    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrapeForDuty()"> {{ isLoading ?
+      'Scraping...' :
+      'Scrape' }}</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success"
+      (click)="SaveItemForDuty()">Save</button>
   </c-modal-footer>
 </c-modal>

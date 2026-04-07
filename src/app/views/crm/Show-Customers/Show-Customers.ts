@@ -69,8 +69,10 @@ export class ShowCustomersComponent implements OnInit {
   ShippingTypes: any;
   selectedShipping: any;
   labb: string = "الزبائن"
+  BusinessId?: number;
 
   ngOnInit(): void {
+    this.BusinessId = Number(localStorage.getItem('businessId'));
     this.GetAllCustomers()
     this.GetAllShippingTypes()
   }
@@ -89,7 +91,7 @@ export class ShowCustomersComponent implements OnInit {
   }
 
   GetAllCustomers() {
-    this.http.getAllData('Packages').subscribe(res => {
+    this.http.getAllData(`Customers/${this.BusinessId}`).subscribe(res => {
       console.log(res)
       this.customers = res
       this.originalCustomers = res
