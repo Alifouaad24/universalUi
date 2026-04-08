@@ -52,7 +52,7 @@
           <td>
             <ng-container *ngIf="inventory.length">
               <button class="btn btn-sm btn-warning me-1"
-                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, type.item?.sku)">
+                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, type.item?.sku, type.item?.upc)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
@@ -196,12 +196,17 @@
         </select>
       </div>
     </div>
-    <div class="col-md-12 mb-3 mt-3">
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
       <div class="col-md-5">
         <label class="form-label">SKU</label>
         <input type="text" [(ngModel)]="SKUFOREDIT" class="form-control" />
       </div>
+      <div class="col-md-5">
+        <label class="form-label">UPC</label>
+        <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
+      </div>
     </div>
+
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
@@ -287,56 +292,56 @@
     </div>
     <div *ngIf="ImagesUrlsFromScrape.length > 0" class="card shadow-sm p-3 mb-4">
 
-  <h5 class="mb-3 text-primary">Product Details</h5>
-  <br />
-  <div class="row mb-2">
-    <div class="col-md-6">
-      <strong>💲 Price:</strong>
-      <span class="text-success ms-2">{{ priceFromScrape }}$</span>
-    </div>
-    <div class="col-md-6">
-      <strong>🛍 Name:</strong>
-      <span class="ms-2">{{ productNameFromScrape }}</span>
-    </div>
-  </div>
-
-  <!-- Dimensions -->
-  <div class="row mb-2">
-    <div class="col-md-3">
-      <strong>📏 Height:</strong> {{ height }}
-    </div>
-    <div class="col-md-3">
-      <strong>📐 Width:</strong> {{ width }}
-    </div>
-    <div class="col-md-3">
-      <strong>📦 Weight:</strong> {{ weight }}
-    </div>
-  </div>
-
-  <!-- Description -->
-  <div class="row mb-3">
-    <div class="col-md-12">
-      <strong>📝 Description:</strong>
-      <div class="text-muted mt-1" style="line-height: 1.6;">
-        {{ desc }}
+      <h5 class="mb-3 text-primary">Product Details</h5>
+      <br />
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <strong>💲 Price:</strong>
+          <span class="text-success ms-2">{{ priceFromScrape }}$</span>
+        </div>
+        <div class="col-md-6">
+          <strong>🛍 Name:</strong>
+          <span class="ms-2">{{ productNameFromScrape }}</span>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Extra Info -->
-  <div class="row mb-2">
-    <div class="col-md-4">
-      <strong>📱 Model:</strong> {{ Model }}
-    </div>
-    <div class="col-md-4">
-      <strong>🌐 Internet:</strong> {{ Internet }}
-    </div>
-    <div class="col-md-4">
-      <strong>🏷 Brand:</strong> {{ Brand }}
-    </div>
-  </div>
+      <!-- Dimensions -->
+      <div class="row mb-2">
+        <div class="col-md-3">
+          <strong>📏 Height:</strong> {{ height }}
+        </div>
+        <div class="col-md-3">
+          <strong>📐 Width:</strong> {{ width }}
+        </div>
+        <div class="col-md-3">
+          <strong>📦 Weight:</strong> {{ weight }}
+        </div>
+      </div>
 
-  <!-- More Details
+      <!-- Description -->
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <strong>📝 Description:</strong>
+          <div class="text-muted mt-1" style="line-height: 1.6;">
+            {{ desc }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra Info -->
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <strong>📱 Model:</strong> {{ Model }}
+        </div>
+        <div class="col-md-4">
+          <strong>🌐 Internet:</strong> {{ Internet }}
+        </div>
+        <div class="col-md-4">
+          <strong>🏷 Brand:</strong> {{ Brand }}
+        </div>
+      </div>
+
+      <!-- More Details
   <div class="row">
     <div class="col-md-6">
       <strong>📊 Dimension:</strong> {{ Dimention }}
@@ -347,14 +352,13 @@
     </div>
   </div> -->
 
-</div>
+    </div>
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showScrapeDutyModal = false">Cancel</button>
     <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrapeForDuty()"> {{ isLoading ?
       'Scraping...' :
       'Scrape' }}</button>
-    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success"
-      (click)="SaveItemForDuty()">Save</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveItemForDuty()">Save</button>
   </c-modal-footer>
 </c-modal>

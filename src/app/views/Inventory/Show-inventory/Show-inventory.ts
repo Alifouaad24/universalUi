@@ -87,6 +87,7 @@ export class ShowInventoryComponent implements OnInit {
   Msg: string = 'No results found for the provided SKU.';
   showMsg: boolean = false;
   SKUFOREDIT: string = '';
+  UPCFOREDIT: string = '';
   isLoadingScrape = false;
   CategoryIdForScrape?: number;
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
@@ -406,11 +407,12 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
     this.SKUFOREDIT = sku || '';
+    this.UPCFOREDIT = upc || '';
     this.showEditModal = true;
   }
 
@@ -433,7 +435,8 @@ export class ShowInventoryComponent implements OnInit {
     const payload = {
       CategoryId: this.CategoryId,
       SizeId: this.SizeId,
-      SKU: this.SKUFOREDIT
+      SKU: this.SKUFOREDIT,
+      upc: this.UPCFOREDIT
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
