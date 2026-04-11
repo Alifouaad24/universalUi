@@ -136,6 +136,7 @@ export class ShowInventoryComponent implements OnInit {
           size_id: item.size_id,
           category_id: item.category_id,
           size: item.size,
+          sitePrice: item.sitePrice,
           qty: item.qty,
           notFound: item.notFound
         }));
@@ -153,7 +154,7 @@ export class ShowInventoryComponent implements OnInit {
   }
 
 
-
+platform?: string;
   idItemForBindWithImages?: number;
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
@@ -161,6 +162,7 @@ export class ShowInventoryComponent implements OnInit {
   ShowScrape(itemId?: number, inventoryId?: number, platform?: string) {
     console.log(platform);
     if (platform == 'SHEIN') {
+      this.platform = platform;
       this.showMsg = false
       this.ImagesUrlsFromScrape = [];
       this.idItemForBindWithImages = itemId;
@@ -284,6 +286,7 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
         this.priceFromScrape = '';
         this.productNameFromScrape = '';
+        this.CategoryIdForScrape = undefined;
         this.showScrapeModal = false;
         this.cdr.detectChanges();
       },
@@ -407,12 +410,15 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string) {
+  PriceFOREDIT: string = '';
+
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
     this.SKUFOREDIT = sku || '';
     this.UPCFOREDIT = upc || '';
+    this.PriceFOREDIT = price || '';
     this.showEditModal = true;
   }
 
@@ -432,11 +438,13 @@ export class ShowInventoryComponent implements OnInit {
     //   return;
     // }
     this.isLoading = true;
+    const realPrice =  this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT + '$' : undefined;
     const payload = {
       CategoryId: this.CategoryId,
       SizeId: this.SizeId,
       SKU: this.SKUFOREDIT,
-      upc: this.UPCFOREDIT
+      upc: this.UPCFOREDIT,
+      price: realPrice
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(

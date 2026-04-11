@@ -422,7 +422,10 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
     console.log(payload)
 
-    this.http.posteData('Item/addDutyItemAndInv', payload).subscribe((res: any) => {
+    var currectEndPoint = this.PlatformId == 8 ? 'addItemAndInv' : 'addDutyItemAndInv';
+
+    this.http.posteData(`Item/${currectEndPoint}`, payload).subscribe((res: any) => {
+      console.log(res)
       this.isLoading = false;
       this.closeModal();
       this.getAlbum();
@@ -430,6 +433,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       this.UPC = '';
       this.CategoryId = null;
       this.SizeId = null;
+
       
       // const album = this.groupedAlbums.find(s => s.folderId == this.selectedFolderId);
       // if (album?.images?.length) {

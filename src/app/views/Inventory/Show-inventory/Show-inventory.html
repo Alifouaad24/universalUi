@@ -32,6 +32,7 @@
           <th style="width: 10%;">Image</th>
           <th style="width: 10%;">UPC</th>
           <th style="width: 8%;">Size</th>
+          <th style="width: 8%;">Price</th>
           <th style="width: 8%;">Quantity</th>
           <th style="width: 10%;">Folder</th>
           <th>Actions</th>
@@ -47,12 +48,13 @@
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
               type.item?.upc }}</a></td>
           <td>{{ type.size?.description }}</td>
+          <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
               <button class="btn btn-sm btn-warning me-1"
-                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, type.item?.sku, type.item?.upc)">
+                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, type.item?.sku, type.item?.upc, type?.sitePrice)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
@@ -205,6 +207,16 @@
         <label class="form-label">UPC</label>
         <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
       </div>
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-5">
+        <label class="form-label">Price</label>
+        <input type="text" [(ngModel)]="PriceFOREDIT" class="form-control" />
+      </div>
+      <!-- <div class="col-md-5">
+        <label class="form-label">UPC</label>
+        <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
+      </div> -->
     </div>
 
   </c-modal-body>

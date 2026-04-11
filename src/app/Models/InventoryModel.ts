@@ -10,6 +10,7 @@ export class InventoryModel {
     platform?: PlatformModel;
     folderImages?: number;
     notFound?: boolean;
+    sitePrice?: string;
     size?: any;
 
 
