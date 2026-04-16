@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { IconComponent, IconDirective } from '@coreui/icons-angular';
 import { AppConstants } from '../../shared/constant';
@@ -58,6 +58,7 @@ function isOverflown(element: HTMLElement) {
 export class DefaultLayoutComponent {
   business: any;
   public navItems: INavData[] = []
+  router = inject(Router);
   services: ServiceModel[] = [];
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef,
@@ -74,7 +75,6 @@ export class DefaultLayoutComponent {
   ];
 
   ngOnInit() {
-
     this.businessCtx.getCurrentBusiness().subscribe(business => {
       this.currBusiness = business;
       console.log('Current Business in layout:', this.currBusiness);
@@ -86,6 +86,14 @@ export class DefaultLayoutComponent {
       this.getAllServices()
       this.cdr.detectChanges();
     });
+
+     const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('tokenId');
+
+      if (token) {
+        localStorage.setItem('tokenId', token);
+        this.router.navigate(['/Home/inventory']);
+      }
 
   }
 

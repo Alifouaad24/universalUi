@@ -12,8 +12,14 @@ export class InventoryModel {
     notFound?: boolean;
     sitePrice?: string;
     size?: any;
-
-
+    platform_id?: number
+    category?: any
+    product_description?: string
+    status?: string
+    ebayInvID?: string;
+    ebayOfferID?: string;
+    ebayListingId?: string;
+    itemCondition?: any;
     constructor(init: Partial<InventoryModel>) {
         Object.assign(this, init);
     }

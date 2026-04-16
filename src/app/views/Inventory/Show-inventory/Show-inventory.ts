@@ -37,6 +37,8 @@ import { ServiceModel } from '../../../Models/ServiceModel';
 import { InventoryModel } from '../../../Models/InventoryModel';
 import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
 import { AppConstants } from '../../../shared/constant';
+import { StorageService } from '../../../core/Services/StorageService';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 
 @Component({
   selector: 'app-button-groups',
@@ -73,6 +75,7 @@ export class ShowInventoryComponent implements OnInit {
   percentage = signal(0);
   autoHideToast = signal(true);
   businessId?: number;
+  currentBusiness?: BusinessModel;
   sourceCode: string = '';
   priceFromScrape: string = '';
   productNameFromScrape: string = '';
@@ -101,17 +104,34 @@ export class ShowInventoryComponent implements OnInit {
   Dimention?: string
   SKU?: string
   weight: string = ''
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
+  DetailsModalVisible: boolean = false;
+  currentBusinessName: string = 'Business';
+  itemConditions?: any[]
+  ItemConditionId: number | null = null;
+
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private storage: StorageService) { }
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'));
+    this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
+    console.log('Current MY Business:', this.currentBusiness);
+    this.currentBusinessName = this.currentBusiness?.business_name ?? 'Business';
     this.getInventory()
     this.getCategories()
     this.getSizes()
+    this.getPlatforms()
+    this.getItemConditions()
+  }
+
+    getItemConditions() {
+    this.http.getAllData(`ItemCondition`).subscribe((res: any) => {
+      console.log(res)
+      this.itemConditions = res;
+    })
   }
 
   getCategories() {
-    this.http.getAllData('Category').subscribe((res: any) => {
+    this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
       console.log(res)
       this.Categories = res;
     })
@@ -134,15 +154,19 @@ export class ShowInventoryComponent implements OnInit {
           platform: item.platform,
           folderImages: item.folderImages,
           size_id: item.size_id,
+          platform_id: item.platform_id,
           category_id: item.category_id,
           size: item.size,
           sitePrice: item.sitePrice,
           qty: item.qty,
-          notFound: item.notFound
+          category: item.category,
+          notFound: item.notFound,
+          product_description: item.product_description,
+          itemCondition : item.itemCondition
         }));
         this.tempInventory = [...this.inventory];
         this.isLoading = false;
-
+        this.selectedFilter = 'All';
         this.cdr.detectChanges();
       },
       (err) => {
@@ -152,9 +176,19 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+  PlatformId: number | null = null;
+  Platforms?: any[]
+  getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+      if (this.Platforms && this.Platforms.length > 0) {
+        this.PlatformId = this.Platforms[0].platform_id;
+      }
+    })
+  }
 
-
-platform?: string;
+  platform?: string;
   idItemForBindWithImages?: number;
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
@@ -199,8 +233,6 @@ platform?: string;
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
   }
-
-
 
   getImagesFromScrape() {
     if (!this.sourceCode.trim()) {
@@ -351,6 +383,11 @@ platform?: string;
         this.isLoading = false;
         console.log('res: ', res);
         this.factoryImages = this.factoryImages.filter(url => url !== imageUrl);
+        this.inventory = this.inventory.map(inv => {
+          if (inv.item?.images) {
+            inv.item.images = inv.item.images.filter((img: any) => img.imageUrl !== imageUrl);
+          } return inv;
+        });
         this.toastMessage.set('Image successfully removed from the item.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
@@ -364,12 +401,14 @@ platform?: string;
     );
   }
 
-
+  selectedFilter: string = 'All';
   filterInventory(event: any) {
     this.inventory = [...this.tempInventory];
+
     const filterValue = event.target.value;
+    this.selectedFilter = filterValue;
     if (filterValue === 'Unprocessed') {
-      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);
+      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1 && !inv.notFound);
     } else if (filterValue === 'NotFound') {
       this.inventory = this.inventory.filter(inv => inv.notFound);
     }
@@ -412,10 +451,11 @@ platform?: string;
 
   PriceFOREDIT: string = '';
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
+    this.PlatformId = platformId || null;
     this.SKUFOREDIT = sku || '';
     this.UPCFOREDIT = upc || '';
     this.PriceFOREDIT = price || '';
@@ -431,20 +471,18 @@ platform?: string;
       this.toastVisible.set(true);
       return;
     }
-    // if (!this.CategoryId || !this.SizeId) {
 
-    //   this.toastMessage.set('Please select both category and size.');
-    //   this.toastVisible.set(true);
-    //   return;
-    // }
     this.isLoading = true;
-    const realPrice =  this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT + '$' : undefined;
+    const realPrice = this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT.replace(/\$/g, '') + '$' : undefined;
     const payload = {
       CategoryId: this.CategoryId,
       SizeId: this.SizeId,
       SKU: this.SKUFOREDIT,
       upc: this.UPCFOREDIT,
-      price: realPrice
+      price: realPrice,
+      platformId: this.PlatformId,
+      itemCondition: this.ItemConditionId
+
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
@@ -675,5 +713,251 @@ platform?: string;
       }
     );
   }
+
+  ShowDetailsModal(inventory: InventoryModel) {
+    this.selectedImagesToEbay = [];
+    this.selectedType = inventory;
+    this.DetailsModalVisible = true;
+  }
+
+  selectedImagesToEbay: any[] = [];
+
+  toggleImage(image: any) {
+    const index = this.selectedImagesToEbay.findIndex(i => i.imageUrl === image.imageUrl);
+
+    if (index === -1) {
+      // إضافة
+      this.selectedImagesToEbay.push(image);
+    } else {
+      // حذف
+      this.selectedImagesToEbay.splice(index, 1);
+    }
+  }
+
+  // جلب رقم الصورة
+  getImageIndex(image: any): number {
+    return this.selectedImagesToEbay.findIndex(i => i.imageUrl === image.imageUrl) + 1;
+  }
+
+  // هل الصورة مختارة؟
+  isSelected(image: any): boolean {
+    return this.selectedImagesToEbay.some(i => i.imageUrl === image.imageUrl);
+  }
+
+  ///// Ebay /////////////////////////////////////
+  ///////////////////////////////////////////////
+  rePublishByEbay(product: any) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      return;
+    }
+    this.isLoading1 = true;
+
+    const imageUrls: string[] = product.item.itemImages
+      .filter((img: any) => img.imageSourceLink && img.imageSourceLink.trim() !== '').slice(0, 7)
+      .map((img: any) => img.imageSourceLink);
+
+    const skuValue = product.item.sku && product.item.sku.trim() !== ''
+      ? product.item.sku
+      : this.generateUniqueSku();
+
+    const titleValue = product.item.engName
+      ? product.item.engName.substring(0, 80)
+      : 'Untitled Item';
+
+    const payload = {
+      'sku': skuValue,
+      'title': titleValue,
+      'description': product.item?.arDesc ?? product.item.engName,
+      'brand': product.item.make.makeDescription,
+      'quantity': Number(product.qty),
+      'condition': product.itemCondetion?.description ?? 'NEW',
+      'imageUrls': imageUrls,
+      'price': Number(product.sellingprice ?? product.item.sitePrice),
+      'currency': "USD",
+      'fulfillmentPolicyId': '373826822023',
+      'paymentPolicyId': '373648989023',
+      'returnPolicyId': '373648988023',
+      'categoryId': (product.item?.category?.ebayCategoryId).toString(),
+      'upc': product.item.upc,
+      'ebayOfferID': product.ebayInvID
+
+    };
+
+    console.log(payload)
+
+    this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+      next: () => {
+        // this.toastr.success('تم نشر المنتج بنجاح');
+        this.toastMessage.set('Product republished successfully');
+        this.toastVisible.set(true);
+        product.status = "Auto Published"
+        this.isLoading1 = false;
+
+      },
+      error: (err) => {
+        this.isLoading1 = false;
+
+        // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
+        this.toastMessage.set('Error republishing product');
+        this.toastVisible.set(true);
+        console.error(err);
+      }
+    });
+
+  }
+
+  PublishingByEbay: boolean = false;
+
+  PublishByEbay(product: any) {
+    if (product.ebayInvID == null || product.ebayInvID == '') {
+      const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+      if (!token) {
+        // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+        this.toastMessage.set('You must log in to eBay first');
+        this.toastVisible.set(true);
+        return;
+      }
+      this.isLoading1 = true;
+
+      const skuValue = product.item.sku && product.item.sku.trim() !== ''
+        ? product.item.sku
+        : this.generateUniqueSku();
+
+      const titleValue = product.item.engName
+        ? product.item.engName.substring(0, 80)
+        : 'Untitled Item';
+
+      const payload = {
+        'sku': skuValue,
+        'title': titleValue,
+        'description': product.Product_description,
+        'brand': product.item.brand,
+        'quantity': Number(product.qty),
+        'condition': product.itemCondition?.description ?? 'NEW',
+        'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
+        'price': Number(product.sitePrice ?? product.item.basePrice),
+        'currency': "USD",
+        'fulfillmentPolicyId': '373826822023',
+        'paymentPolicyId': '373648989023',
+        'returnPolicyId': '373648988023',
+        'categoryId': (product.category?.ebayCategoryId).toString(),
+        'upc': product.item.upc,
+        'ebayOfferID': product.ebayInvID
+
+      };
+
+      console.log(payload)
+      this.PublishingByEbay = true;
+      this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+        next: () => {
+          // this.toastr.success('تم نشر المنتج بنجاح');
+          this.toastMessage.set('Product republished successfully');
+          this.toastVisible.set(true);
+          product.status = "Auto Published"
+          this.PublishingByEbay = false;
+
+        },
+        error: (err) => {
+          this.PublishingByEbay = false;
+
+          // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
+          this.toastMessage.set('Error republishing product');
+          this.toastVisible.set(true);
+          console.error(err);
+        }
+      });
+    } else {
+      this.updateProductOnEbay(product)
+    }
+
+  }
+
+  isLoading1: boolean = false;
+  generateUniqueSku(): string {
+    return 'SKU-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+  updateProductOnEbay(product: any) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading1 = true;
+
+    const imageUrls: string[] = product.item.itemImages
+      .filter((img: any) => img.imageSourceLink && img.imageSourceLink.trim() !== '').slice(0, 7)
+      .map((img: any) => img.imageSourceLink);
+
+    const skuValue = product.item.sku && product.item.sku.trim() !== ''
+      ? product.item.sku
+      : this.generateUniqueSku();
+
+    const titleValue = product.item.engName
+      ? product.item.engName.substring(0, 80)
+      : 'Untitled Item';
+
+    const payload = {
+      'sku': skuValue,
+      'title': titleValue,
+      'description': product.item?.arDesc ?? product.item.engName,
+      'brand': product.item.make.makeDescription,
+      'quantity': Number(product.qty),
+      'condition': product.itemCondetion?.description ?? 'NEW',
+      'imageUrls': imageUrls,
+      'price': Number(product.sellingprice ?? product.item.sitePrice),
+      'currency': "USD",
+      'fulfillmentPolicyId': '373826822023',
+      'paymentPolicyId': '373648989023',
+      'returnPolicyId': '373648988023',
+      'categoryId': (product.item?.category?.ebayCategoryId).toString(),
+      'upc': product.item.upc,
+      'ebayOfferID': product.ebayOfferID
+    };
+
+    console.log(payload)
+
+    this.http.putData(`Ebay/update-product/${token}`, payload).subscribe({
+      next: () => {
+        this.isLoading1 = false;
+
+        // this.toastr.info('تم تعديل المنتج بنجاح');
+        this.toastMessage.set('Product updated successfully');
+        this.toastVisible.set(true);
+      },
+      error: (err) => {
+        this.isLoading1 = false;
+
+        // this.toastr.error('حدث خطأ أثناء تعديل المنتج الرجاء المحاولة مجددًا');
+        this.toastMessage.set('Error updating product');
+        this.toastVisible.set(true);
+        console.error(err);
+      }
+    });
+  }
+
+  loginingInToEbay = false;
+  LogInToEbayDiredty(token: string, inputElement: HTMLInputElement) {
+    this.loginingInToEbay = true;
+    this.http.posteData('Ebay/save-token', {
+      'accessToken': token
+    }).subscribe(res => {
+      this.storage.setItem('ebayToken', res.tokenId, 2 * 60 * 60 * 1000) // localStorage.setItem('tokenId', res.tokenId);
+      this.toastMessage.set('Token stored successfully');
+      this.loginingInToEbay = false;
+      this.toastVisible.set(true);
+      inputElement.value = '';
+    }, (err) => {
+      this.toastMessage.set('Failed to store token, please try again');
+      this.loginingInToEbay = false;
+      this.toastVisible.set(true);
+      console.error(err);
+    })
+  }
+
 
 }

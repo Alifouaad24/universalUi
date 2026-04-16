@@ -94,6 +94,13 @@
           </select>
         </div>
         <div class="col">
+          <select class="form-select" [(ngModel)]="ItemConditionId">
+            <option [ngValue]="null" disabled selected disabled>Item Condition</option>
+            <option *ngFor="let ic of itemConditions" [ngValue]="ic.itemConditionId">{{ic.description}}
+            </option>
+          </select>
+        </div>
+        <div class="col">
           <input class="form-control" [(ngModel)]="UPC" placeholder="UPC..." />
         </div>
         <div class="col">

@@ -64,7 +64,8 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   isDragging = false;
   startX = 0;
   startY = 0;
-
+  itemConditions?: any[]
+  ItemConditionId: number | null = null;
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute,
     public loadingService: LoadingService, private albumState: AlbumStateService,
     private router: Router) { }
@@ -91,9 +92,16 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   }
 
   getCategories() {
-    this.http.getAllData('Category').subscribe((res: any) => {
+    this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
       console.log(res)
       this.Categories = res;
+    })
+  }
+
+  getItemConditions() {
+    this.http.getAllData(`ItemCondition`).subscribe((res: any) => {
+      console.log(res)
+      this.itemConditions = res;
     })
   }
 
@@ -417,7 +425,8 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       sku: this.SKU,
       imageUrl: this.currentImgUrl,
       folderId: this.selectedFolderId,
-      businessId: this.businessId
+      businessId: this.businessId,
+      itemConditionId: this.ItemConditionId
     }
 
     console.log(payload)
@@ -434,12 +443,12 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       this.CategoryId = null;
       this.SizeId = null;
 
-      
+
       // const album = this.groupedAlbums.find(s => s.folderId == this.selectedFolderId);
       // if (album?.images?.length) {
       //   album.images[0].isProccessed = true;
       // }
-      
+
       this.goBack();
     }, (err) => {
       this.isLoading = false;
