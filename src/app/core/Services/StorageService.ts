@@ -16,7 +16,7 @@ export class StorageService {
       expired: now + expired
     }
 
-    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(key, JSON.stringify(item));
   }
 
   getWithExpiry(key: string) {

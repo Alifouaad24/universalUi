@@ -123,7 +123,7 @@ export class ShowInventoryComponent implements OnInit {
     this.getItemConditions()
   }
 
-    getItemConditions() {
+  getItemConditions() {
     this.http.getAllData(`ItemCondition`).subscribe((res: any) => {
       console.log(res)
       this.itemConditions = res;
@@ -161,8 +161,9 @@ export class ShowInventoryComponent implements OnInit {
           qty: item.qty,
           category: item.category,
           notFound: item.notFound,
+          Product_name: item.product_name,
           product_description: item.product_description,
-          itemCondition : item.itemCondition
+          itemCondition: item.itemCondition
         }));
         this.tempInventory = [...this.inventory];
         this.isLoading = false;
@@ -825,19 +826,19 @@ export class ShowInventoryComponent implements OnInit {
         ? product.item.sku
         : this.generateUniqueSku();
 
-      const titleValue = product.item.engName
-        ? product.item.engName.substring(0, 80)
+      const titleValue = product.Product_name
+        ? product.Product_name.substring(0, 80)
         : 'Untitled Item';
 
       const payload = {
         'sku': skuValue,
         'title': titleValue,
-        'description': product.Product_description,
+        'description': product.product_description,
         'brand': product.item.brand,
         'quantity': Number(product.qty),
         'condition': product.itemCondition?.description ?? 'NEW',
         'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
-        'price': Number(product.sitePrice ?? product.item.basePrice),
+        'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
         'currency': "USD",
         'fulfillmentPolicyId': '373826822023',
         'paymentPolicyId': '373648989023',
@@ -850,26 +851,26 @@ export class ShowInventoryComponent implements OnInit {
 
       console.log(payload)
       this.PublishingByEbay = true;
-      this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
-        next: () => {
-          // this.toastr.success('تم نشر المنتج بنجاح');
-          this.toastMessage.set('Product republished successfully');
-          this.toastVisible.set(true);
-          product.status = "Auto Published"
-          this.PublishingByEbay = false;
+      // this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+      //   next: () => {
+      //     // this.toastr.success('تم نشر المنتج بنجاح');
+      //     this.toastMessage.set('Product republished successfully');
+      //     this.toastVisible.set(true);
+      //     product.status = "Auto Published"
+      //     this.PublishingByEbay = false;
 
-        },
-        error: (err) => {
-          this.PublishingByEbay = false;
+      //   },
+      //   error: (err) => {
+      //     this.PublishingByEbay = false;
 
-          // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
-          this.toastMessage.set('Error republishing product');
-          this.toastVisible.set(true);
-          console.error(err);
-        }
-      });
+      //     // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
+      //     this.toastMessage.set('Error republishing product');
+      //     this.toastVisible.set(true);
+      //     console.error(err);
+      //   }
+      // });
     } else {
-      this.updateProductOnEbay(product)
+      // this.updateProductOnEbay(product)
     }
 
   }
@@ -946,6 +947,7 @@ export class ShowInventoryComponent implements OnInit {
     this.http.posteData('Ebay/save-token', {
       'accessToken': token
     }).subscribe(res => {
+      console.log(res);
       this.storage.setItem('ebayToken', res.tokenId, 2 * 60 * 60 * 1000) // localStorage.setItem('tokenId', res.tokenId);
       this.toastMessage.set('Token stored successfully');
       this.loginingInToEbay = false;

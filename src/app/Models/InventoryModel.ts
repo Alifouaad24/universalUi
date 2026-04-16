@@ -19,6 +19,7 @@ export class InventoryModel {
     ebayInvID?: string;
     ebayOfferID?: string;
     ebayListingId?: string;
+    Product_name?: string;
     itemCondition?: any;
     constructor(init: Partial<InventoryModel>) {
         Object.assign(this, init);

@@ -80,6 +80,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     this.getCategories()
     this.getSizes()
     this.getPlatforms()
+    this.getItemConditions()
   }
 
   getFolderBackground(folder: { images: AlbumModel[] }): string {
