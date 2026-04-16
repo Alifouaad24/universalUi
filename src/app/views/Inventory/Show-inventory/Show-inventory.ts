@@ -851,24 +851,24 @@ export class ShowInventoryComponent implements OnInit {
 
       console.log(payload)
       this.PublishingByEbay = true;
-      // this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
-      //   next: () => {
-      //     // this.toastr.success('تم نشر المنتج بنجاح');
-      //     this.toastMessage.set('Product republished successfully');
-      //     this.toastVisible.set(true);
-      //     product.status = "Auto Published"
-      //     this.PublishingByEbay = false;
+      this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+        next: () => {
+          // this.toastr.success('تم نشر المنتج بنجاح');
+          this.toastMessage.set('Product republished successfully');
+          this.toastVisible.set(true);
+          product.status = "Auto Published"
+          this.PublishingByEbay = false;
 
-      //   },
-      //   error: (err) => {
-      //     this.PublishingByEbay = false;
+        },
+        error: (err) => {
+          this.PublishingByEbay = false;
 
-      //     // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
-      //     this.toastMessage.set('Error republishing product');
-      //     this.toastVisible.set(true);
-      //     console.error(err);
-      //   }
-      // });
+          // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
+          this.toastMessage.set('Error republishing product');
+          this.toastVisible.set(true);
+          console.error(err);
+        }
+      });
     } else {
       // this.updateProductOnEbay(product)
     }
