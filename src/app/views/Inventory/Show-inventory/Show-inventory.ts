@@ -108,6 +108,7 @@ export class ShowInventoryComponent implements OnInit {
   currentBusinessName: string = 'Business';
   itemConditions?: any[]
   ItemConditionId: number | null = null;
+  UPCFromScrape: string = '';
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private storage: StorageService) { }
 
@@ -159,6 +160,7 @@ export class ShowInventoryComponent implements OnInit {
           size: item.size,
           sitePrice: item.sitePrice,
           qty: item.qty,
+          status: item.status,
           category: item.category,
           notFound: item.notFound,
           Product_name: item.product_name,
@@ -645,6 +647,7 @@ export class ShowInventoryComponent implements OnInit {
         this.sourceCode = '';
         this.ImagesUrlsFromScrape = res.images as string[];
         this.priceFromScrape = res.price;
+        this.UPCFromScrape = res.upc;
         this.productNameFromScrape = res.title;
         this.height = res.height
         this.width = res.width
@@ -692,6 +695,7 @@ export class ShowInventoryComponent implements OnInit {
       weight: parseFloat(this.weight) ?? 0,
       internet: this.Internet,
       sKU: this.SKU,
+      upc: this.UPCFromScrape,
       currentInventoryId: this.currentInventoryId
 
     }
@@ -812,6 +816,11 @@ export class ShowInventoryComponent implements OnInit {
   PublishingByEbay: boolean = false;
 
   PublishByEbay(product: any) {
+    if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
+      this.toastMessage.set('Please select at least one image to publish the product on eBay.');
+      this.toastVisible.set(true);
+      return;
+    }
     if (product.ebayInvID == null || product.ebayInvID == '') {
       const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
       if (!token) {

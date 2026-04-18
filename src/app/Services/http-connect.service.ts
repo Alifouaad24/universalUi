@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class HttpConnectService {
 
-  private apiUrl = 'http://apxapi.somee.com/api';
+  private apiUrl = 'https://apxapi.somee.com/api';
 
   constructor(private http: HttpClient) { }
 

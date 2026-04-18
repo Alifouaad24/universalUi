@@ -26,6 +26,7 @@ import { HttpConnectService } from '../../Services/http-connect.service';
 import { ServiceModel } from '../../Models/ServiceModel';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { LoadingService } from '../../core/Services/LoadingService';
+import { StorageService } from '../../core/Services/StorageService';
 function isOverflown(element: HTMLElement) {
   return (
     element.scrollHeight > element.clientHeight ||
@@ -61,7 +62,7 @@ export class DefaultLayoutComponent {
   router = inject(Router);
   services: ServiceModel[] = [];
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
-  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef,
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private ebayService: StorageService,
      private http: HttpConnectService, public loader: LoadingService) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -83,6 +84,7 @@ export class DefaultLayoutComponent {
         this.navItems = [...navItems];
         return;
       }
+      this.ebayService.getWithExpiry('ebayToken')
       this.getAllServices()
       this.cdr.detectChanges();
     });

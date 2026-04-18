@@ -70,7 +70,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let type of inventory; index as i" [ngClass]="{'table-warning': type.notFound}">
+        <tr *ngFor="let type of inventory; index as i" [ngClass]="{
+          'table-warning': type.notFound,
+          'table-success': type.status?.trim()?.includes('Auto Published')
+        }">
           <td>{{ type.inventory_id }}</td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
@@ -355,30 +358,28 @@
 
       <h5 class="mb-3 text-primary">Product Details</h5>
       <br />
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <strong>🛍 Name:</strong>
+          <div class="text-muted mt-1" style="line-height: 1.6;">
+            {{ productNameFromScrape }}
+          </div>
+        </div>
+      </div>
       <div class="row mb-2">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <strong>💲 Price:</strong>
           <span class="text-success ms-2">{{ priceFromScrape }}$</span>
         </div>
-        <div class="col-md-6">
-          <strong>🛍 Name:</strong>
-          <span class="ms-2">{{ productNameFromScrape }}</span>
+        <div class="col-md-4">
+          <strong>� UPC:</strong>
+          <span class="text-success ms-2">{{ UPCFromScrape }}</span>
+        </div>
+        <div class="col-md-4">
+          <strong>🔖 SKU:</strong>
+          <span class="badge bg-dark ms-2">{{ SKU }}</span>
         </div>
       </div>
-
-      <!-- Dimensions -->
-      <div class="row mb-2">
-        <div class="col-md-3">
-          <strong>📏 Height:</strong> {{ height }}
-        </div>
-        <div class="col-md-3">
-          <strong>📐 Width:</strong> {{ width }}
-        </div>
-        <div class="col-md-3">
-          <strong>📦 Weight:</strong> {{ weight }}
-        </div>
-      </div>
-
       <!-- Description -->
       <div class="row mb-3">
         <div class="col-md-12">
@@ -401,17 +402,29 @@
           <strong>🏷 Brand:</strong> {{ Brand }}
         </div>
       </div>
+      <!-- Dimensions -->
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <strong>📏 Height:</strong> {{ height }}
+        </div>
+        <div class="col-md-4">
+          <strong>📐 Width:</strong> {{ width }}
+        </div>
+        <div class="col-md-4">
+          <strong>📦 Weight:</strong> {{ weight }}
+        </div>
+      </div>
 
       <!-- More Details
-  <div class="row">
-    <div class="col-md-6">
-      <strong>📊 Dimension:</strong> {{ Dimention }}
-    </div>
-    <div class="col-md-6">
-      <strong>🔖 SKU:</strong> 
-      <span class="badge bg-dark ms-2">{{ SKU }}</span>
-    </div>
-  </div> -->
+        <div class="row">
+          <div class="col-md-6">
+            <strong>📊 Dimension:</strong> {{ Dimention }}
+          </div>
+          <div class="col-md-6">
+            <strong>🔖 SKU:</strong> 
+            <span class="badge bg-dark ms-2">{{ SKU }}</span>
+          </div>
+        </div> -->
 
     </div>
   </c-modal-body>
@@ -467,6 +480,18 @@
             <strong>{{ selectedType?.platform?.description }}</strong>
           </div>
         </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Brand</small>
+            <strong>{{ selectedType?.item?.brand }}</strong>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Model</small>
+            <strong>{{ selectedType?.item?.model }}</strong>
+          </div>
+        </div>
 
         <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.category?.name">
           <div class="card shadow-sm p-2">
@@ -478,7 +503,7 @@
         <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.item?.basePrice !== null">
           <div class="card shadow-sm p-2">
             <small class="text-muted">Base Price</small>
-            <strong class="text-danger">{{ selectedType?.item?.basePrice ?? 0 }}</strong>
+            <strong class="text-danger">{{ selectedType?.item?.basePrice ?? 0 }}$</strong>
           </div>
         </div>
 
