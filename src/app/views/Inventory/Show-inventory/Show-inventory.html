@@ -541,9 +541,10 @@
                   <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
                     {{ getImageIndex(image) }}
                   </span>
-
+                  <span *ngIf="image.isPublishedOnEbay === true" class="position-absolute top-0 end-0 badge bg-info text-white">
+                    ✔
+                  </span>
                 </div>
-
               </div>
             </div>
           </div>

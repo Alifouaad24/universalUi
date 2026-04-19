@@ -723,6 +723,11 @@ export class ShowInventoryComponent implements OnInit {
     this.selectedImagesToEbay = [];
     this.selectedType = inventory;
     this.DetailsModalVisible = true;
+    inventory.item.images.map((el: any) => {
+      if(el.isPublishedOnEbay){
+        this.selectedImagesToEbay.push(el)
+      }
+    })
   }
 
   selectedImagesToEbay: any[] = [];
@@ -815,6 +820,12 @@ export class ShowInventoryComponent implements OnInit {
 
   PublishingByEbay: boolean = false;
 
+  isLoading1: boolean = false;
+  generateUniqueSku(): string {
+    return 'SKU-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+
   PublishByEbay(product: any) {
     if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
       this.toastMessage.set('Please select at least one image to publish the product on eBay.');
@@ -879,14 +890,9 @@ export class ShowInventoryComponent implements OnInit {
         }
       });
     } else {
-      // this.updateProductOnEbay(product)
+      this.updateProductOnEbay(product)
     }
 
-  }
-
-  isLoading1: boolean = false;
-  generateUniqueSku(): string {
-    return 'SKU-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
   updateProductOnEbay(product: any) {
@@ -914,19 +920,20 @@ export class ShowInventoryComponent implements OnInit {
     const payload = {
       'sku': skuValue,
       'title': titleValue,
-      'description': product.item?.arDesc ?? product.item.engName,
-      'brand': product.item.make.makeDescription,
+      'description': product.product_description,
+      'brand': product.item.brand,
       'quantity': Number(product.qty),
-      'condition': product.itemCondetion?.description ?? 'NEW',
-      'imageUrls': imageUrls,
-      'price': Number(product.sellingprice ?? product.item.sitePrice),
+      'condition': product.itemCondition?.description ?? 'NEW',
+      'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
+      'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
       'currency': "USD",
       'fulfillmentPolicyId': '373826822023',
       'paymentPolicyId': '373648989023',
       'returnPolicyId': '373648988023',
-      'categoryId': (product.item?.category?.ebayCategoryId).toString(),
+      'categoryId': (product.category?.ebayCategoryId).toString(),
       'upc': product.item.upc,
       'ebayOfferID': product.ebayOfferID
+      /////////////////////////////////////////////
     };
 
     console.log(payload)
