@@ -158,6 +158,7 @@ export class ShowInventoryComponent implements OnInit {
           platform_id: item.platform_id,
           category_id: item.category_id,
           size: item.size,
+          sku: item.sku,
           sitePrice: item.sitePrice,
           qty: item.qty,
           status: item.status,
@@ -226,12 +227,16 @@ export class ShowInventoryComponent implements OnInit {
   }
 
 
+  // onVisibleChange(visible: boolean) {
+  //   this.showScrapeModal = false;
+  //   this.idItemForBindWithImages = undefined;
+  //   this.toastVisible.set(visible);
+  //   if (!visible) this.percentage.set(0);
+  // }
   onVisibleChange(visible: boolean) {
-    this.showScrapeModal = false;
-    this.idItemForBindWithImages = undefined;
-    this.toastVisible.set(visible);
-    if (!visible) this.percentage.set(0);
-  }
+  this.toastVisible.set(visible);
+  if (!visible) this.percentage.set(0);
+}
 
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
@@ -708,6 +713,7 @@ export class ShowInventoryComponent implements OnInit {
         this.toastMessage.set('Images successfully bound to the item.');
         this.toastVisible.set(true);
         this.showScrapeDutyModal = false
+        this.getInventory();
         this.cdr.detectChanges();
       },
       (err) => {
@@ -724,7 +730,7 @@ export class ShowInventoryComponent implements OnInit {
     this.selectedType = inventory;
     this.DetailsModalVisible = true;
     inventory.item.images.map((el: any) => {
-      if(el.isPublishedOnEbay){
+      if (el.isPublishedOnEbay) {
         this.selectedImagesToEbay.push(el)
       }
     })
@@ -830,6 +836,7 @@ export class ShowInventoryComponent implements OnInit {
     if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
       this.toastMessage.set('Please select at least one image to publish the product on eBay.');
       this.toastVisible.set(true);
+      this.cdr.detectChanges();
       return;
     }
     if (product.ebayInvID == null || product.ebayInvID == '') {
@@ -838,6 +845,7 @@ export class ShowInventoryComponent implements OnInit {
         // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
         this.toastMessage.set('You must log in to eBay first');
         this.toastVisible.set(true);
+        this.cdr.detectChanges();
         return;
       }
       this.isLoading1 = true;
@@ -878,6 +886,7 @@ export class ShowInventoryComponent implements OnInit {
           this.toastVisible.set(true);
           product.status = "Auto Published"
           this.PublishingByEbay = false;
+          this.cdr.detectChanges();
 
         },
         error: (err) => {
@@ -887,6 +896,7 @@ export class ShowInventoryComponent implements OnInit {
           this.toastMessage.set('Error republishing product');
           this.toastVisible.set(true);
           console.error(err);
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -975,6 +985,74 @@ export class ShowInventoryComponent implements OnInit {
       this.toastVisible.set(true);
       console.error(err);
     })
+  }
+
+  countOfSoldItems: number = 0;
+  invIdsSoldOnEbay: { invId: number, qty: number }[] = [];
+  isLoading11: boolean = false;
+  soldItems: any[] = [];
+
+  GetSoldItems() {
+    const token = this.storage.getWithExpiry('ebayToken');
+
+    if (!token) {
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.isLoading11 = true;
+
+    this.http.getAllData(`Ebay/GetSoldItemsAsync/${token}`).subscribe((res: any) => {
+      this.soldItems = res
+      this.toastMessage.set('Sold items retrieved successfully');
+      this.toastVisible.set(true);
+
+      this.countOfSoldItems = res.filter((item: any) =>
+        this.isMatchedSku(item)
+      ).length;
+
+      this.invIdsSoldOnEbay = res.filter((item: any) =>
+        this.isMatchedSku(item)
+      ).map((item: any) => {
+        const matchingInv = this.inventory.find(inv => inv.sku === item.sku);
+        return { invId: matchingInv?.inventory_id, qty: item.quantity };
+      });
+
+      this.showSoldPopup = true;
+      this.isLoading11 = false;
+      this.cdr.detectChanges();
+
+    }, (err) => {
+      this.isLoading11 = false;
+      this.toastMessage.set('Failed to retrieve sold items');
+      this.toastVisible.set(true);
+    });
+  }
+  showSoldPopup = false;
+
+  markAsSold() {
+    console.log('Inventory IDs to mark as sold:', this.invIdsSoldOnEbay);
+    if (this.invIdsSoldOnEbay.length === 0) return;
+
+    this.http.posteData('Inventory/MarkAsSold', {
+      invIds: this.invIdsSoldOnEbay
+    })
+      .subscribe(() => {
+        this.toastMessage.set('Items updated successfully');
+        this.toastVisible.set(true);
+        this.showSoldPopup = false;
+
+      }, () => {
+        this.toastMessage.set('Error updating items');
+        this.toastVisible.set(true);
+      });
+  }
+
+  isMatchedSku(item: any): boolean {
+    return item.sku &&
+      item.sku.trim() !== '' &&
+      this.inventory.some(inv => inv.sku === item.sku);
   }
 
 

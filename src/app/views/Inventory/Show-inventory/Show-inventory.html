@@ -43,6 +43,9 @@
           <button class="btn btn-danger btn-sm" (click)="LogInToEbayDiredty(token.value, token)">
             {{ loginingInToEbay ? 'Logging in...' : 'Login to eBay' }}
           </button>
+          <button class="btn btn-info btn-sm" (click)="GetSoldItems()">
+            {{ isLoading11 ? 'Retrieving...' : 'Get sold items' }}
+          </button>
         </div>
       </div>
     </div>
@@ -61,7 +64,7 @@
           <th>#</th>
           <th style="width: 10%;">SKU</th>
           <th style="width: 10%;">Image</th>
-          <th style="width: 10%;">UPC</th>
+          <th style="width: 10%;">UPC/Eby sku</th>
           <th style="width: 8%;">Size</th>
           <th style="width: 8%;">Price</th>
           <th style="width: 8%;">Quantity</th>
@@ -81,7 +84,9 @@
               [src]="type.item?.images?.length > 1 ? type.item?.images?.[1]?.imageUrl : defaultBusinessLogo" alt="Image"
               style="width: 60px; height: 75px;"></td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
-              type.item?.upc }}</a></td>
+              type.item?.upc }}</a>
+
+          </td>
           <td>{{ type.size?.description }}</td>
           <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
@@ -198,20 +203,6 @@
     <button class="btn btn-secondary" (click)="showFactoryImagesModal = false">Close</button>
   </c-modal-footer>
 </c-modal>
-
-<c-toaster placement="top-end" class="p-3">
-  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
-    [autohide]="autoHideToast()" [delay]="3000">
-    <c-toast-header>
-      Scrape!
-    </c-toast-header>
-    <c-toast-body>
-      <p>{{ toastMessage() }}</p>
-      <c-progress thin [value]="percentage()" />
-    </c-toast-body>
-  </c-toast>
-</c-toaster>
-
 
 <c-modal [(visible)]="showEditModal" [size]="'lg'">
   <c-modal-header>Edit Inventory</c-modal-header>
@@ -541,7 +532,8 @@
                   <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
                     {{ getImageIndex(image) }}
                   </span>
-                  <span *ngIf="image.isPublishedOnEbay === true" class="position-absolute top-0 end-0 badge bg-info text-white">
+                  <span *ngIf="image.isPublishedOnEbay === true"
+                    class="position-absolute top-0 end-0 badge bg-info text-white">
                     ✔
                   </span>
                 </div>
@@ -566,3 +558,52 @@
   <c-modal-footer class="justify-content-between">
   </c-modal-footer>
 </c-modal>
+
+
+<div *ngIf="showSoldPopup" class="modal fade show d-block">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Sold Items ({{ countOfSoldItems }})
+        </h5>
+        <button class="btn-close" (click)="showSoldPopup = false"></button>
+      </div>
+
+      <div class="modal-body" style="max-height: 400px; overflow: auto;">
+
+        <table class="table table-bordered table-sm">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>SKU</th>
+              <th>Qty</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of soldItems" [ngClass]="{'table-warning': isMatchedSku(item)}">
+              <td style="width: 50%;">{{ item.title }}</td>
+              <td>{{ item.sku }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" (click)="showSoldPopup = false">
+          Close
+        </button>
+        <button class="btn btn-secondary" (click)="markAsSold()">
+          Mark as Sold
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

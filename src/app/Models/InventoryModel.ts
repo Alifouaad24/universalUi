@@ -4,6 +4,7 @@ export class InventoryModel {
     inventory_id?: number;
     qty?: number;
     product_name?: string;
+    sku?: string;
     size_id?: number;
     item?: any;
     category_id?: number;
