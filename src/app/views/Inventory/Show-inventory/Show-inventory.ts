@@ -234,9 +234,9 @@ export class ShowInventoryComponent implements OnInit {
   //   if (!visible) this.percentage.set(0);
   // }
   onVisibleChange(visible: boolean) {
-  this.toastVisible.set(visible);
-  if (!visible) this.percentage.set(0);
-}
+    this.toastVisible.set(visible);
+    if (!visible) this.percentage.set(0);
+  }
 
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
@@ -264,7 +264,13 @@ export class ShowInventoryComponent implements OnInit {
       },
       (err) => {
         this.isLoading = false;
-        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        if (err.status === 400) {
+          this.toastMessage.set('change shein website currency to $ USD and try again.');
+          console.error('Error scraping from Shein:', err.error);
+
+        } else {
+          this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        }
         this.toastVisible.set(true);
         this.cdr.detectChanges();
       }
@@ -419,6 +425,24 @@ export class ShowInventoryComponent implements OnInit {
       this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1 && !inv.notFound);
     } else if (filterValue === 'NotFound') {
       this.inventory = this.inventory.filter(inv => inv.notFound);
+    }
+    else {
+      this.inventory = [];
+      this.getInventory();
+      this.cdr.detectChanges();
+    }
+  }
+  selectedDutyFilter: string = 'All';
+  filterDutyInventory(event: any) {
+    this.inventory = [...this.tempInventory];
+
+    const filterValue = event.target.value;
+    this.selectedDutyFilter = filterValue;
+    if (filterValue === 'needUpdates') {
+      this.inventory = this.inventory.filter(inv => !inv.category == null ||
+         inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
+    } else if (filterValue === 'published') {
+      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published') );
     }
     else {
       this.inventory = [];
@@ -994,6 +1018,7 @@ export class ShowInventoryComponent implements OnInit {
 
   GetSoldItems() {
     const token = this.storage.getWithExpiry('ebayToken');
+    console.log('Retrieved eBay token:', token);
 
     if (!token) {
       this.toastMessage.set('You must log in to eBay first');
@@ -1002,7 +1027,6 @@ export class ShowInventoryComponent implements OnInit {
     }
 
     this.isLoading11 = true;
-
     this.http.getAllData(`Ebay/GetSoldItemsAsync/${token}`).subscribe((res: any) => {
       this.soldItems = res
       this.toastMessage.set('Sold items retrieved successfully');
@@ -1025,7 +1049,7 @@ export class ShowInventoryComponent implements OnInit {
 
     }, (err) => {
       this.isLoading11 = false;
-      this.toastMessage.set('Failed to retrieve sold items');
+      this.toastMessage.set('Failed to retrieve sold items \n please login to eBay and try again');
       this.toastVisible.set(true);
     });
   }

@@ -7,14 +7,13 @@ export class StorageService {
 
   constructor() { }
 
-  setItem(key: string, value: any, expired: number): void {
+  setItem(key: string, value: any, ttl: number): void {
+    const now = new Date().getTime();
 
-    var now = new Date().getDate();
-
-    var item = {
+    const item = {
       value: value,
-      expired: now + expired
-    }
+      expiry: now + ttl
+    };
 
     localStorage.setItem(key, JSON.stringify(item));
   }

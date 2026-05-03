@@ -19,12 +19,20 @@
           item{{ inventory.length !== 1 ? 's' : '' }}
         </div>
         <!-- Filter -->
-        <div>
+        <div *ngIf="!currentBusinessName.includes('Duty')">
           <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter"
             (change)="filterInventory($event)">
             <option value="All">All</option>
             <option value="Unprocessed">Un processed</option>
             <option value="NotFound">Not found</option>
+          </select>
+        </div>
+        <div *ngIf="currentBusinessName.includes('Duty')">
+          <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedDutyFilter"
+            (change)="filterDutyInventory($event)">
+            <option value="All">All</option>
+            <option value="needUpdates">Need updates</option>
+            <option value="published">Published</option>
           </select>
         </div>
       </div>
