@@ -489,6 +489,7 @@ export class ShowInventoryComponent implements OnInit {
 
   PriceFOREDIT: string = '';
 
+  
   ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
