@@ -21,7 +21,8 @@ export class BusinessModel {
   activities?: ActiviityModel[];
   businessTypes?: any[];
   businessAddresses?: any[];
-
+  buseness_Customers?: any[];
+business_Services?: any[];
   insert_on!: string;
   insert_by?: string;
 

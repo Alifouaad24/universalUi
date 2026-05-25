@@ -2,7 +2,6 @@ import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BadgeComponent, ButtonCloseDirective, ButtonDirective, FormModule, ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, TableDirective } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
-
 import {
   CardBodyComponent, SpinnerModule,
   CardComponent,
@@ -56,6 +55,9 @@ export class BusinessComponent implements OnInit {
         businessTypes: el.businessTypes,
         businessAddresses: el.businessAddresses,
         business_LogoUrl: el.business_LogoUrl,
+        buseness_Customers: el.buseness_Customers,
+        insert_by: el.insert_by,
+        insert_on: el.insert_on
 
       }))
       this.cdr.detectChanges()

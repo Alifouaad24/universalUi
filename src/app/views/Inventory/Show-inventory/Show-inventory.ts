@@ -10,6 +10,7 @@ import {
   CardHeaderComponent,
   ColComponent,
   DropdownComponent,
+
   DropdownDividerDirective,
   DropdownItemDirective,
   DropdownMenuDirective,
@@ -160,6 +161,7 @@ export class ShowInventoryComponent implements OnInit {
           size: item.size,
           sku: item.sku,
           sitePrice: item.sitePrice,
+          ebayOfferID: item.ebayOfferID,
           qty: item.qty,
           status: item.status,
           category: item.category,
@@ -169,6 +171,7 @@ export class ShowInventoryComponent implements OnInit {
           itemCondition: item.itemCondition
         }));
         this.tempInventory = [...this.inventory];
+        this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
         this.isLoading = false;
         this.selectedFilter = 'All';
         this.cdr.detectChanges();
@@ -440,15 +443,21 @@ export class ShowInventoryComponent implements OnInit {
     this.selectedDutyFilter = filterValue;
     if (filterValue === 'needUpdates') {
       this.inventory = this.inventory.filter(inv => !inv.category == null ||
-         inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
+        inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
     } else if (filterValue === 'published') {
-      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published') );
+      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
     }
     else if (filterValue === 'unpublished') {
-      this.inventory = this.inventory.filter(inv => inv.status == null );
+      this.inventory = this.inventory.filter(inv => inv.status == null);
     }
     else if (filterValue === 'needScrape') {
       this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);
+    }
+    else if (filterValue === 'Sold') {
+      this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
+    }
+    else if (filterValue === 'parcialSold') {
+      this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
     }
     else {
       this.inventory = [];
@@ -489,7 +498,7 @@ export class ShowInventoryComponent implements OnInit {
 
   PriceFOREDIT: string = '';
 
-  
+
   ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
@@ -1046,7 +1055,10 @@ export class ShowInventoryComponent implements OnInit {
       this.invIdsSoldOnEbay = res.filter((item: any) =>
         this.isMatchedSku(item)
       ).map((item: any) => {
-        const matchingInv = this.inventory.find(inv => inv.sku === item.sku);
+        const matchingInv = this.inventory.find(inv => inv.item?.sku?.trim() != ''
+          && inv.item?.sku?.trim() != null
+          && inv.item?.sku?.trim() === item.sku?.trim());
+
         return { invId: matchingInv?.inventory_id, qty: item.quantity };
       });
 
@@ -1066,7 +1078,7 @@ export class ShowInventoryComponent implements OnInit {
     console.log('Inventory IDs to mark as sold:', this.invIdsSoldOnEbay);
     if (this.invIdsSoldOnEbay.length === 0) return;
 
-    this.http.posteData('Inventory/MarkAsSold', {
+    this.http.putData('Inventory/SetRecordsSold', {
       invIds: this.invIdsSoldOnEbay
     })
       .subscribe(() => {
@@ -1079,11 +1091,13 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
       });
   }
-
+  
   isMatchedSku(item: any): boolean {
-    return item.sku &&
-      item.sku.trim() !== '' &&
-      this.inventory.some(inv => inv.sku === item.sku);
+    return this.inventory.some(inv =>
+      inv.item?.sku?.trim() != '' && inv.item?.sku?.trim() != null
+      && inv.item?.sku?.trim() === item.sku?.trim()
+      && inv.status?.includes('Published')
+    );
   }
 
 

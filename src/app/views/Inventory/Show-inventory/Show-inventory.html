@@ -35,6 +35,8 @@
             <option value="published">Published</option>
             <option value="unpublished">Un published</option>
             <option value="needScrape">Need scrape</option>
+            <option value="Sold">Sold</option>
+            <option value="parcialSold">Partially Sold</option>
           </select>
         </div>
       </div>
@@ -87,7 +89,14 @@
           'table-warning': type.notFound,
           'table-success': type.status?.trim()?.includes('Auto Published')
         }">
-          <td>{{ type.inventory_id }}</td>
+          <td *ngIf="type.ebayOfferID != null">
+            <a [href]="'https://www.ebay.com/itm/' + type.ebayOfferID" target="_blank" class="text-decoration-none">
+              {{ type.inventory_id }}
+            </a>
+          </td>
+          <td *ngIf="type.ebayOfferID == null">
+              {{ type.inventory_id }}
+          </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
           <td><img (click)="ShowDetailsModal(type)"
