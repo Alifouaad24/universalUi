@@ -22,6 +22,7 @@ export class InventoryModel {
     ebayListingId?: string;
     Product_name?: string;
     itemCondition?: any;
+    isProccessedInInventory?: boolean;
     constructor(init: Partial<InventoryModel>) {
         Object.assign(this, init);
     }

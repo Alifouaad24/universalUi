@@ -340,17 +340,15 @@
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
-
-                <!-- Add Service -->
                 <div *ngIf="business" class="container card mb-4 mt-4">
                   <div *ngIf="servicesBusiness && servicesBusiness.length > 0" class="m-3">
-                    <div class="mb-2 text-danger">Activities</div>
+                    <div class="mb-2 text-danger">Services</div>
                     <ul>
                       <li *ngFor="let one of servicesBusiness; index as i">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                           <div>{{ one.service?.description }}</div>
                           <div><button class="btn btn-sm btn-danger"
-                              (click)="removeServiceFromBusiness(one.service?.service_id!)">
+                              (click)="removeServiceFromBusiness(one.service_id!, one.business_id!)">
                               ✕
                             </button></div>
                         </div>
@@ -452,7 +450,7 @@
                     <li *ngFor="let one of Activites; index as i">
                       <div class="d-flex justify-content-between align-items-center mb-1">
                         <div>{{ one.description }}</div>
-                        <div><button class="btn btn-sm btn-danger"
+                        <div *ngIf="one.activity_id"><button class="btn btn-sm btn-danger"
                             (click)="removeActivityFromBusiness(one.activity_id!)">
                             ✕
                           </button></div>
@@ -472,7 +470,7 @@
                         [ngModelOptions]="{standalone: true}" [(ngModel)]="activityDescription" />
                     </div>
                     <!-- Add Button -->
-                    <button type="button" class="btn btn-primary" (click)="addActivity()">
+                    <button type="button" type="button" class="btn btn-primary" (click)="addActivity()">
                       Add Activity
                     </button>
                   </div>
@@ -487,12 +485,12 @@
                             <strong>{{ s.description }}</strong>
                           </div>
 
-                          <button class="btn btn-sm btn-danger" (click)="removeActivity(i)">
+                          <button class="btn btn-sm btn-danger" type="button" (click)="removeActivity(i)">
                             ✕
                           </button>
                         </li>
                       </ul>
-                      <button class="btn btn-sm btn-danger" (click)="BindActivitiesWithBusiness()">
+                      <button class="mt-2 btn btn-sm btn-danger" type="button" (click)="BindActivitiesWithBusiness()">
                         Save Activities
                       </button>
                     </div>
@@ -501,7 +499,6 @@
               </ng-template>
             </c-accordion-item>
           </c-accordion>
-
 
           <!-- Serving Info -->
           <c-accordion>
@@ -512,18 +509,43 @@
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
-
-                <div *ngIf="Activites && Activites.length > 0" class="m-3">
-                  <div class="mb-2 text-danger">Serving List</div>
+                <div *ngIf="consumerBusinessRelations && consumerBusinessRelations.length > 0" class="m-3">
+                  <div class="mb-2 text-danger">Consumered Servings List</div>
                   <ul>
-                    <li *ngFor="let one of Activites; index as i">
+                    <li *ngFor="let one of consumerBusinessRelations; index as i">
+
                       <div class="d-flex justify-content-between align-items-center mb-1">
-                        <div>{{ one.description }}</div>
-                        <div><button class="btn btn-sm btn-danger"
-                            (click)="removeActivityFromBusiness(one.activity_id!)">
-                            ✕
-                          </button></div>
+                        <div>{{ one.serving.servingName }}</div>
                       </div>
+                    </li>
+                  </ul>
+                </div>
+                <div *ngIf="groupedProviderRelations.length > 0" class="m-3">
+                  <div class="mb-2 text-danger">
+                    Provider Servings List
+                  </div>
+                  <ul>
+                    <li *ngFor="let group of groupedProviderRelations">
+                      <div class="fw-bold text-primary">
+                        {{ group.serving.servingName }}
+                      </div>
+                      <div class="text-muted mb-2">
+                        {{ group.serving.servingDescription }}
+                      </div>
+                      <ul class="mb-3">
+                        <li *ngFor="let business of group.businesses">
+                          <div class="mb-1 d-flex justify-content-between align-items-center">
+                            <span>
+                              {{ business.business_name }}
+                            </span>
+                            <button class="btn btn-sm btn-outline-danger" type="button"
+                              (click)="removeRelation(business.businessRelationId)">
+                              X
+                            </button>
+                          </div>
+                        </li>
+                      </ul>
+                      <hr>
                     </li>
                   </ul>
                 </div>
@@ -557,17 +579,24 @@
             <c-accordion-item #item="cAccordionItem" [visible]="showCustomersForm">
               <ng-template cTemplateId="accordionHeaderTemplate">
                 <button cAccordionButton class="btn w-100 text-start" (click)="showCustomersForm = !showCustomersForm">
-                  Customers info
+                  Customers Business info
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
 
-                <div *ngIf="businessCustomers && businessCustomers.length > 0" class="m-3">
-                  <div class="mb-2 text-danger">Activities</div>
+                <div *ngIf="business_Owners && business_Owners.length > 0" class="m-3">
+                  <div class="mb-2 text-danger">Customers</div>
                   <ul>
-                    <li *ngFor="let one of businessCustomers; index as i">
-                      {{ one.globalCustomer.customerName }} | {{ one.globalCustomer.vustomerMobile }} | {{
-                      one.globalCustomer.vustomerEmail }}
+                    <li *ngFor="let one of business_Owners; index as i">
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong>{{ one.globalCustomer.customerName }} | {{ one.globalCustomer.customerMobile ?? "Mobile
+                          not provided" }} | {{
+                          one.globalCustomer.customerEmail ?? "Email not provided" }}</strong>
+                        <button class="btn btn-sm btn-outline-danger ms-2" type="button"
+                          (click)="removeCustomerFromBusiness(one.buseness_CustomerId)">
+                          X
+                        </button>
+                      </div>
                     </li>
                   </ul>
                 </div>
@@ -575,49 +604,36 @@
                 <div *ngIf="business" class="container card mb-4 mt-4">
                   <h5 class="text-info mt-1">Add Customer</h5>
                   <div class="card-body">
-
-
                     <!-- here add customer -->
                     <c-row class="mb-3">
                     </c-row>
                     <c-card class="border-0 rounded-4 p-3" style="background: transparent;">
-
                       <c-card-header class="border-0 pb-0" style="background: transparent;">
-
                         <h5 class="fw-bold mb-1 text-dark">
                           Add New Customer
                         </h5>
-
                         <small class="text-medium-emphasis">
                           Fill customer information correctly
                         </small>
-
                       </c-card-header>
-
                       <c-card-body class="pt-4">
-
                         <c-row class="g-4">
-
                           <!-- Name -->
                           <c-col md="4">
                             <label cLabel class="fw-semibold mb-2">
                               Name
                             </label>
-
                             <input class="form-control rounded-3" placeholder="Customer name" [(ngModel)]="customerName"
                               [ngModelOptions]="{standalone: true}" />
                           </c-col>
-
                           <!-- Mobile -->
                           <c-col md="4">
                             <label cLabel class="fw-semibold mb-2">
                               Mobile
                             </label>
-
                             <input class="form-control rounded-3" placeholder="+1 000 000 000"
                               [(ngModel)]="customerMobile" [ngModelOptions]="{standalone: true}" />
                           </c-col>
-
                           <!-- Country -->
                           <c-col md="4">
                             <label cLabel class="fw-semibold mb-2">
@@ -749,16 +765,170 @@
                         </c-row>
                       </c-card-body>
                     </c-card>
-
                     <!-- here add custfomer -->
-
-
-
                   </div>
                 </div>
               </ng-template>
             </c-accordion-item>
           </c-accordion>
+          <c-accordion>
+            <c-accordion-item #item="cAccordionItem" [visible]="showUsersForm">
+              <ng-template cTemplateId="accordionHeaderTemplate">
+                <button cAccordionButton class="btn w-100 text-start" (click)="showUsersForm = !showUsersForm">
+                  Users
+                </button>
+              </ng-template>
+              <ng-template cTemplateId="accordionBodyTemplate">
+                <div class="m-2 text-danger">Users</div>
+                <div *ngIf="usersBusinesses && usersBusinesses.length > 0" class="m-3">
+                  <ul>
+                    <li *ngFor="let one of usersBusinesses; index as i">
+                      {{ one.userData?.userName }}
+                    </li>
+                  </ul>
+                </div>
+                <div *ngIf="usersBusinesses && usersBusinesses.length === 0" class="m-3">
+                  No users added to this business yet.
+                </div>
+                <div class="card">
+                  <div class="card-header">
+                    Add New User
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label for="userName" class="form-label">User Name</label>
+                      <input type="text" class="form-control" id="userName" [(ngModel)]="userName"
+                        [ngModelOptions]="{standalone: true}" placeholder="Enter user name">
+                    </div>
+                    <div class="mb-3">
+                      <label for="Email" class="form-label">User Email</label>
+                      <input type="text" class="form-control" id="Email" [(ngModel)]="Email"
+                        [ngModelOptions]="{standalone: true}" placeholder="Enter user Email">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Roles</label>
+                      <div *ngIf="loadingRoles" class="text-center my-3">
+                        <c-spinner color="primary"></c-spinner>
+                      </div>
+                      <div *ngIf="!loadingRoles" style="height: 100px; overflow-y: auto;">
+                        <div *ngFor="let one of Roles" class="form-check">
+                          <input type="checkbox" class="form-check-input" [checked]="selectedRoleId.includes(one.name)"
+                            (change)="AddRemoveRole(one.name)" />
+
+                          <label class="form-check-label">
+                            {{ one.name }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <button [disabled]="loading" class="btn btn-primary" (click)="addUser()">Add</button>
+                    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+                  </div>
+                </div>
+              </ng-template>
+            </c-accordion-item>
+          </c-accordion>
+
+
+
+
+          <!-- /// -->
+
+
+
+          <c-accordion>
+            <c-accordion-item #item="cAccordionItem" [visible]="showSystemsForm">
+              <ng-template cTemplateId="accordionHeaderTemplate">
+                <button cAccordionButton class="btn w-100 text-start" (click)="showSystemsForm = !showSystemsForm">
+                  Binded Systems
+                </button>
+              </ng-template>
+              <ng-template cTemplateId="accordionBodyTemplate">
+                <div class="m-2 text-danger">Systems</div>
+                <div *ngIf="usersBusinesses && usersBusinesses.length > 0" class="m-3">
+                  <!-- <ul>
+                    <li *ngFor="let one of usersBusinesses; index as i">
+                      {{ one.userData?.userName }}
+                    </li>
+                  </ul> -->
+                </div>
+                <div *ngIf="usersBusinesses && usersBusinesses.length === 0" class="m-3">
+                  No Systems added to this business yet.
+                </div>
+                <div class="card">
+                  <div class="card-header">
+                    Bind with System
+                  </div>
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                      <strong>Systems</strong>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                      <li *ngFor="let system of systems"
+                        class="list-group-item d-flex justify-content-between align-items-center py-3">
+
+                        <label [for]="'system_' + system.globalSystemId" class="d-flex align-items-center mb-0 w-100"
+                          style="cursor: pointer;">
+
+                          <i class="fas fa-cog me-2 text-secondary"></i>
+
+                          <span class="fw-medium">
+                            {{ system.globalSystemName }}
+                          </span>
+                        </label>
+
+                        <input [id]="'system_' + system.globalSystemId" [name]="'system_' + system.globalSystemId"
+                          type="checkbox" class="form-check-input ms-3"
+                          (change)="addRemoveSystem(system.globalSystemId)">
+                      </li>
+                    </ul>
+                  </div>
+                  <!-- <div class="card-body">
+                    <div class="mb-3">
+                      <label for="userName" class="form-label">User Name</label>
+                      <input type="text" class="form-control" id="userName" [(ngModel)]="userName"
+                        [ngModelOptions]="{standalone: true}" placeholder="Enter user name">
+                    </div>
+                    <div class="mb-3">
+                      <label for="Email" class="form-label">User Email</label>
+                      <input type="text" class="form-control" id="Email" [(ngModel)]="Email"
+                        [ngModelOptions]="{standalone: true}" placeholder="Enter user Email">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Roles</label>
+                      <div *ngIf="loadingRoles" class="text-center my-3">
+                        <c-spinner color="primary"></c-spinner>
+                      </div>
+                      <div *ngIf="!loadingRoles" style="height: 100px; overflow-y: auto;">
+                        <div *ngFor="let one of Roles" class="form-check">
+                          <input type="checkbox" class="form-check-input" [checked]="selectedRoleId.includes(one.name)"
+                            (change)="AddRemoveRole(one.name)" />
+
+                          <label class="form-check-label">
+                            {{ one.name }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <button [disabled]="loading" class="btn btn-primary" (click)="addUser()">Add</button>
+                    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+                  </div> -->
+                </div>
+              </ng-template>
+            </c-accordion-item>
+          </c-accordion>
+
+
+
+
+
+
+          <!--  -->
+
+
+
+
         </c-card-body>
       </c-card>
       <div class="d-flex justify-content-end gap-2 mt-3">
@@ -769,7 +939,6 @@
           Save
         </button>
       </div>
-
     </form>
   </c-card-body>
 </c-card>

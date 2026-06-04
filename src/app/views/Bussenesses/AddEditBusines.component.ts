@@ -15,6 +15,7 @@ import { AreaModel } from '../../Models/AreaModel';
 import { StateModel } from '../../Models/StateModel';
 import { GridModule, ButtonModule, FormModule } from '@coreui/angular';
 import { ActiviityModel } from '../../Models/ActivityModel';
+import { RloeModel } from '../../Models/RloeModel';
 import { logo } from '../../icons/logo';
 import { set } from 'lodash-es';
 
@@ -43,6 +44,8 @@ import { set } from 'lodash-es';
 })
 export class AddEditBusniessComponent implements OnInit {
 
+  showUsersForm: boolean = false;
+  showSystemsForm: boolean = false;
   selectedIcon: string | null = null;
   businessToShoowAccordion = true;
   icons: string[] = Object.keys(iconSubset);
@@ -84,7 +87,7 @@ export class AddEditBusniessComponent implements OnInit {
 
   servicesList: String[] = [];
   showCustomersForm: boolean = false;
-
+  systems: any[] = [];
 
   selectedCountry: string = '';
   UsCity: string = '';
@@ -103,7 +106,7 @@ export class AddEditBusniessComponent implements OnInit {
   landMark: string = '';
   Activites?: ActiviityModel[]
   businessCustomers: any[] = [];
-
+  BusinessServices: any[] = [];
   services: {
     description: string;
     isPublic: boolean;
@@ -115,7 +118,8 @@ export class AddEditBusniessComponent implements OnInit {
   }[] = [];
 
   servicesBusiness: any[] = [];
-
+  consumerBusinessRelations: any[] = [];
+  providerBusinessRelations: any[] = [];
   Description?: String;
   businessLogoFile!: File | null;
   logoPreview: string | null = null;
@@ -124,7 +128,8 @@ export class AddEditBusniessComponent implements OnInit {
   selectedCityNonUS: string | null = null;
   selectedAreaNonUS: string | null = null;
   selectedStateName: string | null = null;
-
+  usersBusinesses: any[] = [];
+  business_Owners: any[] = [];
   constructor(private fb: FormBuilder, private http: HttpConnectService,
     private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) {
     this.businessForm = this.fb.group({
@@ -146,15 +151,17 @@ export class AddEditBusniessComponent implements OnInit {
     });
   }
 
+
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(param => {
       const busFromQuery = param.get('bus')
-      console.log(busFromQuery)
       if (busFromQuery) {
         this.getAllBusinesses()
         this.getAllCountries()
         this.getAllAddresses()
         this.getAllBusinessesTypes()
+        this.getAlRless()
+        this.getAllSystems()
         setTimeout(() => {
           this.business = JSON.parse(busFromQuery);
           this.businessForm.patchValue({
@@ -172,9 +179,14 @@ export class AddEditBusniessComponent implements OnInit {
             Business_email: this.business!.business_email
           });
 
+          this.usersBusinesses = this.business!.usersBusinesses || [];
+          console.log(this.usersBusinesses)
           this.logoPreview = this.business!.business_LogoUrl || ''
           this.servicesBusiness = this.business!.business_Services || [];
           this.Activites = this.business!.activities;
+          this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
+          this.providerBusinessRelations = this.business!.providerBusinessRelations;
+          this.business_Owners = this.business!.business_Owners;
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
@@ -187,6 +199,8 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllAddresses()
         this.getAllBusinessesTypes()
         this.getAllCountries()
+        this.getAlRless()
+        this.getAllSystems()
       }
     })
 
@@ -282,6 +296,20 @@ export class AddEditBusniessComponent implements OnInit {
         this.GetAllStatesByCountry(this.business!.countryId);
         this.selectedCountry = Country!.name ? Country!.name : ''
       }
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.cdr.detectChanges()
+    })
+  }
+
+
+
+
+
+  getAllSystems() {
+    this.http.getAllData('GlobalSystem').subscribe((res: any) => {
+      this.systems = res
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
@@ -568,8 +596,31 @@ export class AddEditBusniessComponent implements OnInit {
 
   BindActivitiesWithBusiness() {
     var currentBusinessId = this.business!.business_id
-    const activitiesToBind = this.actiivities.map(a => a.description);
+    var payload = {
+      "business_id": currentBusinessId,
+      "activities": this.actiivities.map(a => a.description)
+
+    }
+    console.log(payload)
+    this.http.putData('Business/AddActivitiesToBusiness', payload).subscribe({
+      next: _ => {
+        console.log(_)
+        this.Activites = [
+          ...(this.Activites ?? []),
+          ...this.actiivities.map(a => new ActiviityModel({
+            description: a.description,
+            Business_id: currentBusinessId
+          }))
+        ];
+        this.actiivities = [];
+        this.cdr.detectChanges();
+        this.getAllBusinesses()
+      },
+      error: err => console.error(err)
+    });
   }
+
+
   addingLoad = false;
   areas: AreaModel[] = [];
   cities: CityModel[] = [];
@@ -612,23 +663,27 @@ export class AddEditBusniessComponent implements OnInit {
       addressPayload.areaId = this.areaId;
     }
 
-    const mainPayLoad = {
+    var bPayload = {
       customerName: this.customerName,
       customerMobile: this.customerMobile,
-      businessId: this.business?.business_id,
+      business_id: this.business?.business_id,
       country_id: Number(this.countryId),
       address: addressPayload
+    }
+
+    const mainPayLoad = {
+      business_id: this.business?.business_id,
+      globalCustomerDto: bPayload,
     };
 
     console.log(mainPayLoad);
-
-    // this.http.posteData('Business/AddCustomesToBusiness', mainPayLoad).subscribe(response => {
-    //   this.addingLoad = false
-    //   this.cdr.detectChanges()
-    // }, (error) => {
-    //   this.addingLoad = false
-    //   this.cdr.detectChanges()
-    // })
+    this.http.putData('Business/AddCustomesToBusiness', mainPayLoad).subscribe(response => {
+      this.addingLoad = false
+      this.cdr.detectChanges()
+    }, (error) => {
+      this.addingLoad = false
+      this.cdr.detectChanges()
+    })
   }
 
   countryChangedForCustomer(event: Event): void {
@@ -679,6 +734,7 @@ export class AddEditBusniessComponent implements OnInit {
   removeActivityFromBusiness(activityId: number): void {
     this.http.deleteData(`Business/RemoveActivityFromBusiness/${activityId}`).subscribe({
       next: _ => {
+        console.log(_)
         this.Activites = this.Activites?.filter(a => a.activity_id !== activityId);
         this.cdr.detectChanges();
       },
@@ -686,8 +742,8 @@ export class AddEditBusniessComponent implements OnInit {
     });
   }
 
-  removeServiceFromBusiness(serviceId: number): void {
-    this.http.deleteData(`Business/RemoveServiceFromBusiness/${serviceId}`).subscribe({
+  removeServiceFromBusiness(serviceId: number, businessId: number): void {
+    this.http.deleteData(`Business/RemoveServiceFromBusiness/${serviceId}/${businessId}`).subscribe({
       next: _ => {
         this.servicesBusiness = this.servicesBusiness?.filter(s => s.service?.service_id !== serviceId);
         this.cdr.detectChanges();
@@ -698,13 +754,207 @@ export class AddEditBusniessComponent implements OnInit {
 
   ServingDescription: string = '';
   addServing() {
+
+    this.SelectedBusinesses = this.SelectedBusinesses.map(c => Number(c));
     const payload = {
-      
-      description: this.ServingDescription,
-      businessId: this.business?.business_id
+      servingName: this.ServingDescription,
+      business_id: this.business?.business_id,
+      consumerBusinessIds: this.SelectedBusinesses,
     };
-   }
+
+    console.log(payload);
+    this.http.posteData('Business/SetServingToBusiness', payload).subscribe({
+      next: _ => {
+        console.log(_);
+        this.ServingDescription = '';
+        this.SelectedBusinesses = [];
+        this.cdr.detectChanges();
+      },
+      error: err => console.error(err)
+    });
+  }
+
+  get groupedProviderRelations() {
+    const grouped: any = {};
+
+    this.providerBusinessRelations?.forEach(rel => {
+
+      const servingId = rel.serving?.servingId;
+      if (!servingId) return;
+
+      if (!grouped[servingId]) {
+        grouped[servingId] = {
+          serving: rel.serving,
+          businesses: []
+        };
+      }
+
+      const business = this.Businesses?.find(
+        b => b.business_id === rel.consumerBusinessId
+      );
+
+      if (business) {
+        grouped[servingId].businesses.push({
+          ...business,
+          businessRelationId: rel.businessRelationId // ⭐ هنا الحل
+        });
+      }
+    });
+
+    return Object.values(grouped) as any[];
+  }
+
+  get groupedConsumerRelations() {
+
+    const grouped: Record<number, any> = {};
+    this.consumerBusinessRelations?.forEach(rel => {
+      const servingId = rel.serving?.servingId;
+      if (!servingId) return;
+      if (!grouped[servingId]) {
+        grouped[servingId] = {
+          serving: rel.serving,
+          businesses: []
+        };
+      }
+      const business = this.Businesses?.find(
+        b => b.business_id === rel.providerBusinessId
+      );
+
+      if (business) {
+        grouped[servingId].businesses.push(business);
+      }
+    });
+
+    return Object.values(grouped) as any[];
+  }
 
 
+  removeRelation(businessRelationId: number) {
+    this.http.deleteData(`Business/RemoveBusinessRelation/${businessRelationId}`).subscribe({
+      next: () => {
+        this.providerBusinessRelations =
+          this.providerBusinessRelations.filter(x =>
+            x.businessRelationId !== businessRelationId
+          );
+      }
+    });
+  }
+
+  removeCustomerFromBusiness(buseness_CustomerId: number) {
+    this.http.deleteData(`Business/RemoveCustomerFromBusiness/${buseness_CustomerId}`).subscribe({
+      next: () => {
+        this.businessCustomers =
+          this.businessCustomers.filter(x =>
+            x.buseness_CustomerId !== buseness_CustomerId
+          );
+      }
+    });
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  userName: string = '';
+  Email: string = '';
+  message: string = '';
+  loading: boolean = false
+  Roles?: RloeModel[]
+  selectedRoleId: string[] = [];
+  loadingRoles = true;
+  createdPassword: string = '';
+  loadingBusiness = true;
+  userIdToEdit?: string;
+
+
+  getAlRless() {
+    this.loadingRoles = true;
+    this.http.getAllData('Account/getAllRoles').subscribe(res => {
+      this.loadingRoles = false;
+      this.Roles = (res as RloeModel[]).map((el) => new RloeModel({
+        id: el.id,
+        name: el.name,
+
+      }))
+      this.cdr.detectChanges()
+    }, (error) => {
+      this.cdr.detectChanges()
+      this.loadingRoles = false
+      console.error(error)
+    })
+  }
+
+  addUser() {
+    this.loading = true
+    if (!this.userName && !this.Email) {
+      this.message = 'Please enter Service description';
+      this.loading = false
+      return;
+    }
+
+    var oneSelectedBusiness = [this.SelectedBusinesses]
+
+    const payLoad = {
+      "userName": this.userName.replace(' ', '-'),
+      "email": this.Email,
+      "roles": this.selectedRoleId,
+      "businessIds": oneSelectedBusiness
+    }
+    console.log(payLoad)
+
+    if (!this.userIdToEdit) {
+      this.http.posteData('Account/AddUsers', payLoad).subscribe(res => {
+        this.router.navigate(['Home/users'])
+        this.createdPassword = res.password
+        this.loading = false
+        alert(`User password: ${this.createdPassword}`)
+
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    } else {
+      this.http.putData(`Account/updateUser/${this.userIdToEdit}`, payLoad).subscribe(res => {
+        this.router.navigate(['Home/users'])
+        this.loading = false
+
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    }
+  }
+
+  AddRemoveRole(id: string) {
+    const index = this.selectedRoleId.indexOf(id);
+
+    if (index > -1) {
+      this.selectedRoleId.splice(index, 1);
+    } else {
+      this.selectedRoleId.push(id);
+    }
+  }
+
+
+  SelectedSystemsIds: number[] = [];
+  addRemoveSystem(systemId: number) {
+    const index = this.SelectedSystemsIds.indexOf(systemId);
+    if (index > -1) {
+      this.SelectedSystemsIds.splice(index, 1);
+    } else {
+      this.SelectedSystemsIds.push(systemId);
+    }
+  }
+
+  bindWithSystem(systemId: number) {
+    const payload = {
+      sysIds: this.SelectedSystemsIds,
+      BusId: this.business?.business_id,
+      CustId: null
+    };
+
+    this.http.posteData('GlobalSystem/BindCustomerOrBusinessWithGlobalSystem', payload).subscribe(res => {
+      window.alert('Bound successfully');
+    }, (error) => {
+      console.error(error);
+    });
+  }
 
 }

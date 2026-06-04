@@ -165,10 +165,12 @@ export class ShowInventoryComponent implements OnInit {
           qty: item.qty,
           status: item.status,
           category: item.category,
+          ebayListingId: item.ebayListingId,
           notFound: item.notFound,
           Product_name: item.product_name,
           product_description: item.product_description,
-          itemCondition: item.itemCondition
+          itemCondition: item.itemCondition,
+          isProccessedInInventory: item.isProccessedInInventory
         }));
         this.tempInventory = [...this.inventory];
         this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
@@ -1091,7 +1093,8 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
       });
   }
-  
+
+
   isMatchedSku(item: any): boolean {
     return this.inventory.some(inv =>
       inv.item?.sku?.trim() != '' && inv.item?.sku?.trim() != null

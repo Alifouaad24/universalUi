@@ -461,7 +461,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   filterAlbum(event: any) {
     const filterValue = event.target.value;
     if (filterValue === 'Unprocessed') {
-      this.groupedAlbums = this.groupedAlbums.filter(album => album.images.some(img => !img.isProccessed));
+      this.groupedAlbums = this.groupedAlbums.filter(album => album.images.every(img => !img.isProccessed));
       this.albumState.setCount(this.groupedAlbums.length);
     } else {
       this.groupedAlbums = [];

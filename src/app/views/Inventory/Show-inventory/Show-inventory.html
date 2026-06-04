@@ -89,12 +89,12 @@
           'table-warning': type.notFound,
           'table-success': type.status?.trim()?.includes('Auto Published')
         }">
-          <td *ngIf="type.ebayOfferID != null">
-            <a [href]="'https://www.ebay.com/itm/' + type.ebayOfferID" target="_blank" class="text-decoration-none">
+          <td *ngIf="type.ebayListingId != null">
+            <a [href]="'https://www.ebay.com/itm/' + type.ebayListingId" target="_blank" class="text-decoration-none">
               {{ type.inventory_id }}
             </a>
           </td>
-          <td *ngIf="type.ebayOfferID == null">
+          <td *ngIf="type.ebayListingId == null">
               {{ type.inventory_id }}
           </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
@@ -124,12 +124,12 @@
               <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
-              <button *ngIf="type.item?.images?.length <= 1" class="btn btn-sm btn-warning me-1"
+              <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
                 [disabled]="type.notFound">
                 Scrape item
               </button>
-              <button *ngIf="type.item?.images?.length > 1" class="btn btn-sm btn-primary me-1"
+              <button *ngIf="type.isProccessedInInventory" class="btn btn-sm btn-primary me-1"
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
               </button>

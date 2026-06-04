@@ -22,13 +22,17 @@ export class BusinessModel {
   businessTypes?: any[];
   businessAddresses?: any[];
   buseness_Customers?: any[];
-business_Services?: any[];
+  business_Services: any[] = [];
+  providerBusinessRelations: any[] = [];
+  consumerBusinessRelations: any[] = [];
+  usersBusinesses: any[] = [];
+  business_Owners: any[] =[]
   insert_on!: string;
   insert_by?: string;
 
   visible: boolean = true;
 
-  constructor(init?: Partial<BusinessModel>){
+  constructor(init?: Partial<BusinessModel>) {
     Object.assign(this, init)
   }
 }

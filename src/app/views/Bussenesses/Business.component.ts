@@ -57,8 +57,13 @@ export class BusinessComponent implements OnInit {
         business_LogoUrl: el.business_LogoUrl,
         buseness_Customers: el.buseness_Customers,
         insert_by: el.insert_by,
-        insert_on: el.insert_on
+        insert_on: el.insert_on,
+        business_Owners: el.business_Owners,
+        providerBusinessRelations: el.providerBusinessRelations,
+        consumerBusinessRelations: el.consumerBusinessRelations,
+        usersBusinesses: el.usersBusinesses,
 
+        business_Services: el.business_Services
       }))
       this.cdr.detectChanges()
     }, (error) => {

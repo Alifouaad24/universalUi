@@ -1,0 +1,24 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header">
+       {{isUpdate ? 'Edit' : 'Add'}} System
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="name" [(ngModel)]="name" placeholder="Enter featrue Name">
+    </div>
+    <div class="mb-3">
+      <label for="type" class="form-label">Type</label>
+      <input type="text" class="form-control" id="type" [(ngModel)]="type" placeholder="Enter system type">
+    </div>
+    <div class="mb-3">
+      <label for="url" class="form-label">Url</label>
+      <input type="text" class="form-control" id="url" [(ngModel)]="url" placeholder="Enter system url">
+    </div>
+    <button [disabled]="loading" class="btn btn-primary" (click)="addSystem()">
+      {{isUpdate ? 'Update' : 'Add'}} System
+    </button>
+    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+  </div>
+</div>
