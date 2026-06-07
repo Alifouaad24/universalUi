@@ -1,4 +1,4 @@
-import { Component, DestroyRef, DOCUMENT, effect, inject, OnInit, Renderer2, signal, WritableSignal } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, DOCUMENT, effect, inject, OnInit, Renderer2, signal, WritableSignal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ChartOptions } from 'chart.js';
 import {
@@ -22,6 +22,10 @@ import { IconDirective } from '@coreui/icons-angular';
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
 import { DashboardChartsData, IChartProps } from './dashboard-charts-data';
+import { BusinessModel } from '../../Models/Business/BusinessModel';
+import { BusinessContextService } from '../../core/Services/business-context.service';
+import { Router } from '@angular/router';
+import { AlbumStateService } from '../../core/Services/countOfFolders';
 
 interface IUser {
   name: string;
@@ -43,6 +47,33 @@ interface IUser {
   imports: [WidgetsDropdownComponent, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, IconDirective, ReactiveFormsModule, ButtonGroupComponent, FormCheckLabelDirective, ChartjsComponent, CardFooterComponent, GutterDirective, ProgressComponent, WidgetsBrandComponent, CardHeaderComponent, TableDirective, AvatarComponent]
 })
 export class DashboardComponent implements OnInit {
+  user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  userName = this.user?.userName || 'Guest';
+  businesses: BusinessModel[] = [];
+  currentBusiness: any;
+  showCRMActions = false;
+  showCountOfFolders = false;
+
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private albumState: AlbumStateService,
+    private router: Router) { }
+
+  ngOnInit(): void {
+    this.initCharts();
+    this.updateChartOnColorModeChange();
+    this.businesses = this.businessCtx.getBusinesses();
+    this.businessCtx.getCurrentBusiness().subscribe(b => {
+      this.currentBusiness = b;
+    });
+  }
+
+  selectBusiness(b: any) {
+    this.currentBusiness = b;
+    setTimeout(() => {
+      this.businessCtx.setCurrentBusiness(b)
+      this.cdr.detectChanges();
+      this.router.navigate(['/Home/dashboard']);
+    }, 1);
+  }
 
   readonly #destroyRef: DestroyRef = inject(DestroyRef);
   readonly #document: Document = inject(DOCUMENT);
@@ -142,10 +173,7 @@ export class DashboardComponent implements OnInit {
     trafficRadio: new FormControl('Month')
   });
 
-  ngOnInit(): void {
-    this.initCharts();
-    this.updateChartOnColorModeChange();
-  }
+
 
   initCharts(): void {
     this.mainChartRef()?.stop();

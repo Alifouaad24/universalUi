@@ -116,6 +116,26 @@ export class ShowUsersComponent implements OnInit {
     this.selectedType = type;
     this.showDeleteModal = true;
   }
+  ShowEditPasswordModal: boolean = false;
+  newPassword: string = '';
+  ShowEditPassword(type: UserModel) {
+    this.selectedType = type;
+    this.ShowEditPasswordModal = true;
+  }
+
+  updatePassword(userId: string) {
+    if (!this.selectedType || !this.newPassword) return;
+    this.http.putData(`Account/${userId}`, { "newPasswor": this.newPassword }).subscribe((res) => {
+      console.log(res);
+      this.ShowEditPasswordModal = false;
+      this.toastMessage.set(`Password for ${this.selectedType?.userName} updated successfully`);
+      this.toastVisible.set(true);
+      this.getAllUsers();
+    }, (error) => {
+      this.toastMessage.set(`An error occured during password update (${this.selectedType?.userName})`);
+      this.toastVisible.set(true);
+    });
+  }
 
   deleteUser(type?: UserModel) {
     if (!type) return;
@@ -143,8 +163,8 @@ export class ShowUsersComponent implements OnInit {
     alert("Feature coming soon!");
   }
 
-   public visible = false;
-   reoles?: any[];
+  public visible = false;
+  reoles?: any[];
 
   toggleLiveDemo(type: UserModel | null) {
     console.log(type);

@@ -5,15 +5,32 @@
   </div>
   <div class="card-body">
     <div class="mb-3">
-      <label for="name" class="form-label">Name</label>
-      <input type="text" class="form-control" id="name" [(ngModel)]="name" placeholder="Enter featrue Name">
+      <label for="name" class="form-label">Title</label>
+      <input type="text" class="form-control" id="name" [(ngModel)]="title" placeholder="Enter feature title">
     </div>
     <div class="mb-3">
-      <label class="form-label">Services</label>
-      <select class="form-select" [(ngModel)]="selectedServiceId">
-        <option disabled [ngValue]="null">-- Select Service --</option>
-        <option *ngFor="let one of Services" [ngValue]="one.service_id">
-          {{ one.description }}
+      <label for="name" class="form-label">Body</label>
+      <textarea class="form-control" id="name" [(ngModel)]="body" placeholder="Enter feature body"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="name" class="form-label">Status</label>
+      <select class="form-select" [(ngModel)]="status">
+        <option>Unscheduled</option>
+        <option>New</option>
+        <option>On progress</option>
+        <option>Waiting response</option>
+        <option>Testing</option>
+        <option>Completed</option>
+      </select>
+
+
+    </div>
+    <div class="mb-3">
+      <label class="form-label">System</label>
+      <select class="form-select" [(ngModel)]="selectedSystemId">
+        <option disabled [ngValue]="null">-- Select System --</option>
+        <option *ngFor="let one of Systems" [ngValue]="one.globalSystemId">
+          {{ one.globalSystemName }}
         </option>
       </select>
     </div>

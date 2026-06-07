@@ -18,19 +18,19 @@
       <thead class="table-light">
         <tr>
           <th>#</th>
-          <th>Name</th>
-          <th>Service Name</th>
+          <th>Title</th>
+          <th>System</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let type of features; index as i">
           <td>{{ i + 1 }}</td>
-          <td>{{ type.name }}</td>
-          <td>{{ type.service.description }}</td>
+          <td>{{ type.title }}</td>
+          <td>{{ type.system.globalSystemName }}</td>
           <td>
             <ng-container *ngIf="features.length">
-              <button class="btn btn-sm btn-primary me-1">
+              <button class="btn btn-sm btn-primary me-1" (click)="openEditModal(type)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
@@ -49,7 +49,7 @@
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.name }}?
+    Are you sure you want to delete {{ selectedType?.title }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
@@ -70,3 +70,159 @@
     </c-toast-body>
   </c-toast>
 </c-toaster>
+
+<!--  Update Feature  -->
+
+<c-modal [(visible)]="showEditModal" [size]="'xl'">
+  <c-modal-header class="bg-primary text-white">
+    <h5 cModalTitle class="mb-0">
+      <i class="fas fa-edit me-2"></i>
+      Edit Feature
+    </h5>
+  </c-modal-header>
+
+  <c-modal-body>
+
+    <!-- Feature Details -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 text-dark">
+          <i class="fas fa-info-circle me-2"></i>
+          Feature Details
+        </h6>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+
+          <!-- Title -->
+          <div class="col-md-12 mb-3">
+            <label class="form-label fw-semibold">
+              Title
+            </label>
+            <input type="text" class="form-control" [(ngModel)]="title" name="title">
+          </div>
+
+          <!-- Body -->
+          <div class="col-md-12 mb-3">
+            <label class="form-label fw-semibold">
+              Description
+            </label>
+            <textarea rows="5" class="form-control" [(ngModel)]="body" name="body">
+            </textarea>
+          </div>
+
+          <!-- Status -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">
+              Status
+            </label>
+
+            <select class="form-select" [(ngModel)]="status" name="status">
+
+              <option>Unscheduled</option>
+              <option>New</option>
+              <option>On progress</option>
+              <option>Waiting response</option>
+              <option>Testing</option>
+              <option>Completed</option>
+
+            </select>
+          </div>
+
+          <!-- System -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">
+              System
+            </label>
+
+            <select class="form-select" [(ngModel)]="globalSystemId" name="globalSystemId">
+
+              <option *ngFor="let system of Systems" [value]="system.globalSystemId">
+
+                {{ system.globalSystemName }}
+
+              </option>
+
+            </select>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-dark">
+          <i class="fas fa-comments me-2"></i>
+          Comments History
+        </h6>
+        <span class="badge bg-primary">
+          {{ comments?.length || 0 }}
+        </span>
+      </div>
+      <div class="card-body">
+        <div *ngFor="let c of comments" class="position-relative ps-4 mb-4">
+          <div class="position-absolute top-0 start-0 bg-primary rounded-circle" style="width:12px;height:12px;">
+          </div>
+          <div class="card border-start border-4 border-primary">
+            <div class="card-body py-2">
+              <small class="text-muted">
+                <i class="fas fa-user-circle me-1"></i>
+                Comment
+              </small>
+              <div class="mt-2">
+                {{ c }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!comments?.length" class="text-center text-muted py-4">
+          <i class="fas fa-comment-slash fa-2x mb-2"></i>
+          <div>
+            No comments available
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Comment -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-light">
+        <h6 class="mb-0 text-dark">
+          <i class="fas fa-plus-circle me-2"></i>
+          Add New Comment
+        </h6>
+      </div>
+      <div class="card-body">
+        <textarea class="form-control mb-3" rows="4" placeholder="Write your comment here..." [(ngModel)]="comment"
+          name="comment">
+        </textarea>
+        <button type="button" class="btn btn-primary" (click)="addComment()">
+          <i class="fas fa-paper-plane me-2"></i>
+          Add Comment
+        </button>
+      </div>
+    </div>
+
+  </c-modal-body>
+
+  <c-modal-footer class="border-0">
+
+    <button class="btn btn-light px-4" (click)="showEditModal = false">
+
+      <i class="fas fa-times me-2"></i>
+      Cancel
+
+    </button>
+
+    <button class="btn btn-success px-4" (click)="updateFeature(selectedFeatureId)">
+
+      <i class="fas fa-save me-2"></i>
+      Save Changes
+
+    </button>
+
+  </c-modal-footer>
+</c-modal>

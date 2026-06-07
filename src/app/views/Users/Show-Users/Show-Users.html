@@ -36,8 +36,11 @@
                 [queryParams]="{ user: type | json }">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
-              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
+              <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditPassword(type)">
+                <c-icon name="cilBookmark"></c-icon>
               </button>
               <!-- <button class="btn btn-sm btn-success ms-1" routerLink="./bind-user-to-business"
                [queryParams]="{ userId: type.id, userName: type.userName, email: type.email }">
@@ -61,6 +64,21 @@
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
     <button class="btn btn-danger" (click)="deleteUser(selectedType)">Delete</button>
+  </c-modal-footer>
+</c-modal>
+
+
+<c-modal [(visible)]="ShowEditPasswordModal" [size]="'sm'">
+  <c-modal-header>Update Password</c-modal-header>
+  <c-modal-body>
+    Set new password for {{ selectedType?.userName }}
+    <div>
+      <input type="text" class="form-control mt-2" [(ngModel)]="newPassword" placeholder="New Password">
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="ShowEditPasswordModal = false">Cancel</button>
+    <button class="btn btn-danger" (click)="updatePassword(selectedType!.id!)">Update Password</button>
   </c-modal-footer>
 </c-modal>
 

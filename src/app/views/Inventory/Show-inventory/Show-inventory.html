@@ -78,6 +78,7 @@
           <th style="width: 10%;">Image</th>
           <th style="width: 10%;">UPC/Eby sku</th>
           <th style="width: 8%;">Size</th>
+          <th style="width: 8%;">Base Price</th>
           <th style="width: 8%;">Price</th>
           <th style="width: 8%;">Quantity</th>
           <th style="width: 10%;">Folder</th>
@@ -107,6 +108,7 @@
 
           </td>
           <td>{{ type.size?.description }}</td>
+          <td class="text-danger">{{ type?.item.basePrice }}{{ type?.item.basePrice ? '$' : '' }}</td>
           <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
           <td>{{ type.folderImages }}</td>
@@ -115,6 +117,9 @@
               <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
                 type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id)">
                 <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-danger me-1" (click)="DeleteInventoryItem(type.inventory_id)">
+                <c-icon name="cil-trash"></c-icon>
               </button>
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
                 [queryParams]="{ folderSelected: type.folderImages }">

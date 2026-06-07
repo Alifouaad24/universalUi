@@ -1103,5 +1103,27 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-
+  DeleteInventoryItem(inventoryId?: number) {
+    if (!inventoryId) {
+      this.toastMessage.set('No inventory item selected for deletion.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    this.http.deleteData(`Inventory/${inventoryId}`).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastVisible.set(true);
+        this.inventory = this.inventory.filter(inv => inv.inventory_id !== inventoryId);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error deleting inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
 }

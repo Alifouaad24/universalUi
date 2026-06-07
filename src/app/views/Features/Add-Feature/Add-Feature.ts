@@ -6,7 +6,7 @@ import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent,
 import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { ActiviityModel } from '../../../Models/ActivityModel';
-import { ServiceModel } from '../../../Models/ServiceModel';
+import { SystemModel } from '../../../Models/SystemModel';
 
 @Component({
   selector: 'app-buttons',
@@ -15,28 +15,29 @@ import { ServiceModel } from '../../../Models/ServiceModel';
     CardComponent, CardHeaderComponent,
     CardBodyComponent, CommonModule, FormsModule, RouterOutlet,
     ButtonDirective, IconDirective, RouterLink,
-    ]
+  ]
 })
 export class AddEditFeatureComponent implements OnInit {
-  name: string = '';
+  title: string = '';
+  status: string = '';
+  body: string = '';
   message: string = '';
   loading: boolean = false
-  Services?: ServiceModel[]
-  selectedServiceId?: number;
+  Systems?: SystemModel[]
+  selectedSystemId?: number;
 
   constructor(private http: HttpConnectService, private router: Router) { }
 
   ngOnInit(): void {
-    this.getAllBusinesses()
+    this.getAllSystems()
   }
 
-  getAllBusinesses(){
-    this.http.getAllData('Service').subscribe(res => {
-    this.Services = (res as ServiceModel[]).map((el) => new ServiceModel({
-      service_id: el.service_id,
-      description: el.description,
-
-    }))
+  getAllSystems() {
+    this.http.getAllData('GlobalSystem').subscribe(res => {
+      this.Systems = (res as SystemModel[]).map((el) => new SystemModel({
+        globalSystemId: el.globalSystemId,
+        globalSystemName: el.globalSystemName,
+      }))
     }, (error) => {
       console.error(error)
       this.loading = false
@@ -45,16 +46,17 @@ export class AddEditFeatureComponent implements OnInit {
 
   addFeature() {
     this.loading = true
-    if (!this.name) {
-      this.message = 'Please enter feature name';
+    if (!this.title) {
+      this.message = 'Please enter feature title';
       this.loading = false
       return;
     }
-    
 
     const payLoad = {
-      "name": this.name,
-      "serviceId": this.selectedServiceId
+      "title": this.title,
+      "body": this.body,
+      "status": this.status,
+      "globalSystemId": this.selectedSystemId
     }
 
     this.http.posteData('Feature', payLoad).subscribe(res => {
@@ -64,8 +66,14 @@ export class AddEditFeatureComponent implements OnInit {
       console.error(error)
       this.loading = false
     })
-
-
-
+  }
+  
+  addComment() {
+    this.loading = true
+    if (!this.body) {
+      this.message = 'Please enter comment body';
+      this.loading = false
+      return;
+    }
   }
 }

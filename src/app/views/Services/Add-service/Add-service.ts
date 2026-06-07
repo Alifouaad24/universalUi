@@ -46,6 +46,7 @@ export class AddEditServiceComponent implements OnInit {
       const serFromQuery = param.get('service')
       if (serFromQuery) {
         this.serviceToEdit = JSON.parse(serFromQuery)
+        console.log('Service to edit:', this.serviceToEdit)
         this.description = this.serviceToEdit!.description!
         this.id = this.serviceToEdit!.service_id,
           this.visibility = this.serviceToEdit!.isPublic ? 'public' : 'local'
@@ -53,6 +54,8 @@ export class AddEditServiceComponent implements OnInit {
         this.selectedBusinessIds = this.serviceToEdit!.business_Services!.map((b: any) => b.business_id!) || []
         this.selectedActivityIds = this.serviceToEdit!.service_Activities!.map((a: any) => a.activity_id!) || []
       }
+
+
     })
   }
 

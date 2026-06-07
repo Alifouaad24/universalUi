@@ -1,7 +1,7 @@
 import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, viewChild } from '@angular/core';
 import { getStyle } from '@coreui/utils';
 import { ChartjsComponent } from '@coreui/angular-chartjs';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IconDirective } from '@coreui/icons-angular';
 import {
   ButtonDirective,
@@ -11,15 +11,24 @@ import {
   DropdownItemDirective,
   DropdownMenuDirective,
   DropdownToggleDirective,
+  FormModule,
   RowComponent,
   TemplateIdDirective,
   WidgetStatAComponent
 } from '@coreui/angular';
+import { BusinessContextService } from '../../../core/Services/business-context.service';
+import { AlbumStateService } from '../../../core/Services/countOfFolders';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-widgets-dropdown',
   templateUrl: './widgets-dropdown.component.html',
-  imports: [RowComponent, ColComponent, WidgetStatAComponent, TemplateIdDirective, IconDirective, DropdownComponent, ButtonDirective, DropdownToggleDirective, DropdownMenuDirective, DropdownItemDirective, RouterLink, DropdownDividerDirective, ChartjsComponent]
+  imports: [RowComponent, ColComponent, WidgetStatAComponent,
+    TemplateIdDirective, IconDirective, DropdownComponent, FormModule, CommonModule,
+    ButtonDirective, DropdownToggleDirective, DropdownMenuDirective,
+    DropdownItemDirective, RouterLink, DropdownDividerDirective,
+    ChartjsComponent]
 })
 export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
   private changeDetectorRef = inject(ChangeDetectorRef);
@@ -120,10 +129,37 @@ export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
     }
   };
 
+  /////////////////////////////////////////////////////////////////////////
+
+  constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private albumState: AlbumStateService,
+    private router: Router) { }
+  user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  userName = this.user?.userName || 'Guest';
+  businesses: BusinessModel[] = [];
+  currentBusiness: any;
+  showCRMActions = false;
+  showCountOfFolders = false;
+  currentBusinessId: number | null = null;
   ngOnInit(): void {
+    this.currentBusinessId = Number.parseInt(localStorage.getItem('businessId') || '0');
+    this.businesses = this.businessCtx.getBusinesses();
+    this.businessCtx.getCurrentBusiness().subscribe(b => {
+      this.currentBusiness = b;
+    });
+    console.log('businesses in widgets-dropdown:', this.businesses);
     this.setData();
   }
 
+  selectBusiness(b: any) {
+    this.currentBusiness = b;
+    setTimeout(() => {
+      this.businessCtx.setCurrentBusiness(b)
+      this.cdr.detectChanges();
+      this.router.navigate(['/Home/dashboard']);
+      window.location.reload();
+    }, 1);
+  }
+  ////////////////////////////////////////////////////////////
   ngAfterContentInit(): void {
     this.changeDetectorRef.detectChanges();
 
@@ -183,7 +219,7 @@ export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
 })
 export class ChartSample implements AfterViewInit {
 
-  constructor() {}
+  constructor() { }
 
   readonly chartComponent = viewChild.required<ChartjsComponent>('chart');
 
