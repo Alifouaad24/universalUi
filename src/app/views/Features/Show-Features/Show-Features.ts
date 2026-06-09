@@ -130,7 +130,7 @@ comments: string[] = [];
 
   deleteFeature(type?: FeatureModel) {
     if (!type) return;
-    this.http.deleteData(`Activity/${type.featureId}`,).subscribe(() => {
+    this.http.deleteData(`Feature/${type.featureId}`,).subscribe(() => {
       this.features = this.features.filter(t => t.featureId !== type.featureId);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.title} deleted successfully`);
