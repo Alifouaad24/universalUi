@@ -76,7 +76,7 @@ export class ShowFeaturesComponent implements OnInit {
   loading: boolean = false
   comment: string = '';
   selectedFeatureId: number = 0;
-comments: string[] = [];
+  comments: string[] = [];
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -97,22 +97,28 @@ comments: string[] = [];
     })
   }
 
+  completedCount = 0;
+  progressCount = 0;
+  newCount = 0;
+
   getAllFeatures() {
     this.isLoading = true;
+
     this.http.getAllData('Feature').subscribe(
       (res: any) => {
-        console.log(res)
+
         this.features = (res as any[]).map(item => new FeatureModel({
           featureId: item.featureId,
           title: item.title,
           body: item.body,
           status: item.status,
           comments: item.comments,
-
           system: item.globalSystem,
         }));
-        this.isLoading = false;
 
+        this.calculateStats();
+
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       (err) => {
@@ -123,6 +129,17 @@ comments: string[] = [];
     );
   }
 
+  calculateStats() {
+
+    this.completedCount =
+      this.features.filter(x => x.status === 'Completed').length;
+
+    this.progressCount =
+      this.features.filter(x => x.status === 'On progress').length;
+
+    this.newCount =
+      this.features.filter(x => x.status === 'New').length;
+  }
   confirmDelete(type: FeatureModel) {
     this.selectedType = type;
     this.showDeleteModal = true;
@@ -175,8 +192,12 @@ comments: string[] = [];
       () => {
         this.toastMessage.set('Comment added successfully');
         this.toastVisible.set(true);
-        this.getAllFeatures();
         this.comments.push(`${currentUser.userName?.replace('-', ' ')}: ${this.comment}`);
+        this.cdr.detectChanges();
+        this.getAllFeatures();
+        this.comment = '';
+            this.toastMessage.set('Comment added successfully');
+    this.toastVisible.set(true);
       },
       (error) => {
         console.error('Error adding comment:', error);
@@ -185,9 +206,8 @@ comments: string[] = [];
       }
     );
     console.log('New comment:', this.comment);
-    this.comment = '';
-    this.toastMessage.set('Comment added successfully');
-    this.toastVisible.set(true);
+    
+
   }
 
   updateFeature(featureId: number) {

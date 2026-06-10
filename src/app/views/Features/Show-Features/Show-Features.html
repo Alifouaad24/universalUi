@@ -1,50 +1,178 @@
-<div class="m-2 p-2">
-  <button class="btn btn-primary" routerLink="./add-edit-feature">
-    Add
-  </button>
-</div>
-<div class="card">
-  <div class="card-header">
-    Features List
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+  <div>
+    <h2 class="mb-0 fw-bold">Features Dashboard</h2>
+    <small class="text-muted">
+      Manage and track all system features
+    </small>
   </div>
-  <div class="card-body">
-    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+
+  <button class="btn btn-primary shadow-sm" routerLink="./add-edit-feature">
+    <i class="fas fa-plus me-2"></i>
+    Add Feature
+  </button>
+
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-sm bg-primary text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3>{{ features.length }}</h3>
+            <div>Total Features</div>
+          </div>
+          <i class="fas fa-layer-group fa-2x"></i>
+        </div>
       </div>
     </div>
-    <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
-    <table *ngIf="features.length > 0" class="table table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Title</th>
-          <th>System</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let type of features; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ type.title }}</td>
-          <td>{{ type.system.globalSystemName }}</td>
-          <td>
-            <ng-container *ngIf="features.length">
-              <button class="btn btn-sm btn-primary me-1" (click)="openEditModal(type)">
-                <c-icon name="cil-pencil"></c-icon>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
-                <c-icon name="cil-trash"></c-icon>
-              </button>
-            </ng-container>
-          </td>
+  </div>
 
-        </tr>
-      </tbody>
-    </table>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-sm bg-success text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3>{{ completedCount }}</h3>
+            <div>Completed</div>
+          </div>
+          <i class="fas fa-check-circle fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-sm bg-warning">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3>{{ progressCount }}</h3>
+            <div>On Progress</div>
+          </div>
+          <i class="fas fa-spinner fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-sm bg-danger text-white">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h3>{{ newCount }}</h3>
+            <div>New Features</div>
+          </div>
+          <i class="fas fa-star fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 300px">
+
+  <div class="spinner-border text-primary" role="status">
+  </div>
+
+</div>
+
+<!-- Error -->
+<div *ngIf="!isLoading && message" class="alert alert-danger">
+
+  {{ message }}
+
+</div>
+
+<!-- Feature Cards -->
+<div class="row" *ngIf="!isLoading && features.length">
+
+  <div class="col-xl-4 col-lg-6 mb-4" *ngFor="let feature of features">
+
+    <div class="card border-0 shadow-sm h-100">
+
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong class="text-dark">
+          {{ feature.title }}
+        </strong>
+        <span class="badge" [ngClass]="{
+              'bg-success': feature.status === 'Completed',
+              'bg-warning text-dark': feature.status === 'On progress',
+              'bg-danger': feature.status === 'New',
+              'bg-info': feature.status === 'Testing',
+              'bg-secondary': feature.status === 'Unscheduled',
+              'bg-dark': feature.status === 'Waiting response'
+            }">
+          {{ feature.status }}
+        </span>
+
+      </div>
+
+      <div class="card-body">
+
+        <div class="mb-3">
+
+          <small class="text-muted">
+            Description
+          </small>
+
+          <p class="mb-0 mt-1">
+            {{
+            (feature.body?.length ?? 0) > 150
+            ? (feature.body | slice:0:150) + '...'
+            : feature.body
+            }}
+          </p>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">
+            System
+          </span>
+          <strong>
+            {{ feature.system?.globalSystemName }}
+          </strong>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">
+            Comments
+          </span>
+          <span class="badge bg-primary">
+            {{ feature.comments?.length || 0 }}
+          </span>
+        </div>
+      </div>
+      <div class="card-footer bg-white border-0">
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary flex-fill" (click)="openEditModal(feature)">
+            <c-icon name="cil-pencil"></c-icon>
+          </button>
+          <button class="btn btn-danger" (click)="confirmDelete(feature)">
+            <c-icon name="cil-trash"></c-icon>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- Empty State -->
+<div *ngIf="!isLoading && !features.length" class="card border-0 shadow-sm">
+  <div class="card-body text-center py-5">
+    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+    <h5>No Features Found</h5>
+    <p class="text-muted">
+      There are no features available yet.
+    </p>
+  </div>
+</div>
 
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
@@ -162,8 +290,9 @@
           {{ comments?.length || 0 }}
         </span>
       </div>
-      <div class="card-body">
-        <div *ngFor="let c of comments" class="position-relative ps-4 mb-4">
+      <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+        <div *ngFor="let c of comments" class="position-relative ps-4 mb-4"
+          style="border-left: 2px solid #28ba90;">
           <div class="position-absolute top-0 start-0 bg-primary rounded-circle" style="width:12px;height:12px;">
           </div>
           <div class="card border-start border-4 border-primary">

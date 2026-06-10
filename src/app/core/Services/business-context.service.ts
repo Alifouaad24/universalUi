@@ -4,43 +4,75 @@ import { BehaviorSubject } from "rxjs";
 @Injectable({ providedIn: 'root' })
 export class BusinessContextService {
 
-  private businesses: any[] = [];
-  private currentBusiness$ = new BehaviorSubject<any>(null);
+  private businessesSubject =
+    new BehaviorSubject<any[]>([]);
+
+  businesses$ =
+    this.businessesSubject.asObservable();
+
+  private currentBusiness$ =
+    new BehaviorSubject<any>(null);
+
+  constructor() {
+
+    const savedBusinesses =
+      localStorage.getItem('businesses');
+
+    const savedCurrent =
+      localStorage.getItem('currentBusiness');
+
+    if (savedBusinesses) {
+
+      const businesses =
+        JSON.parse(savedBusinesses);
+
+      this.businessesSubject.next(businesses);
+    }
+
+    if (savedCurrent) {
+
+      this.currentBusiness$.next(
+        JSON.parse(savedCurrent)
+      );
+    }
+  }
 
   clearContext() {
-    this.businesses = [];
+
+    this.businessesSubject.next([]);
+
     this.currentBusiness$.next(null);
+
     localStorage.removeItem('businesses');
     localStorage.removeItem('currentBusiness');
     localStorage.removeItem('businessId');
   }
 
-  constructor() {
-    const savedBusinesses = localStorage.getItem('businesses');
-    const savedCurrent = localStorage.getItem('currentBusiness');
-
-    if (savedBusinesses) {
-      this.businesses = JSON.parse(savedBusinesses);
-    }
-
-    if (savedCurrent) {
-      this.currentBusiness$.next(JSON.parse(savedCurrent));
-    } else if (this.businesses.length > 0) {
-      this.currentBusiness$.next(this.businesses[0]);
-      localStorage.setItem('currentBusiness', JSON.stringify(this.businesses[0]));
-    }
-  }
-
   setBusinesses(list: any[]) {
-    this.businesses = list;
-    localStorage.setItem('businesses', JSON.stringify(list));
+
+    this.businessesSubject.next(list);
+
+    localStorage.setItem(
+      'businesses',
+      JSON.stringify(list)
+    );
   }
 
   setCurrentBusiness(business: any) {
+
     if (!business) return;
+
     this.currentBusiness$.next(business);
-    localStorage.setItem('currentBusiness', JSON.stringify(business));
-    localStorage.setItem('businessId', business.business_id);
+
+    localStorage.setItem(
+      'currentBusiness',
+      JSON.stringify(business)
+    );
+
+    localStorage.setItem(
+      'businessId',
+      business.business_id
+    );
   }
 
   getCurrentBusiness() {
@@ -48,6 +80,6 @@ export class BusinessContextService {
   }
 
   getBusinesses() {
-    return this.businesses;
+    return this.businessesSubject.value;
   }
 }

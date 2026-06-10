@@ -22,6 +22,7 @@ export class AddEditSystemComponent implements OnInit {
   type: string = '';
   url: string = '';
   message: string = '';
+  id: number = 0;
   loading: boolean = false;
   isUpdate = false;
 
@@ -32,6 +33,7 @@ export class AddEditSystemComponent implements OnInit {
       const system = JSON.parse(params.get('system') || 'null');
       console.log(system)
       if (system) {
+        this.id = system.globalSystemId;
         this.name = system.globalSystemName;
         this.type = system.globalSystemType;
         this.url = system.globalSystemUrl;
@@ -66,7 +68,7 @@ export class AddEditSystemComponent implements OnInit {
       "url": this.url,
     }
 
-    this.isUpdate ? this.http.putData('GlobalSystem', payLoad).subscribe(res => {
+    this.isUpdate ? this.http.putData(`GlobalSystem/${this.id}`, payLoad).subscribe(res => {
       this.router.navigate(['Home/systems'])
       this.loading = false
     }, (error) => {

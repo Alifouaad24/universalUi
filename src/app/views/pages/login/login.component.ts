@@ -53,44 +53,51 @@ export class LoginComponent {
   }
 
 
-    login(): void {
-      if (this.loginForm.invalid) return;
+  login(): void {
+    if (this.loginForm.invalid) return;
 
-      this.loading = true;
-      this.showError = false;
-
-      const payload: LoginRequest = this.loginForm.getRawValue();
-
-      this.httpService.posteData('Account/Login', payload).subscribe({
-        next: (res: LoginResponse) => {
-          console.log(res)
-          //this.businessService.clearContext();
-          
+    this.loading = true;
+    this.showError = false;
+    const payload: LoginRequest = this.loginForm.getRawValue();
+    this.httpService.posteData('Account/Login', payload).subscribe({
+      next: (res: LoginResponse) => {
+        console.log(res)
+        //this.businessService.clearContext();
+        localStorage.removeItem('businesses');
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('currentUser', JSON.stringify(res.user));
+        if (res.businesses && res.businesses.length > 0) {
           localStorage.setItem('token', res.token);
           localStorage.setItem('currentUser', JSON.stringify(res.user));
-          if (res.businesses && res.businesses.length > 0) {
-            const safeBusinesses = JSON.parse(JSON.stringify(res.businesses));
-            localStorage.setItem('businesses', JSON.stringify(safeBusinesses));
-            if(localStorage.getItem('currentBusiness') == null){
-              localStorage.setItem('currentBusiness', JSON.stringify(safeBusinesses[0]));
-              localStorage.setItem('businessId', JSON.stringify(safeBusinesses[0].business_id));
-            }
-          } else {
-            localStorage.removeItem('businesses');
+
+          if (res.businesses?.length) {
+            const safeBusinesses =
+              JSON.parse(JSON.stringify(res.businesses));
+            this.businessService.setBusinesses(
+              safeBusinesses
+            );
+            this.businessService.setCurrentBusiness(
+              safeBusinesses[0]
+            );
           }
+          setTimeout(() => {
+            this.router.navigate(['/Home/dashboard']);
+            this.loading = false;
+          }, 1000);
 
-          this.router.navigate(['/Home/dashboard']);
-          this.loading = false;
-        },
-
-        error: err => {
-          this.showError = true;
-          this.loading = false;
-          this.cdr.detectChanges();
-          alert(err.error.message);
+        } else {
+          localStorage.removeItem('businesses');
         }
-      });
-    }
+      },
+
+      error: err => {
+        this.showError = true;
+        this.loading = false;
+        this.cdr.detectChanges();
+        alert(err.error.message);
+      }
+    });
+  }
 
 
 }

@@ -142,7 +142,12 @@ export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
   currentBusinessId: number | null = null;
   ngOnInit(): void {
     this.currentBusinessId = Number.parseInt(localStorage.getItem('businessId') || '0');
-    this.businesses = this.businessCtx.getBusinesses();
+    this.businessCtx.businesses$
+      .subscribe(res => {
+        this.businesses = res;
+        this.cdr.detectChanges();
+      });
+
     this.businessCtx.getCurrentBusiness().subscribe(b => {
       this.currentBusiness = b;
     });
