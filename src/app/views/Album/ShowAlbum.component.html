@@ -15,8 +15,13 @@
   <c-card-body>
     <div *ngIf="selectedFolderId === null">
       <div class="row g-3">
-        <div class="text-center" *ngIf="groupedAlbums.length === 0">
+        <div class="text-center" *ngIf="groupedAlbums.length === 0 && !isLoading">
           No folders available
+        </div>
+        <div class="text-center" *ngIf="isLoading">
+          <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
         </div>
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let folder of groupedAlbums">
           <div style="cursor: pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer border"
@@ -45,7 +50,7 @@
     <div *ngIf="selectedFolderId !== null">
       <c-button style="cursor: pointer;" color="secondary" (click)="goBack()">Back</c-button>
       <div class="row g-3 mt-2">
-        <div class="text-center" *ngIf="folderImages.length === 0">
+        <div class="text-center" *ngIf="folderImages.length === 0 && !isLoading">
           No photos available
         </div>
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let img of folderImages; let i = index">
