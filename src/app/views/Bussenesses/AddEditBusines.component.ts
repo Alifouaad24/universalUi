@@ -1,6 +1,6 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AccordionModule, BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, CollapseModule, FormControlDirective, RowComponent, SharedModule, SpinnerModule, TableDirective } from '@coreui/angular';
+import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AccordionModule, BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, CollapseModule, FormControlDirective, ModalBodyComponent, ModalComponent, ModalContentComponent, ModalFooterComponent, ModalHeaderComponent, RowComponent, SharedModule, SpinnerModule, TableDirective } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -35,7 +35,9 @@ import { set } from 'lodash-es';
     IconComponent,
     RouterLink, AccordionModule, AccordionComponent, AccordionItemComponent, AccordionButtonDirective,
     GridModule,
-    FormModule,
+    FormModule, ColComponent, IconComponent, ModalComponent, ModalBodyComponent, ModalContentComponent, ModalHeaderComponent
+    , ModalFooterComponent, ModalHeaderComponent,
+    CardComponent, CardHeaderComponent, ReactiveFormsModule, FormsModule,
     ButtonModule,
     RouterOutlet, CommonModule, FormsModule, ReactiveFormsModule, AccordionModule,
     SharedModule,
@@ -104,8 +106,8 @@ export class AddEditBusniessComponent implements OnInit {
   selectedStateId: number | null = null;
   selectedAreaId: number | null = null;
   landMark: string = '';
-  Activites?: ActiviityModel[]
-  businessCustomers: any[] = [];
+  Activites?: any[]
+  businessCustomers?: any[] = [];
   BusinessServices: any[] = [];
   services: {
     description: string;
@@ -114,9 +116,8 @@ export class AddEditBusniessComponent implements OnInit {
   }[] = [];
 
   actiivities: {
-    description: string;
+    id: number;
   }[] = [];
-
   servicesBusiness: any[] = [];
   consumerBusinessRelations: any[] = [];
   providerBusinessRelations: any[] = [];
@@ -129,7 +130,7 @@ export class AddEditBusniessComponent implements OnInit {
   selectedAreaNonUS: string | null = null;
   selectedStateName: string | null = null;
   usersBusinesses: any[] = [];
-  business_Owners: any[] = [];
+  business_Customers: any[] = [];
   constructor(private fb: FormBuilder, private http: HttpConnectService,
     private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) {
     this.businessForm = this.fb.group({
@@ -159,6 +160,7 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllBusinesses()
         this.getAllCountries()
         this.getAllAddresses()
+        this.getAllActivities()
         this.getAllBusinessesTypes()
         this.getAlRless()
         this.getAllSystems()
@@ -183,10 +185,9 @@ export class AddEditBusniessComponent implements OnInit {
           console.log(this.usersBusinesses)
           this.logoPreview = this.business!.business_LogoUrl || ''
           this.servicesBusiness = this.business!.business_Services || [];
-          this.Activites = this.business!.activities;
+          this.Activites = this.business!.business_Activitiy;
           this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
           this.providerBusinessRelations = this.business!.providerBusinessRelations;
-          this.business_Owners = this.business!.business_Owners;
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
@@ -200,6 +201,7 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllBusinessesTypes()
         this.getAllCountries()
         this.getAlRless()
+        this.getAllActivities()
         this.getAllSystems()
       }
     })
@@ -226,7 +228,6 @@ export class AddEditBusniessComponent implements OnInit {
         business_google: el.business_google,
         business_youtube: el.business_youtube,
         business_email: el.business_email,
-        activities: el.activities,
         businessTypes: el.businessTypes,
         businessAddresses: el.businessAddresses,
         business_LogoUrl: el.business_LogoUrl,
@@ -303,8 +304,30 @@ export class AddEditBusniessComponent implements OnInit {
     })
   }
 
+  allActivities: ActiviityModel[] = []
+  selecteActivities: number[] = []
+  getAllActivities() {
+    this.http.getAllData('Activity').subscribe(res => {
+      this.allActivities = (res as any[]).map((el: ActiviityModel) => new ActiviityModel({
+        activity_id: el.activity_id,
+        description: el.description
+      }))
+      if (this.business) {
 
+        const Country = this.countries?.find(c => c.countryId === this.business!.countryId)
+        this.businessForm.patchValue({
+          CountryId: this.business!.countryId
+        });
+        this.GetAllStatesByCountry(this.business!.countryId);
+        this.selectedCountry = Country?.name ? Country?.name : ''
+      }
 
+    }, (error) => {
+      console.error(error)
+    })
+
+    this.cdr.detectChanges()
+  }
 
 
   getAllSystems() {
@@ -475,9 +498,10 @@ export class AddEditBusniessComponent implements OnInit {
     this.serviceVisibility = null;
   }
   activityDescription: string = '';
-  addActivity() {
+
+  addActivity(idAct: number) {
     this.actiivities.push({
-      description: this.activityDescription,
+      id: idAct,
     });
 
     this.activityDescription = '';
@@ -594,30 +618,35 @@ export class AddEditBusniessComponent implements OnInit {
     }
   }
 
+  addActivities: boolean = false
+
   BindActivitiesWithBusiness() {
+    this.addActivities = true
     var currentBusinessId = this.business!.business_id
     var payload = {
       "business_id": currentBusinessId,
-      "activities": this.actiivities.map(a => a.description)
+      "activitiesIds": this.selecteActivities
 
     }
     console.log(payload)
+
     this.http.putData('Business/AddActivitiesToBusiness', payload).subscribe({
       next: _ => {
         console.log(_)
-        this.Activites = [
-          ...(this.Activites ?? []),
-          ...this.actiivities.map(a => new ActiviityModel({
-            description: a.description,
-            Business_id: currentBusinessId
-          }))
-        ];
-        this.actiivities = [];
+        this.addActivities = false
         this.cdr.detectChanges();
         this.getAllBusinesses()
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
+
       },
-      error: err => console.error(err)
+      error: err => {
+        console.error(err)
+        this.addActivities = false
+      }
     });
+    this.addActivities = false
   }
 
 
@@ -732,7 +761,7 @@ export class AddEditBusniessComponent implements OnInit {
 
 
   removeActivityFromBusiness(activityId: number): void {
-    this.http.deleteData(`Business/RemoveActivityFromBusiness/${activityId}`).subscribe({
+    this.http.deleteData(`Business/RemoveActivityFromBusiness/${activityId}/${this.business?.business_id}`).subscribe({
       next: _ => {
         console.log(_)
         this.Activites = this.Activites?.filter(a => a.activity_id !== activityId);
@@ -839,16 +868,30 @@ export class AddEditBusniessComponent implements OnInit {
       }
     });
   }
+  get ownerCustomers() {
+    return (this.businessCustomers ?? []).filter(x => x.isOwner);
+  }
+
 
   removeCustomerFromBusiness(buseness_CustomerId: number) {
-    this.http.deleteData(`Business/RemoveCustomerFromBusiness/${buseness_CustomerId}`).subscribe({
-      next: () => {
-        this.businessCustomers =
-          this.businessCustomers.filter(x =>
-            x.buseness_CustomerId !== buseness_CustomerId
-          );
+    this.http.deleteData(`Business/RemoveCustomerFromBusinessAsOwner/${buseness_CustomerId}`).subscribe({
+      next: (res) => {
+        console.log(res)
+        queueMicrotask(() => {
+          this.businessCustomers =
+            (this.businessCustomers ?? []).filter(
+              x => x.buseness_CustomerId !== buseness_CustomerId
+            );
+        });
+        this.cdr.detectChanges()
+        this.router.navigate(['Home/business'])
+      },
+      error: (error) => {
+        console.log(error)
+        this.cdr.detectChanges()
       }
     });
+    this.cdr.detectChanges()
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -955,6 +998,81 @@ export class AddEditBusniessComponent implements OnInit {
     }, (error) => {
       console.error(error);
     });
+  }
+
+  //////////////////////////////////////////////////////////////
+
+  filteredSuggestions: string[] = [];
+  SearchAboutCustomer: string = ''
+
+  filterSuggestions(value: string): void {
+    if (value.length >= 3) {
+      if (/^\d/.test(value)) {
+        this.http.getAllData(`Customers/SearchAboutCustomers/${value}/${this.business?.business_id}`).subscribe((result: any) => {
+        });
+      } else {
+        this.http.getAllData(`Customers/SearchAboutCustomers/${value}/${this.business?.business_id}`).subscribe((result: any) => {
+          if (result.fromOldDB == false) {
+            console.log(result)
+            this.filteredSuggestions = result.customers.map((el: any) => el.customerName);
+          } else {
+            console.log(result.customers.value)
+            this.filteredSuggestions = result.customers.value.map((el: any) => el.custName);
+          }
+          this.cdr.detectChanges()
+        });
+        this.cdr.detectChanges()
+      }
+      this.cdr.detectChanges()
+    } else {
+      this.filteredSuggestions = [];
+    }
+  }
+
+
+  res: any[] = [];
+  res1: any
+  searchTerm: string = '';
+  showModal1 = false;
+
+  selectSuggestion(suggestion: string): void {
+    this.searchTerm = suggestion;
+    this.filteredSuggestions = [];
+    const search = encodeURIComponent(suggestion);
+    this.http.getAllData(`Customers/SearchAboutDetectedCustomer/${search}/${this.business?.business_id}`)
+      .subscribe((result1: any) => {
+        console.log(result1)
+        this.res1 = null
+        this.res1 = result1.customer
+        this.showModal1 = true
+        this.cdr.detectChanges()
+
+      })
+    this.cdr.detectChanges()
+  }
+  setOwner = false
+  SetCustomerAsOwner(custId: number) {
+    this.setOwner = true
+    var payload = {
+      business_id: this.business?.business_id,
+      globalCustomerId: custId
+    }
+    this.http.putData('Business/SetCustomerAsBusinessOwner', payload).subscribe(res => {
+      this.showModal1 = false
+      this.setOwner = false
+      this.router.navigate(['Home/business'])
+    }, (error) => {
+      this.setOwner = false
+      console.log(error)
+    })
+  }
+
+  openModal() {
+    this.showModal1 = true;
+  }
+
+  closeModal() {
+    this.showModal1 = false;
   }
 
 }

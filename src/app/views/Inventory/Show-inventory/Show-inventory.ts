@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import {
   ButtonDirective,
   ButtonGroupComponent,
@@ -111,7 +111,8 @@ export class ShowInventoryComponent implements OnInit {
   ItemConditionId: number | null = null;
   UPCFromScrape: string = '';
 
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private storage: StorageService) { }
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute,
+    private storage: StorageService) { }
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'));
@@ -176,6 +177,12 @@ export class ShowInventoryComponent implements OnInit {
         this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
         this.isLoading = false;
         this.selectedFilter = 'All';
+
+        this.route.queryParams.subscribe(param => {
+          var filtter = param['filtter']
+          if(filtter)
+            this.filterDutyInventory(filtter);
+        })
         this.cdr.detectChanges();
       },
       (err) => {
@@ -438,10 +445,11 @@ export class ShowInventoryComponent implements OnInit {
     }
   }
   selectedDutyFilter: string = 'All';
-  filterDutyInventory(event: any) {
+
+  filterDutyInventory(event: string) {
     this.inventory = [...this.tempInventory];
 
-    const filterValue = event.target.value;
+    const filterValue = event;
     this.selectedDutyFilter = filterValue;
     if (filterValue === 'needUpdates') {
       this.inventory = this.inventory.filter(inv => !inv.category == null ||
@@ -450,7 +458,7 @@ export class ShowInventoryComponent implements OnInit {
       this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
     }
     else if (filterValue === 'unpublished') {
-      this.inventory = this.inventory.filter(inv => inv.status == null);
+      this.inventory = this.inventory.filter(inv => inv.status == null && !inv.isProccessedInInventory);
     }
     else if (filterValue === 'needScrape') {
       this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);

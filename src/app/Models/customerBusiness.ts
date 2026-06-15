@@ -9,6 +9,7 @@ export class CustomerBusenessModel {
     globalCustomerId: number = 0
     business: BusinessModel = new BusinessModel()
     business_id: number = 0
+    isOwner?: boolean
     
     constructor(init?: Partial<CustomerBusenessModel>) {
         Object.assign(this, init)

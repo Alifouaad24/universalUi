@@ -88,6 +88,7 @@ export class AddEditCustomerComponent implements OnInit {
     console.log(this.selectedBusinessIds);
   }
 
+  
   constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef) { }
   selectedBusinessIds: number[] = [];
 
@@ -164,10 +165,9 @@ export class AddEditCustomerComponent implements OnInit {
   }
 
   AddCustomer(): void {
-    if (!this.selectedBusinessId || this.selectedBusinessId.length === 0) {
-      this.showMyToast('يرجى اختيار عمل واحد على الأقل');
-      return;
-    }
+
+    if(this.addingLoad) return
+
     this.addingLoad = true
     const addressPayload: any = {
       line_1: this.Line1,

@@ -123,11 +123,10 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     })
   }
 
-
+  selectedFilter: string = ''
   getAlbum() {
     const businessId = localStorage.getItem('businessId');
     this.isLoading = true;
-
     this.http.getAllData(`ImageUploader/${businessId}`)
       .subscribe((res: any) => {
         console.log(res)
@@ -160,6 +159,14 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
           if (folderSelected) {
             this.selectedFolderId = Number(folderSelected);
             this.openFolder(this.selectedFolderId);
+            this.cdr.detectChanges();
+          }
+        });
+        this.route.queryParams.subscribe(params => {
+          const filtter = params['filtter'];
+          if (filtter) {
+            this.filterAlbum(filtter)
+            this.selectedFilter = filtter;
             this.cdr.detectChanges();
           }
         });
@@ -458,13 +465,19 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
   }
 
-  filterAlbum(event: any) {
-    const filterValue = event.target.value;
-    if (filterValue === 'Unprocessed') {
+  filterAlbum(filtter: string) {
+    if (filtter === 'Unprocessed') {
       this.groupedAlbums = this.groupedAlbums.filter(album => album.images.every(img => !img.isProccessed));
       this.albumState.setCount(this.groupedAlbums.length);
+      this.cdr.detectChanges();
     } else {
       this.groupedAlbums = [];
+
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
       this.getAlbum();
       this.cdr.detectChanges();
     }

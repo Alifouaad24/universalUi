@@ -63,7 +63,7 @@ export class DefaultLayoutComponent {
   services: ServiceModel[] = [];
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private ebayService: StorageService,
-     private http: HttpConnectService, public loader: LoadingService) { }
+    private http: HttpConnectService, public loader: LoadingService) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
   user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -89,13 +89,13 @@ export class DefaultLayoutComponent {
       this.cdr.detectChanges();
     });
 
-     const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('tokenId');
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('tokenId');
 
-      if (token) {
-        localStorage.setItem('tokenId', token);
-        this.router.navigate(['/Home/inventory']);
-      }
+    if (token) {
+      localStorage.setItem('tokenId', token);
+      this.router.navigate(['/Home/inventory']);
+    }
 
   }
 

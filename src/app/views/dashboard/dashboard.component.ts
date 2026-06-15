@@ -11,6 +11,7 @@ import {
   CardHeaderComponent,
   ColComponent,
   FormCheckLabelDirective,
+  FormModule,
   GutterDirective,
   ProgressComponent,
   RowComponent,
@@ -26,6 +27,7 @@ import { BusinessModel } from '../../Models/Business/BusinessModel';
 import { BusinessContextService } from '../../core/Services/business-context.service';
 import { Router } from '@angular/router';
 import { AlbumStateService } from '../../core/Services/countOfFolders';
+import { CommonModule } from '@angular/common';
 
 interface IUser {
   name: string;
@@ -44,7 +46,11 @@ interface IUser {
 @Component({
   templateUrl: 'dashboard.component.html',
   styleUrls: ['dashboard.component.scss'],
-  imports: [WidgetsDropdownComponent, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, IconDirective, ReactiveFormsModule, ButtonGroupComponent, FormCheckLabelDirective, ChartjsComponent, CardFooterComponent, GutterDirective, ProgressComponent, WidgetsBrandComponent, CardHeaderComponent, TableDirective, AvatarComponent]
+  imports: [WidgetsDropdownComponent, CardComponent, CardBodyComponent,
+    RowComponent, ColComponent, ButtonDirective, IconDirective,
+    ReactiveFormsModule, ButtonGroupComponent, FormCheckLabelDirective,
+    ChartjsComponent, CardFooterComponent, GutterDirective, ProgressComponent, CommonModule, FormModule,
+    WidgetsBrandComponent, CardHeaderComponent, TableDirective, AvatarComponent]
 })
 export class DashboardComponent implements OnInit {
   user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -53,6 +59,7 @@ export class DashboardComponent implements OnInit {
   currentBusiness: any;
   showCRMActions = false;
   showCountOfFolders = false;
+  businessName: string = ''
 
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private albumState: AlbumStateService,
     private router: Router) { }
@@ -63,16 +70,14 @@ export class DashboardComponent implements OnInit {
     this.businesses = this.businessCtx.getBusinesses();
     this.businessCtx.getCurrentBusiness().subscribe(b => {
       this.currentBusiness = b;
+      this.businessName = this.currentBusiness.business_name
+      console.log(this.businessName)
     });
   }
 
   selectBusiness(b: any) {
     this.currentBusiness = b;
-    setTimeout(() => {
-      this.businessCtx.setCurrentBusiness(b)
-      this.cdr.detectChanges();
-      this.router.navigate(['/Home/dashboard']);
-    }, 1);
+    this.businessCtx.setCurrentBusiness(b);
   }
 
   readonly #destroyRef: DestroyRef = inject(DestroyRef);

@@ -206,14 +206,14 @@
                         {{ bt.description }}
                       </div>
                     </c-col>
-                    <c-col md="6">
+                    <!-- <c-col md="6">
                       <label class="form-label">Addresses</label>
                       <div *ngFor="let ad of addresses">
                         <input type="checkbox" [checked]="AddressesArray.value.includes(ad.address_id)"
                           (change)="onAddressChange($event, ad.address_id!)">
                         {{ ad.line_1 }} | {{ ad.line_2 }} | {{ ad.state }} | {{ ad.city }} | {{ ad.post_code }}
                       </div>
-                    </c-col>
+                    </c-col> -->
                   </c-row>
                 </div>
               </ng-template>
@@ -449,7 +449,7 @@
                   <ul>
                     <li *ngFor="let one of Activites; index as i">
                       <div class="d-flex justify-content-between align-items-center mb-1">
-                        <div>{{ one.description }}</div>
+                        <div>{{ one.activiity.description }}</div>
                         <div *ngIf="one.activity_id"><button class="btn btn-sm btn-danger"
                             (click)="removeActivityFromBusiness(one.activity_id!)">
                             ✕
@@ -466,35 +466,16 @@
                     <!-- Description -->
                     <div class="mb-3">
                       <label class="form-label">Activity Description</label>
-                      <input type="text" class="form-control" name="activityDescription"
-                        [ngModelOptions]="{standalone: true}" [(ngModel)]="activityDescription" />
+                      <select cSelect class="form-select" multiple [(ngModel)]="selecteActivities" [ngModelOptions]="{standalone: true}" >
+                        <option *ngFor="let ac of allActivities" [value]="ac.activity_id">{{ ac.description }}</option>
+                      </select>
                     </div>
                     <!-- Add Button -->
-                    <button type="button" type="button" class="btn btn-primary" (click)="addActivity()">
-                      Add Activity
+                    <button type="button" type="button" class="btn btn-primary" (click)="BindActivitiesWithBusiness()">
+                      {{ addActivities ? 'Adding...' : 'Add' }}
                     </button>
                   </div>
-                  <div class="card" *ngIf="actiivities.length > 0">
-                    <div class="card-body">
-                      <!-- Activities List -->
-                      <h6 class="mb-3">New Activities List</h6>
-                      <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between align-items-center"
-                          *ngFor="let s of actiivities; let i = index">
-                          <div>
-                            <strong>{{ s.description }}</strong>
-                          </div>
-
-                          <button class="btn btn-sm btn-danger" type="button" (click)="removeActivity(i)">
-                            ✕
-                          </button>
-                        </li>
-                      </ul>
-                      <button class="mt-2 btn btn-sm btn-danger" type="button" (click)="BindActivitiesWithBusiness()">
-                        Save Activities
-                      </button>
-                    </div>
-                  </div>
+                  
                 </div>
               </ng-template>
             </c-accordion-item>
@@ -551,14 +532,14 @@
                 </div>
                 <!-- Add Service -->
                 <div *ngIf="business" class="container card mb-4 mt-4">
-                  <h5 class="text-info mt-1">Add Serving</h5>
+                  <h5 class="text-info mt-1">Bind Serving</h5>
                   <div class="card-body">
                     <!-- Description -->
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                       <label class="form-label">Serving Description</label>
                       <input type="text" class="form-control" name="servingDescription"
                         [ngModelOptions]="{standalone: true}" [(ngModel)]="ServingDescription" />
-                    </div>
+                    </div> -->
                     <select class="form-controll mb-2" cSelect multiple [(ngModel)]="SelectedBusinesses"
                       [ngModelOptions]="{standalone: true}">
                       <option *ngFor="let business of Businesses" value="{{ business.business_id }}">{{
@@ -579,19 +560,16 @@
             <c-accordion-item #item="cAccordionItem" [visible]="showCustomersForm">
               <ng-template cTemplateId="accordionHeaderTemplate">
                 <button cAccordionButton class="btn w-100 text-start" (click)="showCustomersForm = !showCustomersForm">
-                  Customers Business info
+                  Business Owners
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
-
-                <div *ngIf="business_Owners && business_Owners.length > 0" class="m-3">
-                  <div class="mb-2 text-danger">Customers</div>
+                <div *ngIf="businessCustomers && businessCustomers.length > 0" class="m-3">
+                  <div class="mb-2 text-danger">Owners</div>
                   <ul>
-                    <li *ngFor="let one of business_Owners; index as i">
-                      <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong>{{ one.globalCustomer.customerName }} | {{ one.globalCustomer.customerMobile ?? "Mobile
-                          not provided" }} | {{
-                          one.globalCustomer.customerEmail ?? "Email not provided" }}</strong>
+                    <li *ngFor="let one of ownerCustomers; index as i">
+                      <div  class="d-flex justify-content-between align-items-center mb-1">
+                        <strong>{{ one.globalCustomer?.customerName }}  {{ one.globalCustomer?.customerMobile }}</strong>
                         <button class="btn btn-sm btn-outline-danger ms-2" type="button"
                           (click)="removeCustomerFromBusiness(one.buseness_CustomerId)">
                           X
@@ -602,169 +580,19 @@
                 </div>
                 <!-- Add Service -->
                 <div *ngIf="business" class="container card mb-4 mt-4">
-                  <h5 class="text-info mt-1">Add Customer</h5>
+                  <h5 class="text-info mt-1">Add Owner</h5>
                   <div class="card-body">
-                    <!-- here add customer -->
-                    <c-row class="mb-3">
-                    </c-row>
-                    <c-card class="border-0 rounded-4 p-3" style="background: transparent;">
-                      <c-card-header class="border-0 pb-0" style="background: transparent;">
-                        <h5 class="fw-bold mb-1 text-dark">
-                          Add New Customer
-                        </h5>
-                        <small class="text-medium-emphasis">
-                          Fill customer information correctly
-                        </small>
-                      </c-card-header>
-                      <c-card-body class="pt-4">
-                        <c-row class="g-4">
-                          <!-- Name -->
-                          <c-col md="4">
-                            <label cLabel class="fw-semibold mb-2">
-                              Name
-                            </label>
-                            <input class="form-control rounded-3" placeholder="Customer name" [(ngModel)]="customerName"
-                              [ngModelOptions]="{standalone: true}" />
-                          </c-col>
-                          <!-- Mobile -->
-                          <c-col md="4">
-                            <label cLabel class="fw-semibold mb-2">
-                              Mobile
-                            </label>
-                            <input class="form-control rounded-3" placeholder="+1 000 000 000"
-                              [(ngModel)]="customerMobile" [ngModelOptions]="{standalone: true}" />
-                          </c-col>
-                          <!-- Country -->
-                          <c-col md="4">
-                            <label cLabel class="fw-semibold mb-2">
-                              Country
-                            </label>
 
-                            <select cSelect class="rounded-3" [(ngModel)]="countryId"
-                              [ngModelOptions]="{standalone: true}" (change)="countryChangedForCustomer($event)">
+                    <input cFormControl #wordToseach (input)="filterSuggestions(wordToseach.value)"
+                      [ngModelOptions]="{standalone: true}" [(ngModel)]="SearchAboutCustomer"
+                      placeholder="Enter name or phone to search..." />
 
-                              <option *ngFor="let one of countries" [value]="one.countryId">
-
-                                {{ one.name }}
-
-                              </option>
-
-                            </select>
-                          </c-col>
-
-                          <!-- NON USA -->
-                          <ng-container *ngIf="selectedCountryForUser != 'USA' && selectedCountryForUser != null">
-
-                            <!-- City -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                City
-                              </label>
-
-                              <select cSelect class="rounded-3" [(ngModel)]="cityId"
-                                [ngModelOptions]="{standalone: true}" (ngModelChange)="cityChanged($event)">
-
-                                <option *ngFor="let city of cities" [ngValue]="city.cityId">
-
-                                  {{ city.description }}
-
-                                </option>
-
-                              </select>
-                            </c-col>
-
-                            <!-- Area -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                Area
-                              </label>
-
-                              <select cSelect class="rounded-3" [ngModelOptions]="{standalone: true}"
-                                [(ngModel)]="areaId">
-
-                                <option *ngFor="let area of areas" [ngValue]="area.areaId">
-
-                                  {{ area.description }}
-
-                                </option>
-
-                              </select>
-                            </c-col>
-
-                            <!-- Landmark -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                Landmark
-                              </label>
-
-                              <input class="form-control rounded-3" placeholder="Enter landmark" [(ngModel)]="LandMark"
-                                [ngModelOptions]="{standalone: true}" />
-                            </c-col>
-                          </ng-container>
-                          <!-- USA -->
-                          <ng-container *ngIf="selectedCountryForUser == 'USA'">
-                            <!-- Line1 -->
-                            <c-col md="6">
-                              <label cLabel class="fw-semibold mb-2">
-                                Line 1
-                              </label>
-                              <input class="form-control rounded-3" [(ngModel)]="Line1"
-                                [ngModelOptions]="{standalone: true}" />
-                            </c-col>
-                            <!-- Line2 -->
-                            <c-col md="6">
-                              <label cLabel class="fw-semibold mb-2">
-                                Line 2
-                              </label>
-
-                              <input class="form-control rounded-3" [(ngModel)]="Line2 "
-                                [ngModelOptions]="{standalone: true}" />
-                            </c-col>
-
-                            <!-- State -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                State
-                              </label>
-                              <select cSelect class="rounded-3" [(ngModel)]="stateId"
-                                [ngModelOptions]="{standalone: true}">
-                                <option *ngFor="let state of states" [ngValue]="state.stateId">
-                                  {{ state.name }}
-                                </option>
-
-                              </select>
-                            </c-col>
-                            <!-- Post Code -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                Post Code
-                              </label>
-                              <input class="form-control rounded-3" [(ngModel)]="PostCode"
-                                [ngModelOptions]="{standalone: true}" />
-                            </c-col>
-                            <!-- US City -->
-                            <c-col md="4">
-                              <label cLabel class="fw-semibold mb-2">
-                                City
-                              </label>
-                              <input class="form-control rounded-3" [(ngModel)]="UsCity"
-                                [ngModelOptions]="{standalone: true}" />
-                            </c-col>
-                          </ng-container>
-                          <!-- Button -->
-                          <c-col xs="12" class="text-center mt-4">
-                            <button cButton color="primary" class="px-5 py-2 rounded-pill shadow-sm"
-                              (click)="AddCustomerToThisBusiness()">
-                              <span *ngIf="!addingLoad">
-                                Add Customer
-                              </span>
-                              <c-spinner class="sm" *ngIf="addingLoad">
-                              </c-spinner>
-                            </button>
-                          </c-col>
-                        </c-row>
-                      </c-card-body>
-                    </c-card>
+                    <ul *ngIf="filteredSuggestions.length" class="list-group mt-2"
+                      style="max-height:300px; overflow:auto; cursor:pointer;">
+                      <li class="list-group-item" *ngFor="let s of filteredSuggestions" (click)="selectSuggestion(s)">
+                        {{ s }}
+                      </li>
+                    </ul>
                     <!-- here add custfomer -->
                   </div>
                 </div>
@@ -919,14 +747,7 @@
             </c-accordion-item>
           </c-accordion>
 
-
-
-
-
-
           <!--  -->
-
-
 
 
         </c-card-body>
@@ -942,3 +763,25 @@
     </form>
   </c-card-body>
 </c-card>
+
+
+
+
+<c-modal [visible]="showModal1" (visibleChange)="showModal1 = $event" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle>Set owner request</h5>
+    <button cButtonClose (click)="closeModal()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <h5 cModalTitle>Do you wont to set ( {{ res1?.customerName }} ) as owner ?</h5>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="showModal1 = false">
+      Close
+    </button>
+    <button cButton color="secondary" (click)="SetCustomerAsOwner(res1.globalCustomerId)">
+     {{ setOwner ? 'Setting...' : 'Set' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

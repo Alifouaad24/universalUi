@@ -28,8 +28,8 @@
           </select>
         </div>
         <div *ngIf="currentBusinessName.includes('Duty')">
-          <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedDutyFilter"
-            (change)="filterDutyInventory($event)">
+          <select class="form-select form-select-sm w-auto" #filttered [(ngModel)]="selectedDutyFilter"
+            (change)="filterDutyInventory(filttered.value)">
             <option value="All">All</option>
             <option value="needUpdates">Need updates</option>
             <option value="published">Published</option>

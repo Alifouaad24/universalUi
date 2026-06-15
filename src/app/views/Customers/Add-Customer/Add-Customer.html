@@ -1,32 +1,29 @@
-<button cButton color="secondary" (click)="SelectedBusinesses()">
-   Selection
-</button>
 <c-row class="mb-3">
 </c-row>
 <c-card class="p-4" style="direction: rtl; text-align: right;">
   <c-card-body>
     <c-row class="g-3">
-      <c-col md="3">
+      <c-col md="4">
         <label cLabel>Name</label>
         <input class="form-control" [(ngModel)]="customerName" />
       </c-col>
 
-      <c-col md="3">
+      <c-col md="4">
         <label cLabel>Mobile</label>
         <input class="form-control" [(ngModel)]="customerMobile" />
       </c-col>
       <!--  -->
-      <c-col md="3">
+      <!-- <c-col md="3">
         <label cLabel>Businesses</label>
         <select cSelect multiple [(ngModel)]="selectedBusinessIds">
           <option *ngFor="let one of Businesses" [ngValue]="one.business_id">
             {{ one.business_name }}
           </option>
         </select>
-      </c-col>
+      </c-col> -->
 
       <!--  -->
-      <c-col md="3">
+      <c-col md="4">
         <label cLabel>Country</label>
         <select cSelect [(ngModel)]="countryId" (change)="countryChanged($event)">
           <option *ngFor="let one of countries" [value]="one.countryId">
@@ -35,7 +32,7 @@
         </select>
       </c-col>
 
-      <c-col md="3" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
+      <c-col md="4" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
         <label cLabel>City</label>
         <select cSelect [(ngModel)]="cityId" (change)="cityChanged($event)">
           <option *ngFor="let city of cities" [ngValue]="city.cityId">

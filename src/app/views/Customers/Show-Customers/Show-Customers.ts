@@ -133,19 +133,19 @@ export class ShowCustomersComponent implements OnInit {
                 visible: item.address?.visible,
               }),
 
-              Buseness_Customer: (item.buseness_Customer || []).map(
-                (b: any) =>
-                  new CustomerBusenessModel({
-                    buseness_CustomerId: b.buseness_CustomerId,
-                    globalCustomerId: b.globalCustomerId,
-                    business_id: b.business_id,
-
-                    business: new BusinessModel({
-                      business_id: b.business?.business_id,
-                      business_name: b.business?.business_name,
-                    }),
-                  })
-              ),
+              // Buseness_Customer: (item.buseness_Customers || []).map(
+              //   (b: any) =>
+              //     new CustomerBusenessModel({
+              //       buseness_CustomerId: b.buseness_CustomerId,
+              //       globalCustomerId: b.globalCustomerId,
+              //       business_id: b.business_id,
+              //       isOwner: b.isOwner,
+              //       business: new BusinessModel({
+              //         business_id: b.business?.business_id,
+              //         business_name: b.business?.business_name,
+              //       }),
+              //     })
+              // ),
             })
         );
 

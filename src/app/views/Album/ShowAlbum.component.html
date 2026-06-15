@@ -3,8 +3,8 @@
       Album
     </div>
     <div>
-      <select name="" id="" class="form-select form-select-sm" style="width: auto; display: inline-block;"
-        (change)="filterAlbum($event)">
+      <select name="" id="" class="form-select form-select-sm" style="width: auto; display: inline-block;" #filterSelect
+        (change)="filterAlbum(filterSelect.value)" [(ngModel)]="selectedFilter">
         <option value="All">All</option>
         <option value="Unprocessed">Un processed</option>
       </select>

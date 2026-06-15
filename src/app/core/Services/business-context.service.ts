@@ -82,4 +82,26 @@ export class BusinessContextService {
   getBusinesses() {
     return this.businessesSubject.value;
   }
+
+  /**
+   * Returns the landing page route for a given business based on its name.
+   * Centralized here so every place that selects a business stays consistent.
+   */
+  getLandingPage(business: any): string {
+    const businessName = business?.business_name?.toLowerCase();
+
+    switch (businessName) {
+      case 'duty':
+        return '/Home/duty';
+
+      case 'apx':
+        return '/Home/dashboard';
+
+      case 'ainalfhd':
+        return '/Home/fashion-dashboard';
+
+      default:
+        return '/Home/dashboard';
+    }
+  }
 }
