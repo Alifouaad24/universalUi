@@ -355,8 +355,6 @@
                       </li>
                     </ul>
                   </div>
-
-
                   <div class="card-body">
                     <!-- Description -->
                     <div class="mb-3">
@@ -364,17 +362,14 @@
                       <input type="text" class="form-control" name="serviceDescription"
                         [ngModelOptions]="{standalone: true}" [(ngModel)]="serviceDescription" />
                     </div>
-
                     <!-- Service Type -->
                     <div class="mb-3">
                       <label class="form-label d-block">Service Type</label>
-
                       <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" [ngModelOptions]="{standalone: true}"
                           name="serviceVisibility" id="public" value="public" [(ngModel)]="serviceVisibility" />
                         <label class="form-check-label" for="public">Public</label>
                       </div>
-
                       <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" [ngModelOptions]="{standalone: true}"
                           name="serviceVisibility" id="local" value="local" [(ngModel)]="serviceVisibility" />
@@ -394,9 +389,6 @@
                         </div>
                       </div>
                     </div>
-
-
-
                     <!-- Add Button -->
                     <button type="button" class="btn btn-primary" (click)="addService()">
                       Add Service
@@ -423,15 +415,12 @@
                           </button>
                         </li>
                       </ul>
-
                     </div>
                   </div>
                 </div>
               </ng-template>
             </c-accordion-item>
           </c-accordion>
-
-
 
           <!-- Activities Info -->
           <c-accordion>
@@ -480,7 +469,6 @@
               </ng-template>
             </c-accordion-item>
           </c-accordion>
-
           <!-- Serving Info -->
           <c-accordion>
             <c-accordion-item #item="cAccordionItem" [visible]="showServingForm">
@@ -490,46 +478,6 @@
                 </button>
               </ng-template>
               <ng-template cTemplateId="accordionBodyTemplate">
-                <div *ngIf="consumerBusinessRelations && consumerBusinessRelations.length > 0" class="m-3">
-                  <div class="mb-2 text-danger">Consumered Servings List</div>
-                  <ul>
-                    <li *ngFor="let one of consumerBusinessRelations; index as i">
-
-                      <div class="d-flex justify-content-between align-items-center mb-1">
-                        <div>{{ one.serving.servingName }}</div>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-                <div *ngIf="groupedProviderRelations.length > 0" class="m-3">
-                  <div class="mb-2 text-danger">
-                    Provider Servings List
-                  </div>
-                  <ul>
-                    <li *ngFor="let group of groupedProviderRelations">
-                      <div class="fw-bold text-primary">
-                        {{ group.serving.servingName }}
-                      </div>
-                      <div class="text-muted mb-2">
-                        {{ group.serving.servingDescription }}
-                      </div>
-                      <ul class="mb-3">
-                        <li *ngFor="let business of group.businesses">
-                          <div class="mb-1 d-flex justify-content-between align-items-center">
-                            <span>
-                              {{ business.business_name }}
-                            </span>
-                            <button class="btn btn-sm btn-outline-danger" type="button"
-                              (click)="removeRelation(business.businessRelationId)">
-                              X
-                            </button>
-                          </div>
-                        </li>
-                      </ul>
-                      <hr>
-                    </li>
-                  </ul>
-                </div>
                 <!-- Add Service -->
                 <div *ngIf="business" class="container card mb-4 mt-4">
                   <h5 class="text-info mt-1">Bind Serving</h5>
@@ -542,7 +490,7 @@
                     </div> -->
                     <select class="form-controll mb-2" cSelect multiple [(ngModel)]="SelectedBusinesses"
                       [ngModelOptions]="{standalone: true}">
-                      <option *ngFor="let business of Businesses" value="{{ business.business_id }}">{{
+                      <option *ngFor="let business of Businesses" [ngValue]="business.business_id">{{
                         business.business_name }}</option>
                     </select>
                     <!-- Add Button -->

@@ -188,6 +188,7 @@ export class AddEditBusniessComponent implements OnInit {
           this.Activites = this.business!.business_Activitiy;
           this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
           this.providerBusinessRelations = this.business!.providerBusinessRelations;
+          
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
@@ -234,14 +235,13 @@ export class AddEditBusniessComponent implements OnInit {
         buseness_Customers: el.buseness_Customers,
         insert_by: el.insert_by,
         insert_on: el.insert_on
-
+        
       }))
-      this.cdr.detectChanges()
+      this.SelectedBusinesses = this.business!.providerBusinessRelations.map(e => e.consumerBusinessId)
     }, (error) => {
       console.error(error)
-      this.cdr.detectChanges()
-
     })
+    this.cdr.detectChanges()
   }
 
 
@@ -791,10 +791,9 @@ export class AddEditBusniessComponent implements OnInit {
     };
 
     console.log(payload);
-    this.http.posteData('Business/SetServingToBusiness', payload).subscribe({
+    this.http.putData('Business/SetServingToBusiness', payload).subscribe({
       next: _ => {
         console.log(_);
-        this.ServingDescription = '';
         this.SelectedBusinesses = [];
         this.cdr.detectChanges();
       },
@@ -1011,13 +1010,9 @@ export class AddEditBusniessComponent implements OnInit {
         });
       } else {
         this.http.getAllData(`Customers/SearchAboutCustomers/${value}/${this.business?.business_id}`).subscribe((result: any) => {
-          if (result.fromOldDB == false) {
-            console.log(result)
+  
             this.filteredSuggestions = result.customers.map((el: any) => el.customerName);
-          } else {
-            console.log(result.customers.value)
-            this.filteredSuggestions = result.customers.value.map((el: any) => el.custName);
-          }
+
           this.cdr.detectChanges()
         });
         this.cdr.detectChanges()
