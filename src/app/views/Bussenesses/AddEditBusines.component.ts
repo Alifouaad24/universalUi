@@ -786,7 +786,6 @@ export class AddEditBusniessComponent implements OnInit {
 
     this.SelectedBusinesses = this.SelectedBusinesses.map(c => Number(c));
     const payload = {
-      servingName: this.ServingDescription,
       business_id: this.business?.business_id,
       consumerBusinessIds: this.SelectedBusinesses,
     };
