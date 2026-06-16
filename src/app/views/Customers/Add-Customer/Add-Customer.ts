@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import {
@@ -16,6 +16,7 @@ import { CityModel } from '../../../Models/CityModel';
 import { AreaModel } from '../../../Models/AreaModel';
 import { Country } from '../../../Models/CountryModel';
 import { StateModel } from '../../../Models/StateModel'
+declare const google: any;
 @Component({
   selector: 'app-buttons',
   templateUrl: './Add-Customer.html',
@@ -23,12 +24,14 @@ import { StateModel } from '../../../Models/StateModel'
     CardComponent, CardHeaderComponent, SpinnerComponent, SpinnerModule,
     CardBodyComponent, CommonModule, FormsModule, RouterOutlet,
     ButtonDirective, IconModule, RouterLink,
+
     ModalModule, ModalComponent, ModalHeaderComponent, ModalBodyComponent, ModalFooterComponent, ModalTitleDirective, ButtonCloseDirective,
     ToasterComponent, ToastComponent, ToastBodyComponent, ToastHeaderComponent,
     TableDirective, FormLabelDirective, FormControlDirective, FormSelectDirective,
   ]
 })
-export class AddEditCustomerComponent implements OnInit {
+
+export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   addingLoad = false;
   areas: AreaModel[] = [];
   cities: CityModel[] = [];
@@ -83,13 +86,99 @@ export class AddEditCustomerComponent implements OnInit {
   CustomerId?: number;
   showModal = false;
   BusinessId?: number;
+  @ViewChild('addressInput') addressInput?: ElementRef;
 
   SelectedBusinesses() {
     console.log(this.selectedBusinessIds);
   }
 
   
+  ngAfterViewChecked(): void {
+    if (this.selectedCountry === 'USA' && this.addressInput?.nativeElement && !this.autocompleteInitialized) {
+      this.initAutocomplete();
+      this.autocompleteInitialized = true;
+    }
+  }
+
+
+  autocompleteInitialized = false;
+  ngOnChanges() {
+    if (this.selectedCountry === 'USA') {
+      setTimeout(() => {
+        this.initAutocomplete();
+      });
+    }
+  }
+
+  initAutocomplete() {
+
+    if (!(window as any).google?.maps?.places) {
+      console.error('Google Places API not loaded');
+      return;
+    }
+
+    if (!this.addressInput?.nativeElement) return;
+
+    const autocomplete = new google.maps.places.Autocomplete(
+      this.addressInput.nativeElement,
+      {
+        componentRestrictions: { country: 'us' }
+      }
+    );
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      this.fillAddress(place);
+    });
+  }
+  fillAddress(place: any) {
+
+    if (!place.address_components) return;
+
+    let streetNumber = '';
+    let route = '';
+
+    place.address_components.forEach((c: any) => {
+
+      if (c.types.includes('street_number')) {
+        streetNumber = c.long_name;
+      }
+
+      if (c.types.includes('route')) {
+        route = c.long_name;
+      }
+
+      if (c.types.includes('locality')) {
+        this.UsCity = c.long_name;
+      }
+
+      if (c.types.includes('administrative_area_level_1')) {
+
+        const state = this.states.find(
+          s => s.name === c.short_name
+            || s.name === c.long_name
+        );
+
+        this.stateId = state?.stateId ?? null;
+      }
+
+      if (c.types.includes('postal_code')) {
+        this.PostCode = c.long_name;
+      }
+
+    });
+
+    this.Line1 = `${streetNumber} ${route}`;
+
+    this.Line2 = '';
+
+    this.cdr.detectChanges();
+  }
+
   constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef) { }
+  ngAfterViewInit(): void {
+    throw new Error('Method not implemented.');
+  }
   selectedBusinessIds: number[] = [];
 
   ngOnInit(): void {
@@ -103,7 +192,7 @@ export class AddEditCustomerComponent implements OnInit {
       this.Businesses = (res as any[]).map((b: any) => ({ business_id: b.business_id, business_name: b.business_name }));
       this.loadingBusiness = false;
       // pre-select businesses from localStorage if present
-     
+
       this.cdr.detectChanges();
     }, (err) => {
       this.loadingBusiness = false;
@@ -113,7 +202,6 @@ export class AddEditCustomerComponent implements OnInit {
 
   showToast = false;
   toastMessage = '';
-
   showMyToast(message: string) {
     this.toastMessage = message;
     this.showToast = true;
@@ -166,7 +254,7 @@ export class AddEditCustomerComponent implements OnInit {
 
   AddCustomer(): void {
 
-    if(this.addingLoad) return
+    if (this.addingLoad) return
 
     this.addingLoad = true
     const addressPayload: any = {

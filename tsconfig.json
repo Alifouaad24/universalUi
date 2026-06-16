@@ -21,7 +21,10 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "types": [
+      "google.maps"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -34,5 +37,6 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.spec.json" },
-  ]
+  ],
+
 }

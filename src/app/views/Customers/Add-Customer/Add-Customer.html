@@ -57,7 +57,7 @@
 
       <c-col md="6" *ngIf="selectedCountry == 'USA'">
         <label cLabel>Line 1</label>
-        <input class="form-control" [(ngModel)]="Line1" />
+        <input #addressInput class="form-control" [(ngModel)]="Line1" />
       </c-col>
 
       <c-col md="6" *ngIf="selectedCountry == 'USA'">
