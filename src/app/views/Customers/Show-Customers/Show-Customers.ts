@@ -83,6 +83,7 @@ export class ShowCustomersComponent implements OnInit {
   toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
+  Businesses?: BusinessModel[]
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -91,12 +92,62 @@ export class ShowCustomersComponent implements OnInit {
     console.log(BusinessId);
     this.BusinessId = BusinessId ? parseInt(BusinessId) : 0;
     this.getAllCustomers()
+    this.getAllBusinesses()
   }
+
+  getAllBusinesses() {
+    this.http.getAllData('Business').subscribe(res => {
+      console.log(res)
+      this.Businesses = (res as any[]).map(el => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name,
+        country: el.country,
+        countryId: el.countryId,
+        is_active: el.is_active,
+        business_whatsapp: el.business_whatsapp,
+        business_phone: el.business_phone,
+        business_webSite: el.business_webSite,
+        business_fb: el.business_fb,
+        business_instgram: el.business_instgram,
+        business_tiktok: el.business_tiktok,
+        business_google: el.business_google,
+        business_youtube: el.business_youtube,
+        business_email: el.business_email,
+        businessTypes: el.businessTypes,
+        businessAddresses: el.businessAddresses,
+        business_LogoUrl: el.business_LogoUrl,
+        buseness_Customers: el.buseness_Customers,
+        insert_by: el.insert_by,
+        business_Activitiy: el.business_Activitiy,
+        insert_on: el.insert_on,
+        providerBusinessRelations: el.providerBusinessRelations,
+        consumerBusinessRelations: el.consumerBusinessRelations,
+        usersBusinesses: el.usersBusinesses,
+
+        business_Services: el.business_Services
+      }))
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.cdr.detectChanges()
+
+    })
+  }
+
+
+  businessName(id: number): string {
+
+    return this.Businesses
+      ?.find(b => b.business_id === id)
+      ?.business_name ?? '';
+
+  }
+
 
   getAllCustomers() {
     this.isLoading = true;
     this.http.getAllData(`Customers/${this.BusinessId}`).subscribe(
-      
+
       (res: any) => {
         console.log(res);
         this.Users = (res as any[]).map(
@@ -120,32 +171,17 @@ export class ShowCustomersComponent implements OnInit {
 
               AddressId: item.addressId,
 
-              Address: new AddressModel({
-                address_id: item.address?.address_id,
-                line_1: item.address?.line_1,
-                line_2: item.address?.line_2,
-                state: item.address?.state,
-                post_code: item.address?.post_code,
-                city: item.address?.city,
-                businessAddresses: item.address?.businessAddresses,
-                insert_on: item.address?.insert_on,
-                insert_by: item.address?.insert_by,
-                visible: item.address?.visible,
-              }),
+              Address: item.address,
 
-              // Buseness_Customer: (item.buseness_Customers || []).map(
-              //   (b: any) =>
-              //     new CustomerBusenessModel({
-              //       buseness_CustomerId: b.buseness_CustomerId,
-              //       globalCustomerId: b.globalCustomerId,
-              //       business_id: b.business_id,
-              //       isOwner: b.isOwner,
-              //       business: new BusinessModel({
-              //         business_id: b.business?.business_id,
-              //         business_name: b.business?.business_name,
-              //       }),
-              //     })
-              // ),
+              Buseness_Customer: (item.buseness_Customers || []).map(
+                (b: any) =>
+                  new CustomerBusenessModel({
+                    buseness_CustomerId: b.buseness_CustomerId,
+                    globalCustomerId: b.globalCustomerId,
+                    business_id: b.business_id,
+                    isOwner: b.isOwner,
+                  })
+              ),
             })
         );
 

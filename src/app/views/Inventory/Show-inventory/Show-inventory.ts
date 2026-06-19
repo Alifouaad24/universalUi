@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
+
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import {
   ButtonDirective,
   ButtonGroupComponent,
@@ -111,7 +114,7 @@ export class ShowInventoryComponent implements OnInit {
   ItemConditionId: number | null = null;
   UPCFromScrape: string = '';
 
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute,
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
   ngOnInit(): void {
@@ -146,6 +149,8 @@ export class ShowInventoryComponent implements OnInit {
       this.Sizes = res;
     })
   }
+
+
   getInventory() {
     this.isLoading = true;
     this.http.getAllData(`Inventory/${this.businessId}`).subscribe(
@@ -171,7 +176,8 @@ export class ShowInventoryComponent implements OnInit {
           Product_name: item.product_name,
           product_description: item.product_description,
           itemCondition: item.itemCondition,
-          isProccessedInInventory: item.isProccessedInInventory
+          isProccessedInInventory: item.isProccessedInInventory,
+          isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
         }));
         this.tempInventory = [...this.inventory];
         this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
@@ -180,7 +186,7 @@ export class ShowInventoryComponent implements OnInit {
 
         this.route.queryParams.subscribe(param => {
           var filtter = param['filtter']
-          if(filtter)
+          if (filtter)
             this.filterDutyInventory(filtter);
         })
         this.cdr.detectChanges();
@@ -471,6 +477,11 @@ export class ShowInventoryComponent implements OnInit {
     }
     else {
       this.inventory = [];
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
       this.getInventory();
       this.cdr.detectChanges();
     }
@@ -507,9 +518,10 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   PriceFOREDIT: string = '';
+  title: string = '';
+  descriptionToEdit: string = '';
 
-
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
@@ -517,6 +529,8 @@ export class ShowInventoryComponent implements OnInit {
     this.SKUFOREDIT = sku || '';
     this.UPCFOREDIT = upc || '';
     this.PriceFOREDIT = price || '';
+    this.title = title || ''
+    this.descriptionToEdit = description || ';'
     this.showEditModal = true;
   }
 
@@ -539,7 +553,10 @@ export class ShowInventoryComponent implements OnInit {
       upc: this.UPCFOREDIT,
       price: realPrice,
       platformId: this.PlatformId,
-      itemCondition: this.ItemConditionId
+      itemCondition: this.ItemConditionId,
+      title: this.title,
+      description: this.descriptionToEdit
+
 
     };
     console.log('Payload for editing inventory item:', payload);
@@ -1133,5 +1150,70 @@ export class ShowInventoryComponent implements OnInit {
         this.cdr.detectChanges();
       }
     );
+  }
+  isChangeStatus = false
+
+  togglePublishStatusOnMarketPlase(id: number) {
+    this.isChangeStatus = true;
+    this.http.deleteData(`Inventory/TogglePublishOnMarketPlase/${id}`).subscribe(
+      (res: any) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastVisible.set(true);
+        this.inventory.find(inv => inv.inventory_id == id)!.isPublishedOnMarketPlace = res.status;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Error deleting inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+
+  copyText(text: string | undefined) {
+
+    if (!text) return;
+
+    navigator.clipboard.writeText(text);
+    this.toastMessage.set('Text copied successfully');
+    this.toastVisible.set(true);
+    this.cdr.detectChanges();
+
+  }
+
+  async downloadAllImages() {
+
+    const images =
+      this.selectedType?.item?.images;
+    if (!images?.length) {
+      return;
+    }
+    const upc =
+      this.selectedType?.item?.upc ??
+      'images';
+
+    const body = {
+      folderName: upc,
+      urls: images.map(
+        (x: any) => x.imageUrl
+      )
+    };
+
+    const response = await fetch(
+      'https://apxapi.somee.com/api/Inventory/download-images',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }
+    );
+
+    const blob = await response.blob();
+    saveAs(blob, `${upc}.zip`);
   }
 }

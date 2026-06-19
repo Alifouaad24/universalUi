@@ -20,6 +20,7 @@
           <th>#</th>
           <th>Customer Name</th>
           <th>Customer Mobile</th>
+          <th>Business</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -28,9 +29,12 @@
           <td>{{ i + 1 }}</td>
           <td style="cursor: pointer;">{{ type.CustomerName }}</td>
           <td>{{ type.CustomerMobile }}</td>
+          <td><div class="text-center" *ngFor="let one of type.Buseness_Customer">
+            {{ businessName( one.business_id) }}
+          </div></td>
           <td>
             <ng-container *ngIf="Users.length">
-              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-user']"
+              <button class="btn btn-sm btn-primary me-1" [routerLink]="['../add-edit-customer']"
                 [queryParams]="{ user: type | json }">
                 <c-icon name="cil-pencil"></c-icon>
               </button>

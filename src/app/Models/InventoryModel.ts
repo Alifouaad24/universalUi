@@ -23,6 +23,7 @@ export class InventoryModel {
     Product_name?: string;
     itemCondition?: any;
     isProccessedInInventory?: boolean;
+    isPublishedOnMarketPlace?: boolean
     constructor(init: Partial<InventoryModel>) {
         Object.assign(this, init);
     }

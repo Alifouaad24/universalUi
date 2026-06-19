@@ -12,6 +12,14 @@
         <label cLabel>Mobile</label>
         <input class="form-control" [(ngModel)]="customerMobile" />
       </c-col>
+      <c-col *ngIf="userRole?.includes('Super Ad')" md="4">
+        <label class="form-label d-block">Businesses</label>
+        <select cSelect [(ngModel)]="BusinessIdToBind">
+          <option class="form-check" *ngFor="let one of businesses" [value]="one.business_id">
+            {{ one.business_name }}
+          </option>
+        </select>
+      </c-col>
       <!--  -->
       <!-- <c-col md="3">
         <label cLabel>Businesses</label>
@@ -23,7 +31,7 @@
       </c-col> -->
 
       <!--  -->
-      <c-col md="4">
+      <c-col *ngIf="!isUpdate" md="4">
         <label cLabel>Country</label>
         <select cSelect [(ngModel)]="countryId" (change)="countryChanged($event)">
           <option *ngFor="let one of countries" [value]="one.countryId">
@@ -83,11 +91,110 @@
         <input class="form-control" [(ngModel)]="UsCity" />
       </c-col>
 
-      <c-col class="text-center mt-3">
-        <button cButton color="primary" (click)="AddCustomer()">
-          Add <c-spinner class="sm" *ngIf="addingLoad"></c-spinner>
+      <button cButton color="primary" (click)="AddCustomer()">
+        Add <c-spinner class="sm" *ngIf="addingLoad"></c-spinner>
+      </button>
+    </c-row>
+  </c-card-body>
+</c-card>
+
+<c-row *ngIf="isUpdate" class="mb-3">
+</c-row>
+<c-card *ngIf="isUpdate" class="p-4" style="direction: rtl; text-align: right;">
+  <c-card-body>
+    <c-row class="g-3">
+      <c-col md="3">
+        <h4 cLabel class="text-info text-end">{{ customerName }}'s Addresses</h4>
+        <div class="d-flex justify-content-between mt-2" *ngFor="let address of customerAddresses">
+          <button (click)="DeleteAddress(address.address_id)" class="btn btn-danger btn-small">X</button>
+          <div>
+            {{address.line_1}} {{address.post_code}}
+          </div>
+        </div>
+      </c-col>
+      <c-col md="4">
+
+      </c-col>
+
+      <c-col md="5">
+        <label class="text-info" cLabel>New Address</label>
+        <c-col md="12">
+          <label cLabel>Country</label>
+          <select cSelect [(ngModel)]="countryIdForBind" (change)="countryChangedForBind($event)">
+            <option *ngFor="let one of countries" [value]="one.countryId">
+              {{ one.name }}
+            </option>
+          </select>
+        </c-col>
+
+        <c-row>
+          <c-col md="4" *ngIf="selectedCountryForBind != 'USA' && selectedCountryForBind != null">
+            <label cLabel>City</label>
+            <select cSelect [(ngModel)]="cityIdForBind" (change)="cityChanged($event)">
+              <option *ngFor="let city of cities" [ngValue]="city.cityId">
+                {{ city.description }}
+              </option>
+            </select>
+          </c-col>
+
+          <c-col md="4" *ngIf="selectedCountryForBind != 'USA' && selectedCountryForBind != null">
+            <label cLabel>Area</label>
+            <select [(ngModel)]="areaIdForBind" cSelect>
+              <option *ngFor="let area of areas" [ngValue]="area.areaId">
+                {{ area.description }}
+              </option>
+            </select>
+          </c-col>
+
+          <c-col md="4" *ngIf="selectedCountryForBind != 'USA' && selectedCountryForBind != null">
+            <label cLabel>Land mark</label>
+            <input class="form-control" [(ngModel)]="LandMarkForBind" />
+          </c-col>
+
+          <c-col md="6" *ngIf="selectedCountryForBind == 'USA'">
+            <label cLabel>Line 1</label>
+            <input #addressInput class="form-control" [(ngModel)]="Line1ForBind" />
+          </c-col>
+
+          <c-col md="6" *ngIf="selectedCountryForBind == 'USA'">
+            <label cLabel>Line 2</label>
+            <input class="form-control" [(ngModel)]="Line2ForBind" />
+          </c-col>
+
+          <c-col md="4" *ngIf="selectedCountryForBind == 'USA'">
+            <label cLabel>State</label>
+            <select [(ngModel)]="stateIdForBind" cSelect>
+              <option *ngFor="let state of states" [ngValue]="state.stateId">
+                {{ state.name }}
+              </option>
+            </select>
+          </c-col>
+
+          <c-col md="4" *ngIf="selectedCountryForBind == 'USA'">
+            <label cLabel>Post Code</label>
+            <input class="form-control" [(ngModel)]="PostCodeForBind" />
+          </c-col>
+          <c-col md="4" *ngIf="selectedCountryForBind == 'USA'">
+            <label cLabel>City</label>
+            <input class="form-control" [(ngModel)]="UsCityForBind" />
+          </c-col>
+        </c-row>
+        <button class="mt-2" cButton color="primary" (click)="AddNewAddressForCustomer()">
+          {{ AddNewAddressForCustomerBool ? 'Adding...' : 'Add'}} <c-spinner class="sm"
+            *ngIf="addingLoadForBind"></c-spinner>
         </button>
       </c-col>
+      <!--  -->
+      <!-- <c-col md="3">
+        <label cLabel>Businesses</label>
+        <select cSelect multiple [(ngModel)]="selectedBusinessIds">
+          <option *ngFor="let one of Businesses" [ngValue]="one.business_id">
+            {{ one.business_name }}
+          </option>
+        </select>
+      </c-col> -->
+
+
     </c-row>
   </c-card-body>
 </c-card>

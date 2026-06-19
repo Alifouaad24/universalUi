@@ -65,6 +65,7 @@ export class LoginComponent {
         //this.businessService.clearContext();
         localStorage.removeItem('businesses');
         localStorage.setItem('token', res.token);
+        this.decodeToken(res.token)
         localStorage.setItem('currentUser', JSON.stringify(res.user));
         if (res.businesses && res.businesses.length > 0) {
           localStorage.setItem('token', res.token);
@@ -97,6 +98,21 @@ export class LoginComponent {
         alert(err.error.message);
       }
     });
+  }
+
+  decodeToken(token: string) {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      const data = JSON.parse(decoded);
+      console.log(data['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']);
+      localStorage.setItem('UserRole', data['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'])
+
+      return data;
+    } catch (error) {
+      console.error('Invalid token', error);
+      return null;
+    }
   }
 
 

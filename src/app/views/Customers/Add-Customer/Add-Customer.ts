@@ -16,6 +16,7 @@ import { CityModel } from '../../../Models/CityModel';
 import { AreaModel } from '../../../Models/AreaModel';
 import { Country } from '../../../Models/CountryModel';
 import { StateModel } from '../../../Models/StateModel'
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 declare const google: any;
 @Component({
   selector: 'app-buttons',
@@ -86,13 +87,46 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   CustomerId?: number;
   showModal = false;
   BusinessId?: number;
+  /////
+  businesses?: BusinessModel[]
+
+  UsCityForBind?: String | null
+  Line2ForBind?: String | null
+  PostCodeForBind?: String | null
+  Line1ForBind?: String | null
+  LandMarkForBind?: String | null
+  customerMobileForBind?: String | null
+  customerNameForBind?: String | null
+  cityIdForBind: number | null = null;
+  areaIdForBind: number | null = null;
+  stateIdForBind: number | null = null;
+  countryIdForBind: number | null = null;
+  selectedCountryForBind?: String
+  addingLoadForBind: boolean = false
+  userRole?: string
+  ///
   @ViewChild('addressInput') addressInput?: ElementRef;
+  constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) { }
 
   SelectedBusinesses() {
     console.log(this.selectedBusinessIds);
   }
+  loading = false
+  getAllBusinesses() {
+    this.api.getAllData('Business').subscribe(res => {
+      this.businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name
+      }))
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+    })
+    this.cdr.detectChanges()
+  }
 
-  
+
   ngAfterViewChecked(): void {
     if (this.selectedCountry === 'USA' && this.addressInput?.nativeElement && !this.autocompleteInitialized) {
       this.initAutocomplete();
@@ -131,6 +165,8 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       this.fillAddress(place);
     });
   }
+
+
   fillAddress(place: any) {
 
     if (!place.address_components) return;
@@ -169,19 +205,36 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     });
 
     this.Line1 = `${streetNumber} ${route}`;
-
     this.Line2 = '';
-
     this.cdr.detectChanges();
   }
 
-  constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef) { }
-  ngAfterViewInit(): void {
-    throw new Error('Method not implemented.');
-  }
-  selectedBusinessIds: number[] = [];
 
+  ngAfterViewInit(): void {
+  }
+
+
+  selectedBusinessIds: number[] = [];
+  customerAddresses: any[] = []
+  isUpdate: boolean = false
+  customerId: number = 0
   ngOnInit(): void {
+    this.userRole = localStorage.getItem("UserRole") ?? ''
+    this.getAllBusinesses()
+    this.route.queryParams.subscribe(params => {
+      if (params['user']) {
+        var currentCustomer = JSON.parse(params['user'])
+        if (currentCustomer) {
+          console.log(currentCustomer)
+          this.customerId = currentCustomer.GlobalCustomerId
+          this.customerName = currentCustomer.CustomerName
+          this.customerMobile = currentCustomer.CustomerMobile
+          this.customerAddresses = currentCustomer.Address as []
+          this.isUpdate = true
+        }
+      }
+    })
+
     this.BusinessId = Number(localStorage.getItem('businessId'));
     this.api.getAllData("Country").subscribe((response: any) => {
       console.log("Countries", response)
@@ -202,6 +255,8 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
 
   showToast = false;
   toastMessage = '';
+  BusinessIdToBind?: number
+
   showMyToast(message: string) {
     this.toastMessage = message;
     this.showToast = true;
@@ -239,6 +294,34 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges()
   }
 
+  countryChangedForBind(event: Event) {
+    this.Line1ForBind = ''
+    this.Line2ForBind = ''
+    this.stateIdForBind = null
+    this.cityIdForBind = null
+    this.areaIdForBind = null
+    this.UsCityForBind = ''
+    this.PostCodeForBind = ''
+    this.LandMarkForBind = ''
+
+    var countryIdValue = Number((event.target as HTMLSelectElement).value);
+    this.selectedCountryForBind = this.countries.find(el => el.countryId == countryIdValue)?.name;
+    if (this.selectedCountryForBind == 'USA') {
+      this.api.getAllData(`State/GetAllStatesByCountry/${countryIdValue}`).subscribe((response: any) => {
+        console.log(response)
+        this.states = response;
+      });
+      this.cdr.detectChanges()
+    }
+
+    this.api.getAllData(`City/GetAllCitiesByCountry/${countryIdValue}`).subscribe((response: any) => {
+      console.log(response)
+      this.cities = response;
+      this.cdr.detectChanges()
+    });
+    this.cdr.detectChanges()
+  }
+
   cityChanged(event: Event): void {
     if (this.cityId === undefined) return;
     this.api.getAllData(`Area/GetAlAreasByCity/${this.cityId}`).subscribe((response: any) => {
@@ -252,51 +335,120 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.isVisible = !this.isVisible;
   }
 
+  // AddCustomer(): void {
+
+  //   if (this.addingLoad) return
+
+  //   this.addingLoad = true
+  //   const addressPayload: any = {
+  //     line_1: this.Line1,
+  //     line_2: this.Line2,
+  //     us_City: this.UsCity,
+  //     landMark: this.LandMark,
+  //     post_code: this.PostCode,
+  //     countryId: Number(this.countryId)
+  //   };
+
+  //   if (this.stateId !== undefined) {
+  //     addressPayload.stateId = this.stateId;
+  //   }
+
+  //   if (this.cityId !== undefined) {
+  //     addressPayload.cityId = this.cityId;
+  //   }
+
+  //   if (this.areaId !== undefined) {
+  //     addressPayload.areaId = this.areaId;
+  //   }
+
+  //   const bus = this.BusinessIdToBind != null ? this.BusinessIdToBind : this.BusinessId
+
+  //   const mainPayLoad = {
+  //     customerName: this.customerName,
+  //     customerMobile: this.customerMobile,
+  //     businessId: bus,
+  //     country_id: Number(this.countryId),
+  //     address: addressPayload
+  //   };
+
+  //   console.log(mainPayLoad);
+
+  //   this.api.posteData('Customers', mainPayLoad).subscribe(response => {
+  //     this.isVisible = !this.isVisible;
+  //     this.showMyToast('Customer added successfuly')
+  //     this.addingLoad = false
+  //     this.router.navigate(['/Home/customers'])
+  //     this.cdr.detectChanges()
+  //   }, (error) => {
+  //     this.addingLoad = false
+  //     this.cdr.detectChanges()
+  //   })
+  // }
   AddCustomer(): void {
+    if (this.addingLoad) return;
+    this.addingLoad = true;
+    const allAddressFieldsEmpty =
+      !this.Line1 &&
+      !this.Line2 &&
+      !this.UsCity &&
+      !this.LandMark &&
+      !this.PostCode &&
+      !this.countryId &&
+      !this.stateId &&
+      !this.cityId &&
+      !this.areaId;
 
-    if (this.addingLoad) return
+    let addressPayload: any = null;
 
-    this.addingLoad = true
-    const addressPayload: any = {
-      line_1: this.Line1,
-      line_2: this.Line2,
-      us_City: this.UsCity,
-      landMark: this.LandMark,
-      post_code: this.PostCode,
-      countryId: Number(this.countryId)
-    };
+    if (!allAddressFieldsEmpty) {
 
-    if (this.stateId !== undefined) {
-      addressPayload.stateId = this.stateId;
+      addressPayload = {
+        line_1: this.Line1,
+        line_2: this.Line2,
+        us_City: this.UsCity,
+        landMark: this.LandMark,
+        post_code: this.PostCode,
+        countryId: Number(this.countryId)
+      };
+
+      if (this.stateId != null) {
+        addressPayload.stateId = this.stateId;
+      }
+
+      if (this.cityId != null) {
+        addressPayload.cityId = this.cityId;
+      }
+
+      if (this.areaId != null) {
+        addressPayload.areaId = this.areaId;
+      }
     }
 
-    if (this.cityId !== undefined) {
-      addressPayload.cityId = this.cityId;
-    }
-
-    if (this.areaId !== undefined) {
-      addressPayload.areaId = this.areaId;
-    }
+    const bus = this.BusinessIdToBind != null ? this.BusinessIdToBind : this.BusinessId;
 
     const mainPayLoad = {
       customerName: this.customerName,
       customerMobile: this.customerMobile,
-      businessId: this.BusinessId,
-      country_id: Number(this.countryId),
+      businessId: bus,
+      country_id: this.countryId ?  Number(this.countryId) : null,
       address: addressPayload
     };
 
     console.log(mainPayLoad);
 
-    this.api.posteData('Customers', mainPayLoad).subscribe(response => {
-      this.isVisible = !this.isVisible;
-      this.showMyToast('Customer added successfuly')
-      this.addingLoad = false
-      this.cdr.detectChanges()
-    }, (error) => {
-      this.addingLoad = false
-      this.cdr.detectChanges()
-    })
+    this.api.posteData('Customers', mainPayLoad).subscribe(
+      response => {
+        this.isVisible = !this.isVisible;
+        this.showMyToast('Customer added successfuly');
+        this.addingLoad = false;
+        this.router.navigate(['/Home/customers']);
+        this.cdr.detectChanges();
+      },
+      error => {
+        this.addingLoad = false;
+        this.cdr.detectChanges();
+      }
+    );
   }
 
   filterSuggestions(value: string): void {
@@ -389,9 +541,42 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       //this.CustumerName = res.orders[0].customer.custName
     })
   }
+  AddNewAddressForCustomerBool = false
 
 
+  AddNewAddressForCustomer() {
+    this.AddNewAddressForCustomerBool = true
+    var payLoad = {
+      line_1: this.Line1ForBind,
+      line_2: this.Line2ForBind,
+      us_City: this.UsCityForBind,
+      landMark: this.LandMarkForBind,
+      post_code: this.PostCodeForBind,
+      lognTute: '',
+      latTute: '',
+      stateId: this.stateIdForBind,
+      areaId: this.areaIdForBind,
+      cityId: this.cityIdForBind,
+      countryId: this.countryIdForBind
+    }
 
+    console.log(payLoad)
+
+    this.api.putData(`Customers/AddNewAddressForCustomer/${this.customerId}`, payLoad).subscribe(res => {
+      this.AddNewAddressForCustomerBool = false
+      this.router.navigate(['/Home/customers'])
+    }, (error) => {
+      this.AddNewAddressForCustomerBool = false
+    })
+  }
+
+  DeleteAddress(id: number) {
+    this.api.deleteData(`Customers/DeleteAddress/${id}`).subscribe(res => {
+      this.customerAddresses = this.customerAddresses.filter(a => a.address_id !== id)
+      this.cdr.detectChanges()
+    }, (error) => {
+    })
+  }
 
   openModal() {
     this.showModal = true;

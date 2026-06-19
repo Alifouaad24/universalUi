@@ -96,7 +96,7 @@
             </a>
           </td>
           <td *ngIf="type.ebayListingId == null">
-              {{ type.inventory_id }}
+            {{ type.inventory_id }}
           </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
@@ -114,8 +114,9 @@
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
-                type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id)">
+              <button class="btn btn-sm btn-warning me-1"
+                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
+                type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id, type.Product_name, type.product_description)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger me-1" (click)="DeleteInventoryItem(type.inventory_id)">
@@ -137,6 +138,11 @@
               <button *ngIf="type.isProccessedInInventory" class="btn btn-sm btn-primary me-1"
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
+              </button>
+              <button [ngClass]="type?.isPublishedOnMarketPlace ? 'btn-success' : 'btn-info' "
+                class="btn btn-sm btn-primary mt-1" (click)="togglePublishStatusOnMarketPlase(type.item?.itemId)">
+                {{ isChangeStatus ? 'Toggling...' : type?.isPublishedOnMarketPlace ? 'Published on market place' :
+                'Publish on market place' }}
               </button>
 
             </ng-container>
@@ -280,13 +286,30 @@
       </div>
     </div>
     <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-12">
+        <label class="form-label">Title</label>
+        <input type="text" [(ngModel)]="title" class="form-control" />
+      </div>
+
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <textarea type="text" [(ngModel)]="descriptionToEdit" class="form-control"></textarea>
+      </div>
+
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
       <!-- <div class="col-md-5">
         <label class="form-label">UPC</label>
         <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
       </div> -->
     </div>
-
   </c-modal-body>
+
+
+
+
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
     <button class="btn btn-primary" (click)="EditInventoryItem()"> {{ isLoading ? 'Updating...' :
@@ -530,14 +553,15 @@
         </div>
 
         <!--  Title -->
-        <div class="col-12" *ngIf="selectedType?.product_description">
+        <div (click)="copyText(selectedType?.Product_name)" class="col-12" *ngIf="selectedType?.Product_name">
           <div class="card shadow-sm p-3">
             <small class="text-muted">Title</small>
             <p class="mb-0 mt-2">{{ selectedType?.Product_name }}</p>
           </div>
         </div>
         <!-- Description -->
-        <div class="col-12" *ngIf="selectedType?.product_description">
+        <div (click)="copyText(selectedType?.product_description)" class="col-12"
+          *ngIf="selectedType?.product_description">
           <div class="card shadow-sm p-3">
             <small class="text-muted">Description</small>
             <p class="mb-0 mt-2">{{ selectedType?.product_description }}</p>
@@ -546,10 +570,9 @@
         <div class="col-12" *ngIf="selectedType?.item.images?.length > 0">
           <div class="card shadow-sm p-3">
             <small class="text-muted">Images</small>
-
             <div class="row mt-2">
               <div class="col-2" *ngFor="let image of selectedType?.item.images">
-                <div class="position-relative" (click)="toggleImage(image)" style="cursor: pointer;">
+                <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
                   <img height="100" width="80" [src]="image.imageUrl" class="img-fluid rounded"
                     [class.border]="isSelected(image)" [class.border-danger]="isSelected(image)"
                     [class.border-3]="isSelected(image)">
@@ -563,6 +586,10 @@
                 </div>
               </div>
             </div>
+            <br />
+            <button class="btn btn-warning ms-1" (click)="downloadAllImages()">
+              Download Images
+            </button>
           </div>
         </div>
         <div>

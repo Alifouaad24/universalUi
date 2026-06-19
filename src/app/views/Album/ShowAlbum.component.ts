@@ -472,7 +472,6 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     } else {
       this.groupedAlbums = [];
-
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: {},
