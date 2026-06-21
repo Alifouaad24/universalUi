@@ -425,13 +425,14 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
   SaveInInvAndItem() {
     this.isLoading = true;
+    const imageUrls = this.folderImages.map(img => img.imageUrl);
     const payload = {
       categoryId: this.CategoryId,
       sizeId: this.SizeId,
       platformId: this.PlatformId,
       upc: this.UPC,
       sku: this.SKU,
-      imageUrl: this.currentImgUrl,
+      imageUrl: imageUrls,
       folderId: this.selectedFolderId,
       businessId: this.businessId,
       itemConditionId: this.ItemConditionId

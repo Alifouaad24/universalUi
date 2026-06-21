@@ -1,3 +1,6 @@
+import { BusinessModel } from "./Business/BusinessModel";
+import { ServiceModel } from "./ServiceModel";
+
 export class FeatureModel {
     featureId?: number;
     title?: string;
@@ -5,6 +8,9 @@ export class FeatureModel {
     status?: string;
     comments?: string[];
     system?: any;
+    Business?: BusinessModel
+    Service?: ServiceModel
+
 
     constructor(init?: Partial<FeatureModel>) {
         Object.assign(this, init)

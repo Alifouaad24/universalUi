@@ -35,6 +35,7 @@ import { ServiceModel } from '../../../Models/ServiceModel';
 import { ActiviityModel } from '../../../Models/ActivityModel';
 import { FeatureModel } from '../../../Models/FeatureModel';
 import { SystemModel } from '../../../Models/SystemModel';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 
 @Component({
   selector: 'app-button-groups',
@@ -71,18 +72,26 @@ export class ShowFeaturesComponent implements OnInit {
   title: string = '';
   status: string = '';
   body: string = '';
+  BusinessId?: number
+  ServiceId?: number
   globalSystemId: string = '';
   Systems?: SystemModel[]
   loading: boolean = false
   comment: string = '';
   selectedFeatureId: number = 0;
   comments: string[] = [];
+  Businesses?: BusinessModel[]
+Services?: ServiceModel[]
+SelectedBusinessId?: number
+SelectedServiceId?: number
+
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.getAllFeatures()
     this.getAllSystems()
+    this.getAllBusiness()
   }
 
   getAllSystems() {
@@ -97,14 +106,46 @@ export class ShowFeaturesComponent implements OnInit {
     })
   }
 
+
+  getAllBusiness() {
+    const businessId = localStorage.getItem('businessId')
+
+    this.http.getAllData(`Business/GetAllBusinessForTask/${businessId}`).subscribe(res => {
+      this.Businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name
+      }))
+      this.getAllServices()
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+    })
+  }
+
+
+  getAllServices() {
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Service/${businessId}`).subscribe(res => {
+      this.Services = (res as ServiceModel[]).map((el) => new ServiceModel({
+        service_id: el.service_id,
+        description: el.description
+      }))
+      this.Services = this.Services.filter(el => el.business_Services.business_id == businessId)
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+    })
+  }
+
   completedCount = 0;
   progressCount = 0;
   newCount = 0;
 
   getAllFeatures() {
     this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
 
-    this.http.getAllData('Feature').subscribe(
+    this.http.getAllData(`Feature/${businessId}`).subscribe(
       (res: any) => {
 
         this.features = (res as any[]).map(item => new FeatureModel({
@@ -114,6 +155,9 @@ export class ShowFeaturesComponent implements OnInit {
           status: item.status,
           comments: item.comments,
           system: item.globalSystem,
+          Business: item.business,
+          Service: item.service
+
         }));
 
         this.calculateStats();
@@ -177,6 +221,8 @@ export class ShowFeaturesComponent implements OnInit {
     this.status = type.status || '';
     this.globalSystemId = type.system.globalSystemId || '';
     this.selectedFeatureId = type.featureId || 0;
+    this.BusinessId = type.Business?.business_id
+    this.ServiceId = type.Service?.service_id
     console.log('Edit feature:', type);
   }
 

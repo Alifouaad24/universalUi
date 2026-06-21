@@ -34,6 +34,24 @@
         </option>
       </select>
     </div>
+    <div class="mb-3">
+      <label class="form-label">Business</label>
+      <select (change)="getAllServices(selectedBusinessId)" class="form-select" [(ngModel)]="selectedBusinessId">
+        <option disabled [ngValue]="null">-- Select System --</option>
+        <option *ngFor="let one of Businesses" [ngValue]="one.business_id">
+          {{ one.business_name }}
+        </option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ loadingServices ? 'Loading Services...' : 'Service'}}</label>
+      <select class="form-select" [(ngModel)]="selectedServiceId">
+        <option disabled [ngValue]="null">-- Select Services --</option>
+        <option *ngFor="let one of Services" [ngValue]="one.service_id">
+          {{ one.description }}
+        </option>
+      </select>
+    </div>
     <button [disabled]="loading" class="btn btn-primary" (click)="addFeature()">Add</button>
     <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
   </div>

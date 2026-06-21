@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
@@ -7,6 +7,8 @@ import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { ActiviityModel } from '../../../Models/ActivityModel';
 import { SystemModel } from '../../../Models/SystemModel';
+import { ServiceModel } from '../../../Models/ServiceModel';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 
 @Component({
   selector: 'app-buttons',
@@ -25,11 +27,54 @@ export class AddEditFeatureComponent implements OnInit {
   loading: boolean = false
   Systems?: SystemModel[]
   selectedSystemId?: number;
+  Businesses?: BusinessModel[]
+  Services?: ServiceModel[]
+  selectedServiceId?: number;
+  selectedBusinessId?: number;
 
-  constructor(private http: HttpConnectService, private router: Router) { }
+
+  constructor(private http: HttpConnectService, private router: Router, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.getAllSystems()
+    this.getAllBusiness()
+  }
+
+  getAllBusiness() {
+    const businessId = localStorage.getItem('businessId')
+
+    this.http.getAllData(`Business/GetAllBusinessForTask/${businessId}`).subscribe(res => {
+      this.Businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name
+      }))
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+    })
+  }
+
+loadingServices = false
+  getAllServices(busianessId: number | undefined) {
+    this.loadingServices = true
+    this.Services = []
+    this.http.getAllData(`Service/${busianessId}`).subscribe(res => {
+      console.log(res)
+      this.Services = (res as ServiceModel[]).map((el) => new ServiceModel({
+        service_id: el.service_id,
+        description: el.description
+      }))
+      this.loadingServices = false
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.loading = false
+      this.loadingServices = false
+    })
+  }
+
+  filerServices(id: number){
+    this.Services = this.Services?.filter(s => s.business_Services.business_id == id)
   }
 
   getAllSystems() {
@@ -56,7 +101,9 @@ export class AddEditFeatureComponent implements OnInit {
       "title": this.title,
       "body": this.body,
       "status": this.status,
-      "globalSystemId": this.selectedSystemId
+      "globalSystemId": this.selectedSystemId,
+      "businessId": this.selectedBusinessId,
+      "serviceId": this.selectedServiceId
     }
 
     this.http.posteData('Feature', payLoad).subscribe(res => {
@@ -67,7 +114,7 @@ export class AddEditFeatureComponent implements OnInit {
       this.loading = false
     })
   }
-  
+
   addComment() {
     this.loading = true
     if (!this.body) {

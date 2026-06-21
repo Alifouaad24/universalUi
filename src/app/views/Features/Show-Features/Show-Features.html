@@ -2,15 +2,15 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
 
   <div>
-    <h2 class="mb-0 fw-bold">Features Dashboard</h2>
+    <h2 class="mb-0 fw-bold">Tasks Dashboard</h2>
     <small class="text-muted">
-      Manage and track all system features
+      Manage and track all system tasks
     </small>
   </div>
 
   <button class="btn btn-primary shadow-sm" routerLink="./add-edit-feature">
     <i class="fas fa-plus me-2"></i>
-    Add Feature
+    Add task
   </button>
 
 </div>
@@ -99,9 +99,7 @@
     <div class="card border-0 shadow-sm h-100">
 
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <strong class="text-dark">
-          {{ feature.title }}
-        </strong>
+
         <span class="badge" [ngClass]="{
               'bg-success': feature.status === 'Completed',
               'bg-warning text-dark': feature.status === 'On progress',
@@ -269,6 +267,37 @@
               <option *ngFor="let system of Systems" [value]="system.globalSystemId">
 
                 {{ system.globalSystemName }}
+
+              </option>
+
+            </select>
+          </div>
+
+
+          <!-- Business -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">
+              Business
+            </label>
+
+            <select class="form-select" [(ngModel)]="BusinessId" name="Business">
+
+              <option *ngFor="let bus of Businesses" [value]="bus.business_id">{{bus.business_name}}</option>
+
+            </select>
+          </div>
+
+          <!-- Service -->
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">
+              Service
+            </label>
+
+            <select class="form-select" [(ngModel)]="ServiceId" name="Service">
+
+              <option *ngFor="let ser of Services" [value]="ser.service_id">
+
+                {{ ser.description }}
 
               </option>
 

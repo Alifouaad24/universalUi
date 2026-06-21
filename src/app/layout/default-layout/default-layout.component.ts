@@ -58,10 +58,13 @@ function isOverflown(element: HTMLElement) {
 })
 export class DefaultLayoutComponent {
   business: any;
+  taskCount = 0;
+
   public navItems: INavData[] = []
   router = inject(Router);
   services: ServiceModel[] = [];
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
+
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private ebayService: StorageService,
     private http: HttpConnectService, public loader: LoadingService) { }
   readonly #colorModeService = inject(ColorModeService);
@@ -76,6 +79,7 @@ export class DefaultLayoutComponent {
   ];
 
   ngOnInit() {
+    this.getStartSettings()
     this.businessCtx.getCurrentBusiness().subscribe(business => {
       this.currBusiness = business;
       console.log('Current Business in layout:', this.currBusiness);
@@ -85,7 +89,7 @@ export class DefaultLayoutComponent {
         return;
       }
       this.ebayService.getWithExpiry('ebayToken')
-      this.getAllServices()
+      //this.getAllServices()
       this.cdr.detectChanges();
     });
 
@@ -98,9 +102,9 @@ export class DefaultLayoutComponent {
     }
 
   }
-
   getAllServices() {
-    this.http.getAllData('Service').subscribe(
+     const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Service/${businessId}`).subscribe(
       (res: any) => {
         console.log(res);
         this.services = (res as any[]).map(item => new ServiceModel({
@@ -121,18 +125,46 @@ export class DefaultLayoutComponent {
             businessServiceIds.includes(s.service_id)
           );
 
-          this.navItems = this.services
-            .map((bs: any) => ({
-              name: bs.description,
-              url: bs.service_Route,
-              iconComponent: { name: bs.service_icon }
-            }));
+          // this.navItems = this.services
+          //   .map((bs: any) => ({
+          //     name: bs.description,
+          //     url: bs.service_Route,
+          //     iconComponent: { name: bs.service_icon }
+          //   }));
+
+          this.navItems = this.services.map((bs: any) => ({
+            name: bs.description,
+            url: bs.service_Route,
+            iconComponent: { name: bs.service_icon },
+
+            ...(bs.description === 'eTask' && {
+              badge: {
+                color: 'danger',
+                text: this.taskCount.toString()
+              }
+            })
+          }));
 
           this.cdr.detectChanges();
         }, 100);
         this.cdr.detectChanges();
       },
       (err) => {
+      }
+    );
+  }
+
+  getStartSettings() {
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`StartInformation/${businessId}`).subscribe(
+      (res: any) => {
+        this.taskCount = res.countOfNerTasks
+        this.cdr.detectChanges()
+        this.getAllServices()
+        this.cdr.detectChanges()
+      },
+      (err) => {
+
       }
     );
   }

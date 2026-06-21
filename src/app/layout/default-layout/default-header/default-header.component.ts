@@ -94,6 +94,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
       this.businessCtx.setCurrentBusiness(b)
       this.cdr.detectChanges();
       this.router.navigate(['/Home/dashboard']);
+      window.location.reload()
     }, 1);
   }
 

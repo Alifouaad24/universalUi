@@ -75,7 +75,8 @@ export class ShowCategoriesComponent implements OnInit {
 
   getAllCategories() {
     this.isLoading = true;
-    this.http.getAllData('Category').subscribe(
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Category/${businessId}`).subscribe(
       
       (res: any) => {
         console.log(res)

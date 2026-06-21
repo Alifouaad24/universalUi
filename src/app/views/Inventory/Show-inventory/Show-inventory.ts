@@ -464,10 +464,10 @@ export class ShowInventoryComponent implements OnInit {
       this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
     }
     else if (filterValue === 'unpublished') {
-      this.inventory = this.inventory.filter(inv => inv.status == null && !inv.isProccessedInInventory);
+      this.inventory = this.inventory.filter(inv => inv.status == null && inv.isProccessedInInventory);
     }
     else if (filterValue === 'needScrape') {
-      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1);
+      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1 && !inv.isProccessedInInventory);
     }
     else if (filterValue === 'Sold') {
       this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
