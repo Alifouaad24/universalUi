@@ -767,7 +767,6 @@ export class ShowInventoryComponent implements OnInit {
       weight: parseFloat(this.weight) ?? 0,
       internet: this.Internet,
       sKU: this.SKU,
-      upc: this.UPCFromScrape,
       currentInventoryId: this.currentInventoryId
 
     }
@@ -1154,22 +1153,7 @@ export class ShowInventoryComponent implements OnInit {
   isChangeStatus = false
 
   togglePublishStatusOnMarketPlase(id: number) {
-    this.isChangeStatus = true;
-    this.http.deleteData(`Inventory/TogglePublishOnMarketPlase/${id}`).subscribe(
-      (res: any) => {
-        this.isChangeStatus = false;
-        this.toastMessage.set('Inventory item successfully deleted.');
-        this.toastVisible.set(true);
-        this.inventory.find(inv => inv.inventory_id == id)!.isPublishedOnMarketPlace = res.status;
-        this.cdr.detectChanges();
-      },
-      (err) => {
-        this.isChangeStatus = false;
-        this.toastMessage.set('Error deleting inventory item.');
-        this.toastVisible.set(true);
-        this.cdr.detectChanges();
-      }
-    );
+
   }
 
 
@@ -1215,5 +1199,40 @@ export class ShowInventoryComponent implements OnInit {
 
     const blob = await response.blob();
     saveAs(blob, `${upc}.zip`);
+  }
+  selctedInvId: number = 0
+  MarketPlaceOfferUrl: string = ''
+  showMarketPlacePopup: boolean = false
+  showMarketPlaceModal(id: number | undefined) {
+    this.selctedInvId = id ?? 0
+    this.showMarketPlacePopup = true
+  }
+
+  SetAsPublishedInMarketPlace() {
+    if(this.MarketPlaceOfferUrl.length == 0){
+      return;
+    }
+
+    this.isChangeStatus = true;
+    var payLoad = {
+      id: this.selctedInvId,
+      url: this.MarketPlaceOfferUrl
+    }
+    this.http.putData(`Inventory/SetPublishOnMarketPlase`, payLoad).subscribe(
+      (res: any) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastVisible.set(true);
+        this.inventory.find(inv => inv.inventory_id == this.selctedInvId)!.isPublishedOnMarketPlace = res.status;
+        this.showMarketPlacePopup = false
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Error deleting inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
   }
 }

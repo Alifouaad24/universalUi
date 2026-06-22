@@ -139,8 +139,9 @@
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
               </button>
-              <button [ngClass]="type?.isPublishedOnMarketPlace ? 'btn-success' : 'btn-info' "
-                class="btn btn-sm btn-primary mt-1" (click)="togglePublishStatusOnMarketPlase(type.item?.itemId)">
+              <button *ngIf="type.isProccessedInInventory"
+                [ngClass]="type?.isPublishedOnMarketPlace ? 'btn-success' : 'btn-info' "
+                class="btn btn-sm btn-primary mt-1" (click)="showMarketPlaceModal(type.inventory_id)">
                 {{ isChangeStatus ? 'Toggling...' : type?.isPublishedOnMarketPlace ? 'Published on market place' :
                 'Publish on market place' }}
               </button>
@@ -655,6 +656,53 @@
         </button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showMarketPlacePopup" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow border-0 rounded-4">
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white">
+        <div>
+          <h5 class="modal-title mb-0">
+            <i class="bi bi-shop me-2"></i>
+            Publish To Marketplace
+          </h5>
+          <small class="opacity-75">
+            Add Marketplace URL
+          </small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="showMarketPlacePopup = false">
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4">
+        <label class="form-label fw-semibold">
+          Marketplace URL
+        </label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="bi bi-link-45deg"></i>
+          </span>
+          <input class="form-control" placeholder="https://facebook.com/marketplace/..."
+            [(ngModel)]="MarketPlaceOfferUrl">
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="showMarketPlacePopup = false">
+          Close
+        </button>
+        <button class="btn btn-success px-4" (click)="SetAsPublishedInMarketPlace()">
+          <i class="bi bi-check-circle me-2"></i>
+          {{isChangeStatus ? 'Saving...' : 'Save'}}
+        </button>
+      </div>
     </div>
   </div>
 </div>
