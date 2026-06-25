@@ -175,7 +175,7 @@
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.title }}?
+    Are you sure you want to delete {{ selectedType?.featureId }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
@@ -220,14 +220,6 @@
 
       <div class="card-body">
         <div class="row">
-
-          <!-- Title -->
-          <div class="col-md-12 mb-3">
-            <label class="form-label fw-semibold">
-              Title
-            </label>
-            <input type="text" class="form-control" [(ngModel)]="title" name="title">
-          </div>
 
           <!-- Body -->
           <div class="col-md-12 mb-3">
@@ -375,7 +367,7 @@
 
     </button>
 
-    <button class="btn btn-success px-4" (click)="updateFeature(selectedFeatureId)">
+    <button class="btn btn-success px-4" (click)="updateFeature(selectedFeatureId!)">
 
       <i class="fas fa-save me-2"></i>
       Save Changes

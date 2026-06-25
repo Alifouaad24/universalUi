@@ -74,16 +74,16 @@ export class ShowFeaturesComponent implements OnInit {
   body: string = '';
   BusinessId?: number
   ServiceId?: number
-  globalSystemId: string = '';
+  globalSystemId?: number;
   Systems?: SystemModel[]
   loading: boolean = false
   comment: string = '';
-  selectedFeatureId: number = 0;
+  selectedFeatureId?: number;
   comments: string[] = [];
   Businesses?: BusinessModel[]
-Services?: ServiceModel[]
-SelectedBusinessId?: number
-SelectedServiceId?: number
+  Services?: ServiceModel[]
+  SelectedBusinessId?: number
+  SelectedServiceId?: number
 
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
@@ -123,19 +123,27 @@ SelectedServiceId?: number
   }
 
 
-  getAllServices() {
-    const businessId = localStorage.getItem('businessId')
-    this.http.getAllData(`Service/${businessId}`).subscribe(res => {
-      this.Services = (res as ServiceModel[]).map((el) => new ServiceModel({
+ getAllServices() {
+  const businessId = Number(localStorage.getItem('businessId'));
+
+  this.http.getAllData(`Service/${businessId}`).subscribe(res => {
+
+    this.Services = (res as ServiceModel[])
+      .filter(el =>
+        el.business_Services?.some((bs: any) => bs.business_id === businessId)
+      )
+      .map(el => new ServiceModel({
         service_id: el.service_id,
         description: el.description
-      }))
-      this.Services = this.Services.filter(el => el.business_Services.business_id == businessId)
-    }, (error) => {
-      console.error(error)
-      this.loading = false
-    })
-  }
+      }));
+
+    this.cdr.detectChanges();
+
+  }, error => {
+    console.error(error);
+    this.loading = false;
+  });
+}
 
   completedCount = 0;
   progressCount = 0;
@@ -144,19 +152,20 @@ SelectedServiceId?: number
   getAllFeatures() {
     this.isLoading = true;
     const businessId = localStorage.getItem('businessId')
-
     this.http.getAllData(`Feature/${businessId}`).subscribe(
       (res: any) => {
-
+        console.log(res)
         this.features = (res as any[]).map(item => new FeatureModel({
           featureId: item.featureId,
-          title: item.title,
           body: item.body,
           status: item.status,
           comments: item.comments,
           system: item.globalSystem,
           Business: item.business,
-          Service: item.service
+          Service: item.service,
+          business_id: item.business_id,
+          globalSystemId: item.globalSystemId,
+          service_id: item.service_id
 
         }));
 
@@ -194,10 +203,10 @@ SelectedServiceId?: number
     this.http.deleteData(`Feature/${type.featureId}`,).subscribe(() => {
       this.features = this.features.filter(t => t.featureId !== type.featureId);
       this.showDeleteModal = false;
-      this.toastMessage.set(`${type.title} deleted successfully`);
+      this.toastMessage.set(`${type.featureId} deleted successfully`);
       this.toastVisible.set(true);
     }, (error) => {
-      this.toastMessage.set(`An error occured during delete (${type.title})`);
+      this.toastMessage.set(`An error occured during delete (${type.featureId})`);
       this.toastVisible.set(true);
     });
   }
@@ -215,14 +224,13 @@ SelectedServiceId?: number
 
   openEditModal(type: FeatureModel) {
     this.showEditModal = true;
-    this.title = type.title || '';
     this.body = type.body || '';
     this.comments = type.comments ? type.comments : [];
     this.status = type.status || '';
-    this.globalSystemId = type.system.globalSystemId || '';
-    this.selectedFeatureId = type.featureId || 0;
-    this.BusinessId = type.Business?.business_id
-    this.ServiceId = type.Service?.service_id
+    this.globalSystemId = type.globalSystemId;
+    this.selectedFeatureId = type.featureId;
+    this.BusinessId = type?.business_id
+    this.ServiceId = type?.service_id
     console.log('Edit feature:', type);
   }
 
@@ -242,8 +250,8 @@ SelectedServiceId?: number
         this.cdr.detectChanges();
         this.getAllFeatures();
         this.comment = '';
-            this.toastMessage.set('Comment added successfully');
-    this.toastVisible.set(true);
+        this.toastMessage.set('Comment added successfully');
+        this.toastVisible.set(true);
       },
       (error) => {
         console.error('Error adding comment:', error);
@@ -252,17 +260,20 @@ SelectedServiceId?: number
       }
     );
     console.log('New comment:', this.comment);
-    
+
 
   }
 
   updateFeature(featureId: number) {
     const updatedFeature = {
-      title: this.title,
       body: this.body,
       status: this.status,
       globalSystemId: this.globalSystemId,
+      businessId: this.BusinessId,
+      serviceId: this.ServiceId
     };
+
+    console.log(updatedFeature)
 
     this.http.putData(`Feature/${featureId}`, updatedFeature).subscribe(
       () => {

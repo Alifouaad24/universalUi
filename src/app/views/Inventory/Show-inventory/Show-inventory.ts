@@ -475,6 +475,9 @@ export class ShowInventoryComponent implements OnInit {
     else if (filterValue === 'parcialSold') {
       this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
     }
+    else if (filterValue === 'unpublishedOnMarketPlace') {
+      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory &&  !inv.isPublishedOnMarketPlace);
+    }
     else {
       this.inventory = [];
       this.router.navigate([], {
@@ -485,6 +488,7 @@ export class ShowInventoryComponent implements OnInit {
       this.getInventory();
       this.cdr.detectChanges();
     }
+    this.cdr.detectChanges();
   }
 
   setInvItemNotFound() {
@@ -768,7 +772,6 @@ export class ShowInventoryComponent implements OnInit {
       internet: this.Internet,
       sKU: this.SKU,
       currentInventoryId: this.currentInventoryId
-
     }
 
     console.log('Payload for binding images:', payLoad);
@@ -1171,7 +1174,7 @@ export class ShowInventoryComponent implements OnInit {
   async downloadAllImages() {
 
     const images =
-      this.selectedType?.item?.images;
+      this.selectedImagesToEbay;
     if (!images?.length) {
       return;
     }
@@ -1209,7 +1212,7 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   SetAsPublishedInMarketPlace() {
-    if(this.MarketPlaceOfferUrl.length == 0){
+    if (this.MarketPlaceOfferUrl.length == 0) {
       return;
     }
 

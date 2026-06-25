@@ -20,7 +20,6 @@ import { BusinessModel } from '../../../Models/Business/BusinessModel';
   ]
 })
 export class AddEditFeatureComponent implements OnInit {
-  title: string = '';
   status: string = '';
   body: string = '';
   message: string = '';
@@ -48,6 +47,9 @@ export class AddEditFeatureComponent implements OnInit {
         business_id: el.business_id,
         business_name: el.business_name
       }))
+
+      this.selectedBusinessId = this.Businesses.find(el => el.business_id == Number(businessId))?.business_id
+      this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
       this.loading = false
@@ -91,14 +93,13 @@ loadingServices = false
 
   addFeature() {
     this.loading = true
-    if (!this.title) {
-      this.message = 'Please enter feature title';
+    if (!this.body) {
+      this.message = 'Please enter task body';
       this.loading = false
       return;
     }
 
     const payLoad = {
-      "title": this.title,
       "body": this.body,
       "status": this.status,
       "globalSystemId": this.selectedSystemId,

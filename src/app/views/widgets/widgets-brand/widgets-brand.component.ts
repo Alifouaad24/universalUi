@@ -51,7 +51,7 @@ export class WidgetsBrandComponent
   CountUnProccessedImages = 0;
   CountUnnScrapedItems = 0;
   CountUnPublishedItems = 0;
-
+  CountUnPublishedOnMarket = 0;
   constructor(
     private http: HttpConnectService
   ) { }
@@ -135,6 +135,7 @@ export class WidgetsBrandComponent
 
         this.CountUnPublishedItems =
           res.countUnPublishedItems;
+        this.CountUnPublishedOnMarket = res.countUnPublishedOnMarket
 
         this.buildBrandData();
 
@@ -279,7 +280,7 @@ export class WidgetsBrandComponent
         values: [
           {
             title: 'Un published in MarketPlace',
-            value: 12
+            value: this.CountUnPublishedOnMarket
           }
         ],
 
@@ -287,9 +288,11 @@ export class WidgetsBrandComponent
           '--cui-card-cap-bg': 'var(--cui-warning)'
         },
 
-        router: '/Home/album',
+        router: '/Home/inventory',
 
-        queryParams: {},
+        queryParams: {
+          filtter: 'unpublishedOnMarketPlace'
+        },
 
         data: {
           labels: [...this.labels],
