@@ -17,7 +17,6 @@
 
 <!-- Statistics -->
 <div class="row mb-4">
-
   <div class="col-lg-3 col-md-6 mb-3">
     <div class="card border-0 shadow-sm bg-primary text-white">
       <div class="card-body">
@@ -92,69 +91,62 @@
 </div>
 
 <!-- Feature Cards -->
-<div class="row" *ngIf="!isLoading && features.length">
-
-  <div class="col-xl-4 col-lg-6 mb-4" *ngFor="let feature of features">
-
+<div *ngIf="!isLoading && features.length">
+  <div class="mb-3" *ngFor="let feature of features">
     <div class="card border-0 shadow-sm h-100">
-
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-
-        <span class="badge" [ngClass]="{
-              'bg-success': feature.status === 'Completed',
-              'bg-warning text-dark': feature.status === 'On progress',
-              'bg-danger': feature.status === 'New',
-              'bg-info': feature.status === 'Testing',
-              'bg-secondary': feature.status === 'Unscheduled',
-              'bg-dark': feature.status === 'Waiting response'
-            }">
-          {{ feature.status }}
-        </span>
-
-      </div>
-
       <div class="card-body">
-
-        <div class="mb-3">
-
-          <small class="text-muted">
-            Description
-          </small>
-
-          <p class="mb-0 mt-1">
-            {{
-            (feature.body?.length ?? 0) > 150
-            ? (feature.body | slice:0:150) + '...'
-            : feature.body
-            }}
-          </p>
-        </div>
-        <hr>
-        <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted">
-            System
-          </span>
-          <strong>
-            {{ feature.system?.globalSystemName }}
-          </strong>
-        </div>
-        <div class="d-flex justify-content-between mb-3">
-          <span class="text-muted">
-            Comments
-          </span>
-          <span class="badge bg-primary">
-            {{ feature.comments?.length || 0 }}
-          </span>
-        </div>
-      </div>
-      <div class="card-footer bg-white border-0">
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary flex-fill" (click)="openEditModal(feature)">
-            <c-icon name="cil-pencil"></c-icon>
-          </button>
-          <button class="btn btn-danger" (click)="confirmDelete(feature)">
-            <c-icon name="cil-trash"></c-icon>
-          </button>
+        <div class="row align-items-center">
+          <!-- Left Side -->
+          <div class="col-lg-9">
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge me-3" [ngClass]="{
+                'bg-success': feature.status === 'Completed',
+                'bg-warning text-dark': feature.status === 'On progress',
+                'bg-danger': feature.status === 'New',
+                'bg-info': feature.status === 'Testing',
+                'bg-secondary': feature.status === 'Unscheduled',
+                'bg-dark': feature.status === 'Waiting response'
+              }">
+                {{ feature.status }}
+              </span>
+              <strong class="text-dark">
+                {{ feature.system?.globalSystemName }}
+              </strong>
+            </div>
+            <small class="text-muted d-block mb-1">
+              Description
+            </small>
+            <p class="mb-2">
+              {{
+                (feature.body?.length ?? 0) > 150
+                ? (feature.body | slice:0:150) + '...'
+                : feature.body
+              }}
+            </p>
+            <div class="d-flex gap-4">
+              <div>
+                <small class="text-muted">System</small>
+                <div><strong>{{ feature.system?.globalSystemName }}</strong></div>
+              </div>
+              <div>
+                <small class="text-muted">Comments</small>
+                <div>
+                  <span class="badge bg-primary">
+                    {{ feature.comments?.length || 0 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Right Side (Buttons) -->
+          <div class="col-lg-3 text-end">
+            <button class="btn btn-primary me-2" (click)="openEditModal(feature)">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
+            <button class="btn btn-danger" (click)="confirmDelete(feature)">
+              <c-icon name="cil-trash"></c-icon>
+            </button>
+          </div>
         </div>
       </div>
     </div>

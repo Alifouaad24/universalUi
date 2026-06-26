@@ -467,7 +467,7 @@ export class ShowInventoryComponent implements OnInit {
       this.inventory = this.inventory.filter(inv => inv.status == null && inv.isProccessedInInventory);
     }
     else if (filterValue === 'needScrape') {
-      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1 && !inv.isProccessedInInventory);
+      this.inventory = this.inventory.filter(inv => !inv.isProccessedInInventory);
     }
     else if (filterValue === 'Sold') {
       this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
@@ -476,7 +476,7 @@ export class ShowInventoryComponent implements OnInit {
       this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
     }
     else if (filterValue === 'unpublishedOnMarketPlace') {
-      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory &&  !inv.isPublishedOnMarketPlace);
+      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory && !inv.isPublishedOnMarketPlace);
     }
     else {
       this.inventory = [];
@@ -771,6 +771,7 @@ export class ShowInventoryComponent implements OnInit {
       weight: parseFloat(this.weight) ?? 0,
       internet: this.Internet,
       sKU: this.SKU,
+      upc: this.UPCFromScrape,
       currentInventoryId: this.currentInventoryId
     }
 
@@ -839,9 +840,6 @@ export class ShowInventoryComponent implements OnInit {
     }
     this.isLoading1 = true;
 
-    const imageUrls: string[] = product.item.itemImages
-      .filter((img: any) => img.imageSourceLink && img.imageSourceLink.trim() !== '').slice(0, 7)
-      .map((img: any) => img.imageSourceLink);
 
     const skuValue = product.item.sku && product.item.sku.trim() !== ''
       ? product.item.sku
@@ -858,7 +856,7 @@ export class ShowInventoryComponent implements OnInit {
       'brand': product.item.make.makeDescription,
       'quantity': Number(product.qty),
       'condition': product.itemCondetion?.description ?? 'NEW',
-      'imageUrls': imageUrls,
+      'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
       'price': Number(product.sellingprice ?? product.item.sitePrice),
       'currency': "USD",
       'fulfillmentPolicyId': '373826822023',
@@ -902,6 +900,12 @@ export class ShowInventoryComponent implements OnInit {
 
 
   PublishByEbay(product: any) {
+
+    if (product.ebayOfferID) {
+      this.rePublishByEbay(product)
+      return
+    }
+
     if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
       this.toastMessage.set('Please select at least one image to publish the product on eBay.');
       this.toastVisible.set(true);
