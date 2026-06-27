@@ -835,8 +835,9 @@ export class ShowInventoryComponent implements OnInit {
   rePublishByEbay(product: any) {
     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
     if (!token) {
-      // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
-      return;
+      this.toastMessage.set('Please login to publish the product on eBay.');
+      this.toastVisible.set(true);
+      this.cdr.detectChanges(); return;
     }
     this.isLoading1 = true;
 
@@ -845,32 +846,32 @@ export class ShowInventoryComponent implements OnInit {
       ? product.item.sku
       : this.generateUniqueSku();
 
-    const titleValue = product.item.engName
-      ? product.item.engName.substring(0, 80)
+    const titleValue = product.Product_name
+      ? product.Product_name.substring(0, 80)
       : 'Untitled Item';
 
     const payload = {
       'sku': skuValue,
       'title': titleValue,
-      'description': product.item?.arDesc ?? product.item.engName,
-      'brand': product.item.make.makeDescription,
+      'description': product.product_description,
+      'brand': product.item.brand,
       'quantity': Number(product.qty),
-      'condition': product.itemCondetion?.description ?? 'NEW',
+      'condition': product.itemCondition?.description ?? 'NEW',
       'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
-      'price': Number(product.sellingprice ?? product.item.sitePrice),
+      'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
       'currency': "USD",
       'fulfillmentPolicyId': '373826822023',
       'paymentPolicyId': '373648989023',
       'returnPolicyId': '373648988023',
-      'categoryId': (product.item?.category?.ebayCategoryId).toString(),
+      'categoryId': (product.category?.ebayCategoryId).toString(),
       'upc': product.item.upc,
-      'ebayOfferID': product.ebayInvID
+      'ebayOfferID': product.ebayOfferID
 
     };
 
     console.log(payload)
 
-    this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+    this.http.putData(`Ebay/update-product/${token}`, payload).subscribe({
       next: () => {
         // this.toastr.success('تم نشر المنتج بنجاح');
         this.toastMessage.set('Product republished successfully');
