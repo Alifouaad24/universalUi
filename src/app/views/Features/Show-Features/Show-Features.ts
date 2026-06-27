@@ -59,6 +59,7 @@ import { BusinessModel } from '../../../Models/Business/BusinessModel';
 export class ShowFeaturesComponent implements OnInit {
 
   features: FeatureModel[] = [];
+  allFeatures: FeatureModel[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
@@ -84,6 +85,7 @@ export class ShowFeaturesComponent implements OnInit {
   Services?: ServiceModel[]
   SelectedBusinessId?: number
   SelectedServiceId?: number
+  selectedFilter: string = "All"
 
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
@@ -109,7 +111,6 @@ export class ShowFeaturesComponent implements OnInit {
 
   getAllBusiness() {
     const businessId = localStorage.getItem('businessId')
-
     this.http.getAllData(`Business/GetAllBusinessForTask/${businessId}`).subscribe(res => {
       this.Businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
         business_id: el.business_id,
@@ -123,27 +124,27 @@ export class ShowFeaturesComponent implements OnInit {
   }
 
 
- getAllServices() {
-  const businessId = Number(localStorage.getItem('businessId'));
+  getAllServices() {
+    const businessId = Number(localStorage.getItem('businessId'));
 
-  this.http.getAllData(`Service/${businessId}`).subscribe(res => {
+    this.http.getAllData(`Service/${businessId}`).subscribe(res => {
 
-    this.Services = (res as ServiceModel[])
-      .filter(el =>
-        el.business_Services?.some((bs: any) => bs.business_id === businessId)
-      )
-      .map(el => new ServiceModel({
-        service_id: el.service_id,
-        description: el.description
-      }));
+      this.Services = (res as ServiceModel[])
+        .filter(el =>
+          el.business_Services?.some((bs: any) => bs.business_id === businessId)
+        )
+        .map(el => new ServiceModel({
+          service_id: el.service_id,
+          description: el.description
+        }));
 
-    this.cdr.detectChanges();
+      this.cdr.detectChanges();
 
-  }, error => {
-    console.error(error);
-    this.loading = false;
-  });
-}
+    }, error => {
+      console.error(error);
+      this.loading = false;
+    });
+  }
 
   completedCount = 0;
   progressCount = 0;
@@ -166,11 +167,10 @@ export class ShowFeaturesComponent implements OnInit {
           business_id: item.business_id,
           globalSystemId: item.globalSystemId,
           service_id: item.service_id
-
         }));
 
+        this.allFeatures = this.features;
         this.calculateStats();
-
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -182,8 +182,9 @@ export class ShowFeaturesComponent implements OnInit {
     );
   }
 
-  calculateStats() {
 
+  calculateStats() {
+    this.features = this.features.filter(x => x.status !== 'Closed')
     this.completedCount =
       this.features.filter(x => x.status === 'Completed').length;
 
@@ -192,6 +193,8 @@ export class ShowFeaturesComponent implements OnInit {
 
     this.newCount =
       this.features.filter(x => x.status === 'New').length;
+
+    this.filterTasks(this.selectedFilter)
   }
   confirmDelete(type: FeatureModel) {
     this.selectedType = type;
@@ -288,6 +291,32 @@ export class ShowFeaturesComponent implements OnInit {
         this.toastVisible.set(true);
       }
     );
+  }
+
+  SetStatusClosed(id: number) {
+
+    this.http.putData(`Feature/SetTaskStatusClosed/${id}`, {}).subscribe(
+      () => {
+        this.toastMessage.set('Feature updated successfully');
+        this.toastVisible.set(true);
+        this.getAllFeatures();
+        this.showEditModal = false;
+      },
+      (error) => {
+        console.error('Error updating feature:', error);
+        this.toastMessage.set('An error occurred while updating the feature');
+        this.toastVisible.set(true);
+      }
+    );
+  }
+
+  filterTasks(filtter: string) {
+    this.features = this.allFeatures;
+    if (filtter == "All") {
+      this.features = this.features.filter(x => x.status !== 'Closed')
+      return
+    }
+    this.features = this.features.filter(x => x.status === filtter);
   }
 
 }

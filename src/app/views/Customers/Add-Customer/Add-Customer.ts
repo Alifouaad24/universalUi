@@ -108,9 +108,6 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   @ViewChild('addressInput') addressInput?: ElementRef;
   constructor(private api: HttpConnectService, private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) { }
 
-  SelectedBusinesses() {
-    console.log(this.selectedBusinessIds);
-  }
   loading = false
   getAllBusinesses() {
     this.api.getAllData('Business').subscribe(res => {
@@ -118,6 +115,24 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
         business_id: el.business_id,
         business_name: el.business_name
       }))
+
+      this.route.queryParams.subscribe(params => {
+        if (params['user']) {
+          var currentCustomer = JSON.parse(params['user'])
+          if (currentCustomer) {
+            console.log(currentCustomer)
+            this.customerId = currentCustomer.GlobalCustomerId
+            this.customerName = currentCustomer.CustomerName
+            this.customerMobile = currentCustomer.CustomerMobile
+            this.customerAddresses = currentCustomer.Address as []
+            this.selectedBusinessId = currentCustomer.Buseness_Customer.map((el: any) => el.business_id)
+            this.isUpdate = true
+          }
+        }
+      })
+
+      console.log(this.selectedBusinessId)
+
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
@@ -214,26 +229,14 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   }
 
 
-  selectedBusinessIds: number[] = [];
   customerAddresses: any[] = []
   isUpdate: boolean = false
   customerId: number = 0
   ngOnInit(): void {
     this.userRole = localStorage.getItem("UserRole") ?? ''
     this.getAllBusinesses()
-    this.route.queryParams.subscribe(params => {
-      if (params['user']) {
-        var currentCustomer = JSON.parse(params['user'])
-        if (currentCustomer) {
-          console.log(currentCustomer)
-          this.customerId = currentCustomer.GlobalCustomerId
-          this.customerName = currentCustomer.CustomerName
-          this.customerMobile = currentCustomer.CustomerMobile
-          this.customerAddresses = currentCustomer.Address as []
-          this.isUpdate = true
-        }
-      }
-    })
+
+
 
     this.BusinessId = Number(localStorage.getItem('businessId'));
     this.api.getAllData("Country").subscribe((response: any) => {
@@ -255,7 +258,6 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
 
   showToast = false;
   toastMessage = '';
-  BusinessIdToBind?: number
 
   showMyToast(message: string) {
     this.toastMessage = message;
@@ -424,13 +426,13 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       }
     }
 
-    const bus = this.BusinessIdToBind != null ? this.BusinessIdToBind : this.BusinessId;
+    const bus = this.selectedBusinessId != null ? this.selectedBusinessId : [this.BusinessId];
 
     const mainPayLoad = {
       customerName: this.customerName,
       customerMobile: this.customerMobile,
       businessId: bus,
-      country_id: this.countryId ?  Number(this.countryId) : null,
+      country_id: this.countryId ? Number(this.countryId) : null,
       address: addressPayload
     };
 

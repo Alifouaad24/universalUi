@@ -203,7 +203,7 @@ export class ShowCustomersComponent implements OnInit {
 
   deleteUser(type?: CustomerModel) {
     if (!type) return;
-    this.http.deleteData(`Account/${type.GlobalCustomerId}`,).subscribe(() => {
+    this.http.deleteData(`Customers/${type.GlobalCustomerId}`,).subscribe(() => {
       this.Users = this.Users.filter(t => t.GlobalCustomerId !== type.GlobalCustomerId);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.CustomerName} deleted successfully`);
