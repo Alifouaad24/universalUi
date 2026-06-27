@@ -589,7 +589,7 @@
         </div>
         <div class="col-12" *ngIf="selectedType?.item.images?.length > 0">
           <div class="card shadow-sm p-3">
-            <small class="text-muted">Images</small>
+            <small class="text-muted">Images (select more than 7 images to publish)</small>
             <div class="row mt-2">
               <div class="col-2" *ngFor="let image of selectedType?.item.images">
                 <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
@@ -613,7 +613,8 @@
           </div>
         </div>
         <div>
-          <button [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
+          <button *ngIf="selectedImagesToEbay && selectedImagesToEbay.length > 7 && selectedType?.category?.name && selectedType?.itemCondition?.description
+            " [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
             (click)="PublishByEbay(selectedType)">
             {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on
             eBay' : 'Publish on eBay') }}
