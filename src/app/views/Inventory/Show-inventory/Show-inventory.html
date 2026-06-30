@@ -368,10 +368,22 @@
       <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
     </div>
     <hr /> -->
-    paste source code here to get data:
+    <div>
+      <label>
+        <input type="radio" name="searchSource" [(ngModel)]="selectedSource" value="homeDepot" />
+        By HomeDepot
+      </label>
+      <label style="margin-left: 20px;">
+        <input type="radio" name="searchSource" [(ngModel)]="selectedSource" value="ebay" />
+        By Ebay
+      </label>
+    </div>
     <br /><br />
-    <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
-    <br /><br />
+    <p *ngIf="selectedSource == 'homeDepot'">paste source code here to get data:</p>
+    <p *ngIf="selectedSource == 'ebay'">paste UPC here to get data:</p>
+    <textarea *ngIf="selectedSource == 'homeDepot'" [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
+    <input *ngIf="selectedSource == 'ebay'" [(ngModel)]="sourceCode" class="form-control" rows="5" />
+    <br />
     <div *ngIf="priceFromScrape.length > 0" class="">
       <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
       <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
@@ -618,7 +630,7 @@
             (click)="PublishByEbay(selectedType)">
             {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on
             eBay' : 'Publish on eBay') }}
-            
+
           </button>
         </div>
 

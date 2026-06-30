@@ -67,6 +67,7 @@ export class ShowInventoryComponent implements OnInit {
 
   inventory: InventoryModel[] = [];
   message?: string
+  selectedSource: string = 'homeDepot';
   isLoading: boolean = false;
   showScrapeModal: boolean = false;
   showScrapeDutyModal: boolean = false;
@@ -708,7 +709,58 @@ export class ShowInventoryComponent implements OnInit {
     this.rotation = (this.rotation + 1) % 4;
   }
 
+  getFromEbay(){
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.http.getAllData(`Ebay/search-ebay-product/${token}/${this.sourceCode}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.UPCFromScrape = res.specifications['UPC'];
+        this.productNameFromScrape = res.title;
+        this.height = res.height
+        this.width = res.width
+        this.length = res.length
+        this.desc = res.description
+        this.weight = res.weight
+        this.Model = res.model
+        this.Internet = res.internet
+        this.Brand = res.brand
+        this.Dimention = res.dimention
+        this.SKU = res.sKU
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+    this.cdr.detectChanges();
+
+  }
+
   getImagesFromScrapeForDuty() {
+    if(this.selectedSource === 'ebay'){
+      this.getFromEbay()
+      return
+    }
     if (!this.sourceCode.trim()) {
       this.toastMessage.set('Please paste the source code to scrape.');
       this.toastVisible.set(true);
