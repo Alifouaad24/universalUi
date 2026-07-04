@@ -52,9 +52,9 @@
         </div>
         <!-- Login -->
         <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
-          <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;" />
-          <button class="btn btn-danger btn-sm" (click)="LogInToEbayDiredty(token.value, token)">
-            {{ loginingInToEbay ? 'Logging in...' : 'Login to eBay' }}
+          <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;" [ngClass]="{ 'd-none': isAuthInEbay }" />
+          <button class="btn btn-sm" [ngClass]="{ 'btn-danger': !isAuthInEbay, 'btn-success': isAuthInEbay, 'disabled': isAuthInEbay }" (click)="LogInToEbayDiredty(token.value, token)">
+            {{ loginingInToEbay ? 'Logging in...' : isAuthInEbay ? 'Authorized' : 'Login to eBay' }}
           </button>
           <button class="btn btn-info btn-sm" (click)="GetSoldItems()">
             {{ isLoading11 ? 'Retrieving...' : 'Get sold items' }}
@@ -102,7 +102,7 @@
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
           <td><img (click)="ShowDetailsModal(type)"
-              [src]="type.item?.images?.length > 1 ? type.item?.images?.[1]?.imageUrl : defaultBusinessLogo" alt="Image"
+              [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo" alt="Image"
               style="width: 60px; height: 75px;"></td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
               type.item?.upc }}</a>

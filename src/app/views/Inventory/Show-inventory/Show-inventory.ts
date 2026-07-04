@@ -114,11 +114,14 @@ export class ShowInventoryComponent implements OnInit {
   itemConditions?: any[]
   ItemConditionId: number | null = null;
   UPCFromScrape: string = '';
+  isAuthInEbay: boolean = false;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
   ngOnInit(): void {
+    this.isAuthInEbay = this.storage.getWithExpiry('ebayToken') != null ? true : false;
+
     this.businessId = Number(localStorage.getItem('businessId'));
     this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
     console.log('Current MY Business:', this.currentBusiness);
@@ -180,6 +183,7 @@ export class ShowInventoryComponent implements OnInit {
           isProccessedInInventory: item.isProccessedInInventory,
           isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
         }));
+
         this.tempInventory = [...this.inventory];
         this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
         this.isLoading = false;
@@ -709,14 +713,15 @@ export class ShowInventoryComponent implements OnInit {
     this.rotation = (this.rotation + 1) % 4;
   }
 
-  getFromEbay(){
+  getFromEbay() {
     if (!this.sourceCode.trim()) {
       this.toastMessage.set('Please paste the source code to scrape.');
       this.toastVisible.set(true);
       return;
     }
-     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
     if (!token) {
+      this.isAuthInEbay = false;
       //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
       this.toastMessage.set('You must log in to eBay first');
       this.toastVisible.set(true);
@@ -736,7 +741,7 @@ export class ShowInventoryComponent implements OnInit {
         this.length = res.length
         this.desc = res.description
         this.weight = res.weight
-        this.Model = res.model
+        this.Model = res.mpn
         this.Internet = res.internet
         this.Brand = res.brand
         this.Dimention = res.dimention
@@ -757,7 +762,7 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   getImagesFromScrapeForDuty() {
-    if(this.selectedSource === 'ebay'){
+    if (this.selectedSource === 'ebay') {
       this.getFromEbay()
       return
     }
@@ -887,6 +892,7 @@ export class ShowInventoryComponent implements OnInit {
   rePublishByEbay(product: any) {
     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
     if (!token) {
+      this.isAuthInEbay = false;
       this.toastMessage.set('Please login to publish the product on eBay.');
       this.toastVisible.set(true);
       this.cdr.detectChanges(); return;
@@ -968,6 +974,7 @@ export class ShowInventoryComponent implements OnInit {
     if (product.ebayInvID == null || product.ebayInvID == '') {
       const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
       if (!token) {
+        this.isAuthInEbay = false;
         // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
         this.toastMessage.set('You must log in to eBay first');
         this.toastVisible.set(true);
@@ -1105,6 +1112,7 @@ export class ShowInventoryComponent implements OnInit {
       this.loginingInToEbay = false;
       this.toastVisible.set(true);
       inputElement.value = '';
+      this.isAuthInEbay = true;
     }, (err) => {
       this.toastMessage.set('Failed to store token, please try again');
       this.loginingInToEbay = false;
