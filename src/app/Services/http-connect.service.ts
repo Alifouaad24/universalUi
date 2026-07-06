@@ -27,12 +27,11 @@ export class HttpConnectService {
 
   posteData(finalUrl: string, data: any, isFormData: boolean = false): Observable<any> {
 
-    let options: any = {};
+    let headers = this.getHeaders();
 
-    if (!isFormData) {
-      options.headers = this.getHeaders();
-    }
-
+    let options: any = {
+      headers: headers
+    };
 
     return this.http.post(
       `${this.apiUrl}/${finalUrl}`,
@@ -42,7 +41,7 @@ export class HttpConnectService {
   }
 
   putData(finalUrl: string, data: any, isFormData: boolean = false): Observable<any> {
-     let options: any = {};
+    let options: any = {};
     if (!isFormData) {
       options.headers = this.getHeaders();
       // headers فيها Content-Type: application/json

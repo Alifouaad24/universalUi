@@ -1,7 +1,7 @@
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div class="col-md-7">
-    <h2 class="mb-0 fw-bold">Tasks Dashboard</h2>
+    <h2 class="mb-0 fw-bold">Tasks Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks}} Task</small></h2>
     <small class="text-muted">
       Manage and track all system tasks
     </small>
@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  <div (click)="filterTasks('On Progress')" class="col-lg-3 col-md-6 mb-3">
+  <div (click)="filterTasks('On progress')" class="col-lg-3 col-md-6 mb-3">
     <div class="card border-0 shadow-sm bg-warning">
       <div class="card-body">
         <div class="d-flex justify-content-between">

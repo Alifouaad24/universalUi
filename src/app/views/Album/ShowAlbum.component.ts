@@ -243,9 +243,11 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
         this.currentIndex = images.length - 1;
         this.cdr.detectChanges();
         this.closeModal();
+        this.cdr.detectChanges();
       }
       if (images.length === 0) {
         this.closeModal();
+        this.cdr.detectChanges();
       }
 
       this.cdr.detectChanges();
@@ -417,6 +419,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
 
     this.http.deleteData(`ImageUploader/DeleteImageByFolderId/${folderIdd}`).subscribe((res: any) => {
       this.groupedAlbums = this.groupedAlbums.filter(el => el.folderId != folderIdd)
+      this.cdr.detectChanges();
     }, (error) => {
       alert(error)
     })

@@ -86,7 +86,7 @@ export class ShowFeaturesComponent implements OnInit {
   SelectedBusinessId?: number
   SelectedServiceId?: number
   selectedFilter: string = "All"
-
+allCountOfTasks: number = 0
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -168,7 +168,7 @@ export class ShowFeaturesComponent implements OnInit {
           globalSystemId: item.globalSystemId,
           service_id: item.service_id
         }));
-
+        this.allCountOfTasks = this.features.length
         this.allFeatures = this.features;
         this.calculateStats();
         this.isLoading = false;
@@ -311,12 +311,13 @@ export class ShowFeaturesComponent implements OnInit {
   }
 
   filterTasks(filtter: string) {
+    console.log('Filtering tasks with filter:', filtter);
     this.features = this.allFeatures;
     if (filtter == "All") {
       this.features = this.features.filter(x => x.status !== 'Closed')
       return
     }
-    this.features = this.features.filter(x => x.status === filtter);
+    this.features = this.features.filter(x => x.status === filtter.trim());
   }
 
 }

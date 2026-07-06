@@ -115,6 +115,11 @@ export class ShowInventoryComponent implements OnInit {
   ItemConditionId: number | null = null;
   UPCFromScrape: string = '';
   isAuthInEbay: boolean = false;
+  errorGetFromEbay = '';
+  selectedFiles: File[] = [];
+  loadingImages: boolean = false;
+
+
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
@@ -234,7 +239,7 @@ export class ShowInventoryComponent implements OnInit {
       console.log('Selected Inventory ID for Scraping:', inventoryId);
       this.currentInventoryId = inventoryId;
       this.showScrapeModal = true;
-    } else if (platform == 'Home Depot') {
+    } else if (platform == 'Home Depot' || 'Build') {
       this.showScrapeDutyModal = true;
       this.showMsg = false
       this.currentInventoryId = inventoryId;
@@ -717,6 +722,7 @@ export class ShowInventoryComponent implements OnInit {
     if (!this.sourceCode.trim()) {
       this.toastMessage.set('Please paste the source code to scrape.');
       this.toastVisible.set(true);
+      console.log('Source code is empty. Cannot scrape from eBay.');
       return;
     }
     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
@@ -726,11 +732,21 @@ export class ShowInventoryComponent implements OnInit {
       this.toastMessage.set('You must log in to eBay first');
       this.toastVisible.set(true);
       return;
+      return;
     }
 
+    this.isLoading = true;
     this.http.getAllData(`Ebay/search-ebay-product/${token}/${this.sourceCode}`).subscribe(
       (res: any) => {
         console.log(res)
+        if (res.message) {
+          this.errorGetFromEbay = res.message;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+
         this.sourceCode = '';
         this.ImagesUrlsFromScrape = res.images as string[];
         this.priceFromScrape = res.price;
@@ -748,6 +764,7 @@ export class ShowInventoryComponent implements OnInit {
         this.SKU = res.sKU
         console.log(this.ImagesUrlsFromScrape);
         this.isLoading = false;
+
         this.cdr.detectChanges();
       },
       (err) => {
@@ -757,12 +774,15 @@ export class ShowInventoryComponent implements OnInit {
         this.cdr.detectChanges();
       }
     );
+    this.isLoading = false;
     this.cdr.detectChanges();
 
   }
 
   getImagesFromScrapeForDuty() {
+    console.log('Selected Source for Scraping:', this.selectedSource);
     if (this.selectedSource === 'ebay') {
+      this.errorGetFromEbay = '';
       this.getFromEbay()
       return
     }
@@ -915,7 +935,15 @@ export class ShowInventoryComponent implements OnInit {
       'brand': product.item.brand,
       'quantity': Number(product.qty),
       'condition': product.itemCondition?.description ?? 'NEW',
-      'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
+      'imageUrls': (() => {
+        const imageUrls = this.selectedImagesToEbay.map(img => img.imageUrl);
+
+        while (imageUrls.length < 8) {
+          imageUrls.push(imageUrls[imageUrls.length - 1]);
+        }
+
+        return imageUrls;
+      })(),
       'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
       'currency': "USD",
       'fulfillmentPolicyId': '373826822023',
@@ -998,7 +1026,15 @@ export class ShowInventoryComponent implements OnInit {
         'brand': product.item.brand,
         'quantity': Number(product.qty),
         'condition': product.itemCondition?.description ?? 'NEW',
-        'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
+        'imageUrls': (() => {
+          const imageUrls = this.selectedImagesToEbay.map(img => img.imageUrl);
+
+          while (imageUrls.length < 8) {
+            imageUrls.push(imageUrls[imageUrls.length - 1]);
+          }
+
+          return imageUrls;
+        })(),
         'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
         'currency': "USD",
         'fulfillmentPolicyId': '373826822023',
@@ -1015,7 +1051,7 @@ export class ShowInventoryComponent implements OnInit {
       this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
         next: () => {
           // this.toastr.success('تم نشر المنتج بنجاح');
-          this.toastMessage.set('Product republished successfully');
+          this.toastMessage.set('Product published successfully');
           this.toastVisible.set(true);
           product.status = "Auto Published"
           this.PublishingByEbay = false;
@@ -1303,4 +1339,41 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+
+
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files) return;
+
+    this.selectedFiles = Array.from(input.files);
+
+    console.log(this.selectedFiles);
+  }
+
+  uploadImages(folderId: number) {
+    this.loadingImages = true;
+    const formData = new FormData();
+
+    this.selectedFiles.forEach(file => {
+      formData.append('Images', file);
+    });
+
+    formData.append('BusinessId', this.businessId?.toString() || '');
+    formData.append('FolderId', folderId.toString());
+
+    this.http.posteData('ImageUploader', formData, true).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.loadingImages = false;
+        window.location.reload();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error uploading images.');
+        this.loadingImages = false;
+      }
+    });
+  }
 }
+
