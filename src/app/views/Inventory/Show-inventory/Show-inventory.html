@@ -706,7 +706,7 @@
           </div>
         </div>
         <div>
-          <button *ngIf="selectedImagesToEbay && selectedImagesToEbay.length > 7 && selectedType?.category?.name && selectedType?.itemCondition?.description
+          <button *ngIf="selectedType?.category?.name && selectedType?.itemCondition?.description
             " [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
             (click)="PublishByEbay(selectedType)">
             {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on
