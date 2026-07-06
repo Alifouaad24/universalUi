@@ -371,6 +371,7 @@
       <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
     </div>
     <hr /> -->
+
     <div>
       <label>
         <input type="radio" name="searchSource" [(ngModel)]="selectedSource" value="homeDepot" />
@@ -381,12 +382,63 @@
         By Ebay
       </label>
     </div>
+    <br />
+    <p *ngIf="selectedSource == 'ebay'">Select search type:</p>
+    <div *ngIf="selectedSource == 'ebay'">
+      <label>
+        <input type="radio" name="searchType" [(ngModel)]="selectedEbayType" value="UPC" />
+        By UPC
+      </label>
+      <label style="margin-left: 20px;">
+        <input type="radio" name="searchType" [(ngModel)]="selectedEbayType" value="Image" />
+        By Image
+      </label>
+
+    </div>
+
+
     <br /><br />
     <p *ngIf="selectedSource == 'homeDepot'">paste source code here to get data:</p>
-    <p *ngIf="selectedSource == 'ebay'">paste UPC here to get data:</p>
+    <p *ngIf="selectedSource == 'ebay' && selectedEbayType == 'UPC'">paste UPC here to get data:</p>
+    <p *ngIf="selectedSource == 'ebay' && selectedEbayType == 'Image'">upload image to get data: {{ results.length }}
+    </p>
 
+
+    <div style="max-height: 500px; overflow-y: auto;" class="container mt-3" *ngIf="results?.length">
+      <div class="card mb-3 shadow-sm" *ngFor="let item of results">
+        <div class="row g-0 align-items-center">
+          <!-- IMAGE -->
+          <div class="col-4 col-md-3">
+            <img [src]="item.imageUrl" class="img-fluid rounded-start w-75 h-75"
+              style="object-fit: cover; max-height: 160px;" />
+          </div>
+          <!-- CONTENT -->
+          <div class="col-8 col-md-9">
+            <div class="card-body py-2">
+              <h6 class="card-title mb-1">
+                {{ item.title }}
+              </h6>
+              <div class="text-success fw-bold mb-1">
+                {{ item.price }} {{ item.currency }}
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="selectItem(item)">
+                Choose
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <br />
+    <input *ngIf="selectedSource == 'ebay' && selectedEbayType == 'Image'" type="file"
+      (change)="onFileSelected($event)" />
+
+    <p class="text-center text-success" *ngIf="loadingResults">جار جلب المنتجات</p>
+    <p class="text-center text-danger" *ngIf="noDataFound">لم يتم العثور على نتائج</p>
     <textarea *ngIf="selectedSource == 'homeDepot'" [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
-    <input *ngIf="selectedSource == 'ebay'" [(ngModel)]="sourceCode" class="form-control" rows="5" />
+    <input *ngIf="selectedSource == 'ebay' && selectedEbayType == 'UPC'" [(ngModel)]="sourceCode" class="form-control"
+      rows="5" />
     <br />
     <p *ngIf="errorGetFromEbay" class="text-danger text-center">
       {{ errorGetFromEbay }}
@@ -644,7 +696,8 @@
                   <i class="bi bi-images me-1"></i>
                   Choose Images {{ selectedFiles.length > 0 ? '(' + selectedFiles.length + ')' : '' }}
                 </button>
-                <button class="btn btn-success" (click)="uploadImages(selectedType!.folderImages!)" [disabled]="selectedFiles.length === 0">
+                <button class="btn btn-success" (click)="uploadImages(selectedType!.folderImages!)"
+                  [disabled]="selectedFiles.length === 0">
                   <i class="bi bi-cloud-upload me-1"></i>
                   {{ loadingImages ? 'Uploading...' : 'Upload' }}
                 </button>

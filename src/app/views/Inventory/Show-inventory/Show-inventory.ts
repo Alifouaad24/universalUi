@@ -118,6 +118,7 @@ export class ShowInventoryComponent implements OnInit {
   errorGetFromEbay = '';
   selectedFiles: File[] = [];
   loadingImages: boolean = false;
+  selectedEbayType: string = 'UPC';
 
 
 
@@ -1143,7 +1144,7 @@ export class ShowInventoryComponent implements OnInit {
       'accessToken': token
     }).subscribe(res => {
       console.log(res);
-      this.storage.setItem('ebayToken', res.tokenId, 2 * 60 * 60 * 1000) // localStorage.setItem('tokenId', res.tokenId);
+      this.storage.setItem('ebayToken', res.tokenId, 1 * 60 * 60 * 1000) // localStorage.setItem('tokenId', res.tokenId);
       this.toastMessage.set('Token stored successfully');
       this.loginingInToEbay = false;
       this.toastVisible.set(true);
@@ -1374,6 +1375,55 @@ export class ShowInventoryComponent implements OnInit {
         this.loadingImages = false;
       }
     });
+  }
+
+  results: any[] = [];
+  loadingResults: boolean = false;
+  noDataFound: boolean = false;
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('imageFile', file);
+
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.results = [];
+    this.noDataFound = false;
+    this.loadingResults = true;
+    this.http.posteData(
+      `Ebay/SearchByImage/${token}`,
+      formData
+    ).subscribe({
+      next: (res) => {
+        if (!res || res.length === 0) {
+          this.noDataFound = true;
+          this.loadingResults = false;
+          return;
+        }
+        this.results = res;
+        this.loadingResults = false;
+        this.cdr.detectChanges();
+        console.log('RESULT:', res);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loadingResults = false;
+        this.noDataFound = true;
+        console.error('ERROR:', err);
+      }
+    });
+  }
+
+  selectItem(item: any) {
+    console.log('Selected item:', item);
+    this.cdr.detectChanges();
   }
 }
 
