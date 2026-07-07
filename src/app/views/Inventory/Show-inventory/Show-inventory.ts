@@ -119,7 +119,7 @@ export class ShowInventoryComponent implements OnInit {
   selectedFiles: File[] = [];
   loadingImages: boolean = false;
   selectedEbayType: string = 'UPC';
-
+  QuantityItem: number = 0
 
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
@@ -536,12 +536,13 @@ export class ShowInventoryComponent implements OnInit {
   title: string = '';
   descriptionToEdit: string = '';
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
     this.PlatformId = platformId || null;
     this.SKUFOREDIT = sku || '';
+    this.QuantityItem = qty || 0
     this.UPCFOREDIT = upc || '';
     this.PriceFOREDIT = price || '';
     this.title = title || ''
@@ -570,9 +571,8 @@ export class ShowInventoryComponent implements OnInit {
       platformId: this.PlatformId,
       itemCondition: this.ItemConditionId,
       title: this.title,
-      description: this.descriptionToEdit
-
-
+      description: this.descriptionToEdit,
+      qty: this.QuantityItem
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
