@@ -724,6 +724,7 @@ export class ShowInventoryComponent implements OnInit {
       this.toastMessage.set('Please paste the source code to scrape.');
       this.toastVisible.set(true);
       console.log('Source code is empty. Cannot scrape from eBay.');
+      this.cdr.detectChanges();
       return;
     }
     const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
@@ -732,13 +733,14 @@ export class ShowInventoryComponent implements OnInit {
       //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
       this.toastMessage.set('You must log in to eBay first');
       this.toastVisible.set(true);
-      return;
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.http.getAllData(`Ebay/search-ebay-product/${token}/${this.sourceCode}`).subscribe(
       (res: any) => {
+
         console.log(res)
         if (res.message) {
           this.errorGetFromEbay = res.message;
@@ -747,22 +749,21 @@ export class ShowInventoryComponent implements OnInit {
           return;
         }
 
-
-        this.sourceCode = '';
         this.ImagesUrlsFromScrape = res.images as string[];
         this.priceFromScrape = res.price;
-        this.UPCFromScrape = res.specifications['UPC'];
+        this.UPCFromScrape = this.sourceCode;
         this.productNameFromScrape = res.title;
-        this.height = res.height
-        this.width = res.width
-        this.length = res.length
-        this.desc = res.description
-        this.weight = res.weight
-        this.Model = res.mpn
-        this.Internet = res.internet
-        this.Brand = res.brand
-        this.Dimention = res.dimention
-        this.SKU = res.sKU
+        this.height = res.height ?? ''
+        this.width = res.width ?? ''
+        this.length = res.length ?? ''
+        this.desc = res.description ?? ''
+        this.weight = res.weight ?? ''
+        this.Model = res.mpn ?? ''
+        this.Internet = res.internet ?? ''
+        this.Brand = res.brand ?? ''
+        this.Dimention = res.dimention ?? ''
+        this.SKU = res.sKU ?? ''
+        this.sourceCode = '';
         console.log(this.ImagesUrlsFromScrape);
         this.isLoading = false;
 
@@ -872,6 +873,36 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+  isDeleteingImages: boolean = false;
+  deleteSelectedImages() {
+    if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
+      this.toastMessage.set('Please select at least one image to delete.');
+      this.cdr.detectChanges();
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const imageNamesToDelete = this.selectedImagesToEbay.map(img => img.itemImageId);
+    console.log('Deleting selected images with IDs:', imageNamesToDelete);
+    this.isDeleteingImages = true;
+    this.http.putData(`Item/DeleteImages`, { imagesIds: imageNamesToDelete }).subscribe(
+      (res: any) => {
+        this.isDeleteingImages = false;
+        this.toastMessage.set('Selected images successfully deleted from the item.');
+        this.toastVisible.set(true);
+        this.selectedType!.item.images = this.selectedType?.item?.images.filter((img: any) => !this.selectedImagesToEbay.some(selImg => selImg.imageUrl === img.imageUrl));
+        this.selectedImagesToEbay = [];
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isDeleteingImages = false;
+        this.toastMessage.set('Error deleting selected images from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
 
   ShowDetailsModal(inventory: InventoryModel) {
     this.selectedImagesToEbay = [];
@@ -969,10 +1000,10 @@ export class ShowInventoryComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading1 = false;
-
-        // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
         this.toastMessage.set('Error republishing product');
         this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        alert('Error republishing product: ' + err.message);
         console.error(err);
       }
     });
@@ -1061,11 +1092,20 @@ export class ShowInventoryComponent implements OnInit {
         },
         error: (err) => {
           this.PublishingByEbay = false;
-
-          // this.toastr.error('حدث خطأ أثناء نشر المنتج الرجاء المحاولة مجددًا');
+          console.error(err);
+          let errorMessage = 'Unknown error';
+          if (err.error) {
+            if (typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else {
+              errorMessage = JSON.stringify(err.error, null, 2);
+            }
+          }
+          if (err.status === 400) {
+            alert(errorMessage);
+          }
           this.toastMessage.set('Error republishing product');
           this.toastVisible.set(true);
-          console.error(err);
           this.cdr.detectChanges();
         }
       });
@@ -1425,5 +1465,58 @@ export class ShowInventoryComponent implements OnInit {
     console.log('Selected item:', item);
     this.cdr.detectChanges();
   }
+
+
+  DeleteOffer(offerId: number) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.http.deleteData(`Ebay/delete-ebay-offer/${token}/${offerId}`).subscribe({
+      next: (res) => {
+        this.toastMessage.set('Offer deleted successfully');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        window.location.reload();
+      },
+      error: (err) => {
+        this.toastMessage.set('Error deleting offer');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        console.error('Error deleting offer:', err);
+      }
+    })
+  }
 }
 
+
+
+// {
+//   "sku": "SKU-mrafm7ro-GSW2U6",
+//   "title": "Chapman and Myers Collection Wall Sconce In Brushed Nickel",
+//   "description": "Chapman and Myers Collection Wall Sconce In Brushed Nickel condition is new just opened box to inspect CHAPMAN & MYERS SUSSEX SMALL FRAMED SCONCE IN POLISHED NICKEL WITH ANTIQUE MIRROR WALL LIGHT W5\" X H12.25",
+//   "brand": "Visual Comfort",
+//   "quantity": 1,
+//   "condition": "NEW",
+//   "imageUrls": [
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783115049/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/mxyotluvospegc6s8zxe.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783139645/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/x8kmvadadsu1ghjbsq7p.jpg",
+// "https://i.ebayimg.com/images/g/sv8AAeSwjcxqGdYe/s-l1600.jpg",
+// "https://i.ebayimg.com/images/g/JFIAAeSwq~tqGdYf/s-l1600.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367569/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/pyqps0kzb7styxv9tts6.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg"
+//   ],
+//   "price": 435,
+//   "currency": "USD",
+//   "fulfillmentPolicyId": "373826822023",
+//   "paymentPolicyId": "373648989023",
+//   "returnPolicyId": "373648988023",
+//   "categoryId": "116880",
+//   "ebayOfferID": "",
+//   "upc": "206311922305",
+// }

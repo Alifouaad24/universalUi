@@ -92,7 +92,8 @@
       <tbody>
         <tr *ngFor="let type of inventory; index as i" [ngClass]="{
           'table-warning': type.notFound,
-          'table-success': type.status?.trim()?.includes('Auto Published')
+          'table-success': type.status?.trim()?.includes('Auto Published'),
+          'table-danger': type.status?.trim()?.includes('Offer Maked Only')
         }">
           <td *ngIf="type.ebayListingId != null">
             <a [href]="'https://www.ebay.com/itm/' + type.ebayListingId" target="_blank" class="text-decoration-none">
@@ -142,6 +143,10 @@
               <button *ngIf="type.isProccessedInInventory" class="btn btn-sm btn-primary me-1"
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
+              </button>
+              <button *ngIf="type.status?.trim()?.includes('Offer Maked Only')" class="btn btn-sm btn-danger me-1"
+                (click)="DeleteOffer(type!.inventory_id!)">
+                Delete Offer
               </button>
               <button *ngIf="type.isProccessedInInventory"
                 [ngClass]="type?.isPublishedOnMarketPlace ? 'btn-success' : 'btn-info' "
@@ -682,15 +687,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
               <!-- يسار -->
-              <div>
-                <button class="btn btn-warning" (click)="downloadAllImages()">
-                  <i class="bi bi-download me-1"></i>
-                  Download Images
-                </button>
-              </div>
-
-              <!-- يمين -->
-              <div class="d-flex align-items-center gap-2">
+               <div class="d-flex align-items-center gap-2">
                 <input #fileInput type="file" multiple accept="image/*" hidden (change)="onFilesSelected($event)">
                 <button class="btn btn-outline-primary" (click)="fileInput.click()">
                   <i class="bi bi-images me-1"></i>
@@ -702,24 +699,34 @@
                   {{ loadingImages ? 'Uploading...' : 'Upload' }}
                 </button>
               </div>
+
+              <!-- يمين -->
+
+              <div *ngIf="selectedImagesToEbay.length > 0" class="d-flex align-items-center gap-2">
+                <button class="btn btn-warning" (click)="downloadAllImages()">
+                  <i class="bi bi-download me-1"></i>
+                  Download Images
+                </button>
+                <button class="btn btn-danger ms-1" (click)="deleteSelectedImages()">
+                  <i class="bi bi-download me-1"></i>
+                  {{ isDeleteingImages ? 'Deleting...' : 'Delete Images' }}
+                </button>
+              </div>
+             
             </div>
           </div>
-          
+
         </div>
         <div>
-          <button *ngIf="selectedType?.category?.name && selectedType?.itemCondition?.description
+          <button *ngIf="selectedImagesToEbay.length > 0 && selectedType?.category?.name && selectedType?.itemCondition?.description
             " [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
             (click)="PublishByEbay(selectedType)">
             {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on
             eBay' : 'Publish on eBay') }}
-
           </button>
         </div>
-
       </div>
-
     </div>
-
 
   </c-modal-body>
   <c-modal-footer class="justify-content-between">
@@ -737,9 +744,7 @@
         </h5>
         <button class="btn-close" (click)="showSoldPopup = false"></button>
       </div>
-
       <div class="modal-body" style="max-height: 400px; overflow: auto;">
-
         <table class="table table-bordered table-sm">
           <thead>
             <tr>
@@ -749,7 +754,6 @@
               <th>Price</th>
             </tr>
           </thead>
-
           <tbody>
             <tr *ngFor="let item of soldItems" [ngClass]="{'table-warning': isMatchedSku(item)}">
               <td style="width: 50%;">{{ item.title }}</td>
