@@ -799,10 +799,11 @@ export class ShowInventoryComponent implements OnInit {
     formData.append('file', file);
     this.http.posteData(`Scraper/HomeDepotFileHtmlAnalyse`, formData, true).subscribe(
       (res: any) => {
+        console.log(res)
         this.sourceCode = '';
         this.ImagesUrlsFromScrape = res.images as string[];
         this.priceFromScrape = res.price;
-        this.UPCFromScrape = res.upc;
+        this.UPCFromScrape = res.upc != "Does not Apply" ? res.upc : this.inventory.filter(el => el.inventory_id == this.idItemForBindWithImages)[0].item?.upc;
         this.productNameFromScrape = res.title;
         this.height = res.height
         this.width = res.width
@@ -813,7 +814,7 @@ export class ShowInventoryComponent implements OnInit {
         this.Internet = res.internet
         this.Brand = res.brand
         this.Dimention = res.dimention
-        this.SKU = res.sKU
+        this.SKU = res.sku
         console.log(this.ImagesUrlsFromScrape);
         this.isLoading = false;
         this.cdr.detectChanges();

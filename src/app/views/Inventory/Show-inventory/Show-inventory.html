@@ -550,7 +550,8 @@
     <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrapeForDuty()"> {{ isLoading ?
       'Scraping...' :
       'Scrape' }}</button>
-    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveItemForDuty()">Save</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveItemForDuty()">{{ isLoading ?
+      'Saveing...' : 'Save'}}</button>
   </c-modal-footer>
 </c-modal>
 
@@ -687,7 +688,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
               <!-- يسار -->
-               <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2">
                 <input #fileInput type="file" multiple accept="image/*" hidden (change)="onFilesSelected($event)">
                 <button class="btn btn-outline-primary" (click)="fileInput.click()">
                   <i class="bi bi-images me-1"></i>
@@ -712,7 +713,7 @@
                   {{ isDeleteingImages ? 'Deleting...' : 'Delete Images' }}
                 </button>
               </div>
-             
+
             </div>
           </div>
 
