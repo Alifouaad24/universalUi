@@ -948,11 +948,11 @@ export class ShowInventoryComponent implements OnInit {
       this.isAuthInEbay = false;
       this.toastMessage.set('Please login to publish the product on eBay.');
       this.toastVisible.set(true);
-      this.cdr.detectChanges(); return;
+      this.cdr.detectChanges(); 
+      console.log('Please login to publish the product on eBay.')
+      return;
     }
-    this.isLoading1 = true;
-
-
+    this.PublishingByEbay = true;
     const skuValue = product.item.sku && product.item.sku.trim() !== ''
       ? product.item.sku
       : this.generateUniqueSku();
@@ -977,6 +977,7 @@ export class ShowInventoryComponent implements OnInit {
 
         return imageUrls;
       })(),
+
       'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
       'currency': "USD",
       'fulfillmentPolicyId': '373826822023',
@@ -991,16 +992,16 @@ export class ShowInventoryComponent implements OnInit {
     console.log(payload)
 
     this.http.putData(`Ebay/update-product/${token}`, payload).subscribe({
-      next: () => {
+      next: (res) => {
         // this.toastr.success('تم نشر المنتج بنجاح');
         this.toastMessage.set('Product republished successfully');
         this.toastVisible.set(true);
         product.status = "Auto Published"
-        this.isLoading1 = false;
-
+        this.PublishingByEbay = false;
+        console.error(res);
       },
       error: (err) => {
-        this.isLoading1 = false;
+        this.PublishingByEbay = false;
         this.toastMessage.set('Error republishing product');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
@@ -1021,7 +1022,7 @@ export class ShowInventoryComponent implements OnInit {
 
   PublishByEbay(product: any) {
 
-    if (product.ebayOfferID) {
+    if (product.ebayOfferID && product.status?.trim()?.includes('Auto Published')) {
       this.rePublishByEbay(product)
       return
     }
@@ -1075,8 +1076,7 @@ export class ShowInventoryComponent implements OnInit {
         'returnPolicyId': '373648988023',
         'categoryId': (product.category?.ebayCategoryId).toString(),
         'upc': product.item.upc,
-        'ebayOfferID': product.ebayInvID
-
+        'ebayOfferID': product.ebayOfferID
       };
 
       console.log(payload)
@@ -1088,6 +1088,7 @@ export class ShowInventoryComponent implements OnInit {
           this.toastVisible.set(true);
           product.status = "Auto Published"
           this.PublishingByEbay = false;
+          this.getInventory()
           this.cdr.detectChanges();
 
         },
@@ -1521,3 +1522,10 @@ export class ShowInventoryComponent implements OnInit {
 //   "ebayOfferID": "",
 //   "upc": "206311922305",
 // }
+
+
+
+
+
+
+

@@ -93,7 +93,7 @@
         <tr *ngFor="let type of inventory; index as i" [ngClass]="{
           'table-warning': type.notFound,
           'table-success': type.status?.trim()?.includes('Auto Published'),
-          'table-danger': type.status?.trim()?.includes('Offer Maked Only')
+          'table-danger': type.status?.trim()?.includes('Offer Made Only')
         }">
           <td *ngIf="type.ebayListingId != null">
             <a [href]="'https://www.ebay.com/itm/' + type.ebayListingId" target="_blank" class="text-decoration-none">
@@ -145,7 +145,7 @@
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
               </button>
-              <button *ngIf="type.status?.trim()?.includes('Offer Maked Only')" class="btn btn-sm btn-danger me-1"
+              <button *ngIf="type.status?.trim()?.includes('Offer Made Only')" class="btn btn-sm btn-danger me-1"
                 (click)="DeleteOffer(type!.inventory_id!)">
                 Delete Offer
               </button>

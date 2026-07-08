@@ -414,14 +414,19 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     return new File([u8arr], 'edited.png', { type: mime });
   }
 
+  isDeleteingFolder: boolean = false
+
   deleteFolder(folderIdd: number) {
     if (!confirm(`Are you sure you want to delete folder-${folderIdd} folder?`)) return;
-
+    this.isDeleteingFolder = false
     this.http.deleteData(`ImageUploader/DeleteImageByFolderId/${folderIdd}`).subscribe((res: any) => {
       this.groupedAlbums = this.groupedAlbums.filter(el => el.folderId != folderIdd)
+      this.isDeleteingFolder = false
       this.cdr.detectChanges();
     }, (error) => {
       alert(error)
+      this.isDeleteingFolder = false
+
     })
 
   }
