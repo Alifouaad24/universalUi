@@ -120,7 +120,8 @@ export class ShowInventoryComponent implements OnInit {
   loadingImages: boolean = false;
   selectedEbayType: string = 'UPC';
   QuantityItem: number = 0
-
+  BrandToEdit: string = ''
+  proccessedInInv: boolean = false
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
@@ -178,7 +179,8 @@ export class ShowInventoryComponent implements OnInit {
           sku: item.sku,
           sitePrice: item.sitePrice,
           ebayOfferID: item.ebayOfferID,
-          qty: item.qty,
+          qty: item.qtyPublished,
+          publishedQty: item.qtyInInventory,
           status: item.status,
           category: item.category,
           ebayListingId: item.ebayListingId,
@@ -220,13 +222,14 @@ export class ShowInventoryComponent implements OnInit {
       }
     })
   }
-
+  platformToScrape?: string
   platform?: string;
   idItemForBindWithImages?: number;
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
   fullUPCToScrapeByAinAlfhd?: string
   ShowScrape(itemId?: number, inventoryId?: number, platform?: string) {
+    this.platformToScrape = platform
     console.log(platform);
     if (platform == 'SHEIN') {
       this.platform = platform;
@@ -240,7 +243,7 @@ export class ShowInventoryComponent implements OnInit {
       console.log('Selected Inventory ID for Scraping:', inventoryId);
       this.currentInventoryId = inventoryId;
       this.showScrapeModal = true;
-    } else if (platform == 'Home Depot' || 'Build') {
+    } else if (platform == 'Home Depot' || 'Fergusonhome') {
       this.showScrapeDutyModal = true;
       this.showMsg = false
       this.currentInventoryId = inventoryId;
@@ -536,7 +539,7 @@ export class ShowInventoryComponent implements OnInit {
   title: string = '';
   descriptionToEdit: string = '';
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
@@ -545,6 +548,8 @@ export class ShowInventoryComponent implements OnInit {
     this.QuantityItem = qty || 0
     this.UPCFOREDIT = upc || '';
     this.PriceFOREDIT = price || '';
+    this.BrandToEdit = brand || '';
+    this.proccessedInInv = isproccessed || false
     this.title = title || ''
     this.descriptionToEdit = description || ';'
     this.showEditModal = true;
@@ -572,7 +577,9 @@ export class ShowInventoryComponent implements OnInit {
       itemCondition: this.ItemConditionId,
       title: this.title,
       description: this.descriptionToEdit,
-      qty: this.QuantityItem
+      qty: this.QuantityItem,
+      isProccessedInInventory: this.proccessedInInv,
+      brand: this.BrandToEdit
     };
     console.log('Payload for editing inventory item:', payload);
     this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
@@ -782,6 +789,11 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   getImagesFromScrapeForDuty() {
+
+    if(this.platformToScrape == 'Fergusonhome'){
+      this.getImagesFromScrapeForDutyFromFergusonhome()
+      return
+    }
     console.log('Selected Source for Scraping:', this.selectedSource);
     if (this.selectedSource === 'ebay') {
       this.errorGetFromEbay = '';
@@ -804,6 +816,48 @@ export class ShowInventoryComponent implements OnInit {
         this.ImagesUrlsFromScrape = res.images as string[];
         this.priceFromScrape = res.price;
         this.UPCFromScrape = res.upc != "Does not Apply" ? res.upc : this.inventory.filter(el => el.inventory_id == this.idItemForBindWithImages)[0].item?.upc;
+        this.productNameFromScrape = res.title;
+        this.height = res.height
+        this.width = res.width
+        this.length = res.length
+        this.desc = res.desc
+        this.weight = res.weight
+        this.Model = res.model
+        this.Internet = res.internet
+        this.Brand = res.brand
+        this.Dimention = res.dimention
+        this.SKU = res.sku
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+    this.cdr.detectChanges();
+  }
+
+  getImagesFromScrapeForDutyFromFergusonhome(){
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('htmlFile', file);
+    this.http.posteData(`Scraper/ScrapeByFergusonhomeHtml`, formData, true).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.UPCFromScrape = this.inventory.filter(el => el.inventory_id == this.idItemForBindWithImages)[0].item?.upc;
         this.productNameFromScrape = res.title;
         this.height = res.height
         this.width = res.width

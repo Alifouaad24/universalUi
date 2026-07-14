@@ -18,6 +18,7 @@ import { ActiviityModel } from '../../Models/ActivityModel';
 import { RloeModel } from '../../Models/RloeModel';
 import { logo } from '../../icons/logo';
 import { set } from 'lodash-es';
+import { AssetModel } from '../../Models/Asset';
 
 @Component({
   templateUrl: 'AddEditBusines.component.html',
@@ -53,6 +54,7 @@ export class AddEditBusniessComponent implements OnInit {
   icons: string[] = Object.keys(iconSubset);
   businessForm: FormGroup;
   countries: Country[] = [];
+  assets: AssetModel[] = [];
   businessesType?: BusinessType[]
   addresses?: AddressModel[]
   business?: BusinessModel;
@@ -90,14 +92,14 @@ export class AddEditBusniessComponent implements OnInit {
   servicesList: String[] = [];
   showCustomersForm: boolean = false;
   systems: any[] = [];
-
+  business_Assets: any[] = [];
   selectedCountry: string = '';
   UsCity: string = '';
   citiesByCountry: CityModel[] = [];
   statesByCountry: StateModel[] = [];
   areasByCity: AreaModel[] = [];
   hasStates = false;
-
+  showAssetsForm = false;
   Line_1: string = ''
   Line_2: string = ''
   State: number | null = null
@@ -113,8 +115,9 @@ export class AddEditBusniessComponent implements OnInit {
     description: string;
     isPublic: boolean;
     service_icon?: string;
-  }[] = [];
 
+  }[] = [];
+  addingAsset: boolean = false
   actiivities: {
     id: number;
   }[] = [];
@@ -152,6 +155,8 @@ export class AddEditBusniessComponent implements OnInit {
     });
   }
 
+  SelectedAssetId?: number;
+  AccountForAsset?: string
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(param => {
@@ -161,6 +166,7 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllCountries()
         this.getAllAddresses()
         this.getAllActivities()
+        this.getAllAssets()
         this.getAllBusinessesTypes()
         this.getAlRless()
         this.getAllSystems()
@@ -188,20 +194,20 @@ export class AddEditBusniessComponent implements OnInit {
           this.Activites = this.business!.business_Activitiy;
           this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
           this.providerBusinessRelations = this.business!.providerBusinessRelations;
-          
+          this.business_Assets = this.business!.business_Assets
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
               this.fb.control(el.business_type_id)
             );
           });
-
         }, 50);
       } else {
         this.getAllAddresses()
         this.getAllBusinessesTypes()
         this.getAllCountries()
         this.getAlRless()
+        this.getAllAssets()
         this.getAllActivities()
         this.getAllSystems()
       }
@@ -233,9 +239,10 @@ export class AddEditBusniessComponent implements OnInit {
         businessAddresses: el.businessAddresses,
         business_LogoUrl: el.business_LogoUrl,
         buseness_Customers: el.buseness_Customers,
+        business_Assets: el.business_Assets,
         insert_by: el.insert_by,
         insert_on: el.insert_on
-        
+
       }))
       this.SelectedBusinesses = this.business!.providerBusinessRelations.map(e => e.consumerBusinessId)
     }, (error) => {
@@ -297,6 +304,20 @@ export class AddEditBusniessComponent implements OnInit {
         this.GetAllStatesByCountry(this.business!.countryId);
         this.selectedCountry = Country!.name ? Country!.name : ''
       }
+      this.cdr.detectChanges()
+    }, (error) => {
+      console.error(error)
+      this.cdr.detectChanges()
+    })
+  }
+
+  getAllAssets() {
+    this.http.getAllData('Asset').subscribe(res => {
+      this.assets = (res as any[]).map((el: any) => new AssetModel({
+        assetId: el.assetId,
+        assetName: el.assetName,
+        assetType: el.assetType
+      }))
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
@@ -984,6 +1005,7 @@ export class AddEditBusniessComponent implements OnInit {
     }
   }
 
+
   bindWithSystem(systemId: number) {
     const payload = {
       sysIds: this.SelectedSystemsIds,
@@ -1002,7 +1024,6 @@ export class AddEditBusniessComponent implements OnInit {
 
   filteredSuggestions: string[] = [];
   SearchAboutCustomer: string = ''
-
   filterSuggestions(value: string): void {
     if (value.length >= 3) {
       if (/^\d/.test(value)) {
@@ -1010,8 +1031,8 @@ export class AddEditBusniessComponent implements OnInit {
         });
       } else {
         this.http.getAllData(`Customers/SearchAboutCustomers/${value}/${this.business?.business_id}`).subscribe((result: any) => {
-  
-            this.filteredSuggestions = result.customers.map((el: any) => el.customerName);
+
+          this.filteredSuggestions = result.customers.map((el: any) => el.customerName);
 
           this.cdr.detectChanges()
         });
@@ -1067,6 +1088,26 @@ export class AddEditBusniessComponent implements OnInit {
 
   closeModal() {
     this.showModal1 = false;
+  }
+
+
+  addAsset() {
+    if (!this.SelectedAssetId) {
+      alert("please choose asset")
+    }
+    var payLoad = {
+      assetId: this.SelectedAssetId,
+      business_id: this.business?.business_id,
+      account_Id: this.AccountForAsset
+    }
+    this.addingAsset = true
+    this.http.posteData('Asset', payLoad).subscribe((res) => {
+      this.addingAsset = false
+      this.router.navigate(['Home/business'])
+    }, (error) => {
+      this.addingAsset = false
+      alert(error)
+    })
   }
 
 }

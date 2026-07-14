@@ -81,11 +81,12 @@
           <th style="width: 10%;">SKU</th>
           <th style="width: 10%;">Image</th>
           <th style="width: 10%;">UPC/Eby sku</th>
-          <th style="width: 8%;">Size</th>
+          <th style="width: 5%;">Size</th>
           <th style="width: 8%;">Base Price</th>
           <th style="width: 8%;">Price</th>
-          <th style="width: 8%;">Quantity</th>
-          <th style="width: 10%;">Folder</th>
+          <th style="width: 8%;">Qty In Store</th>
+          <th style="width: 8%;">Published Qty</th>
+          <th style="width: 5%;">Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -116,13 +117,13 @@
           <td class="text-danger">{{ type?.item.basePrice }}{{ type?.item.basePrice ? '$' : '' }}</td>
           <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
+          <td>{{ type.publishedQty }}</td>
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-warning me-1"
-                (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
+              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
                 type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id, type.Product_name, type.product_description,
-                type.qty)">
+                type.qty, type.item?.brand, type.isProccessedInInventory)">
                 <c-icon name="cil-pencil"></c-icon>
               </button>
               <button class="btn btn-sm btn-danger me-1" (click)="DeleteInventoryItem(type.inventory_id)">
@@ -286,6 +287,45 @@
         <input type="text" [(ngModel)]="PriceFOREDIT" class="form-control mt-2" />
       </div>
     </div>
+
+
+    <div class="row mb-4 mt-3 g-4">
+
+      <!-- Brand -->
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">
+          Brand
+        </label>
+        <div class="input-group">
+          <span class="input-group-text bg-light">
+            <i class="bi bi-tag"></i>
+          </span>
+          <input type="text" [(ngModel)]="BrandToEdit" class="form-control" placeholder="Enter brand name" />
+        </div>
+      </div>
+
+      <!-- Processed -->
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">
+          Is Processed?
+        </label>
+
+        <div class="card border-0 shadow-sm p-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="processedSwitch"
+              [(ngModel)]="proccessedInInv" />
+
+            <label class="form-check-label ms-2" for="processedSwitch">
+              {{ proccessedInInv ? 'Processed' : 'Not Processed' }}
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
     <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
       <div class="col-md-4">
         <label class="form-label">SKU</label>

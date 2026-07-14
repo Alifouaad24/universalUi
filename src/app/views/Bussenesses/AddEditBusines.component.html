@@ -455,7 +455,8 @@
                     <!-- Description -->
                     <div class="mb-3">
                       <label class="form-label">Activity Description</label>
-                      <select cSelect class="form-select" multiple [(ngModel)]="selecteActivities" [ngModelOptions]="{standalone: true}" >
+                      <select cSelect class="form-select" multiple [(ngModel)]="selecteActivities"
+                        [ngModelOptions]="{standalone: true}">
                         <option *ngFor="let ac of allActivities" [value]="ac.activity_id">{{ ac.description }}</option>
                       </select>
                     </div>
@@ -464,7 +465,7 @@
                       {{ addActivities ? 'Adding...' : 'Add' }}
                     </button>
                   </div>
-                  
+
                 </div>
               </ng-template>
             </c-accordion-item>
@@ -516,8 +517,8 @@
                   <div class="mb-2 text-danger">Owners</div>
                   <ul>
                     <li *ngFor="let one of ownerCustomers; index as i">
-                      <div  class="d-flex justify-content-between align-items-center mb-1">
-                        <strong>{{ one.globalCustomer?.customerName }}  {{ one.globalCustomer?.customerMobile }}</strong>
+                      <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong>{{ one.globalCustomer?.customerName }} {{ one.globalCustomer?.customerMobile }}</strong>
                         <button class="btn btn-sm btn-outline-danger ms-2" type="button"
                           (click)="removeCustomerFromBusiness(one.buseness_CustomerId)">
                           X
@@ -695,11 +696,98 @@
             </c-accordion-item>
           </c-accordion>
 
+
+
           <!--  -->
+
+          <!-- Assets -->
+          <c-accordion>
+            <c-accordion-item #item="cAccordionItem" [visible]="showAssetsForm">
+              <ng-template cTemplateId="accordionHeaderTemplate">
+                <button cAccordionButton class="btn w-100 text-start fw-semibold"
+                  (click)="showAssetsForm = !showAssetsForm">
+                  <i class="fas fa-boxes me-2"></i>
+                  Business Assets
+                </button>
+              </ng-template>
+              <ng-template cTemplateId="accordionBodyTemplate">
+                <!-- Current Assets -->
+                <div class="card border-0 shadow-sm mb-4">
+                  <div class="card-header">
+                    <strong>Current Assets</strong>
+                  </div>
+                  <div class="card-body">
+                    <div *ngIf="(business_Assets?.length ?? 0) > 0">
+                      <div *ngFor="let one of business_Assets"
+                        class="d-flex justify-content-between align-items-center border rounded p-3 mb-2">
+                        <div>
+                          <div class="fw-semibold">
+                            {{ one.asset.assetName }}
+                          </div>
+                          <small class="text-muted">
+                            Account: {{ one.account_Id }}
+                          </small>
+                        </div>
+                        <span class="badge bg-primary">
+                          Asset
+                        </span>
+                      </div>
+                    </div>
+                    <div *ngIf="business_Assets?.length === 0" class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-2x mb-2"></i>
+                      <div>No assets added yet</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Add Asset -->
+                <div class="card border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <strong>Add New Asset</strong>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">
+                        Asset
+                      </label>
+                      <select class="form-select" [ngModelOptions]="{standalone: true}" [(ngModel)]="SelectedAssetId">
+                        <option disabled value="">
+                          Select Asset
+                        </option>
+                        <option *ngFor="let asset of assets" [value]="asset.assetId">
+                          {{ asset.assetName }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">
+                        Account
+                      </label>
+                      <input type="text" class="form-control" placeholder="Enter account" [(ngModel)]="AccountForAsset"
+                        [ngModelOptions]="{standalone: true}" />
+                    </div>
+                    <div class="d-grid">
+                      <button class="btn btn-primary" [disabled]="loading" (click)="addAsset()">
+                        <span *ngIf="addingAsset" class="spinner-border spinner-border-sm me-2">
+                        </span>
+                        Add Asset
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </ng-template>
+            </c-accordion-item>
+          </c-accordion>
 
 
         </c-card-body>
       </c-card>
+
+
+
+
+
       <div class="d-flex justify-content-end gap-2 mt-3">
         <button type="button" (click)="resetForm()" cButton color="secondary" variant="outline">
           Cancel
@@ -729,7 +817,7 @@
       Close
     </button>
     <button cButton color="secondary" (click)="SetCustomerAsOwner(res1.globalCustomerId)">
-     {{ setOwner ? 'Setting...' : 'Set' }}
+      {{ setOwner ? 'Setting...' : 'Set' }}
     </button>
   </c-modal-footer>
 </c-modal>
