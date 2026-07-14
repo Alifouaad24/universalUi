@@ -19,6 +19,7 @@ import { RloeModel } from '../../Models/RloeModel';
 import { logo } from '../../icons/logo';
 import { set } from 'lodash-es';
 import { AssetModel } from '../../Models/Asset';
+import Swal from 'sweetalert2';
 
 @Component({
   templateUrl: 'AddEditBusines.component.html',
@@ -1103,11 +1104,35 @@ export class AddEditBusniessComponent implements OnInit {
     this.addingAsset = true
     this.http.posteData('Asset', payLoad).subscribe((res) => {
       this.addingAsset = false
+      this.getAllBusinesses()
       this.router.navigate(['Home/business'])
     }, (error) => {
       this.addingAsset = false
       alert(error)
     })
+  }
+
+  deleteAssetFromThisBusiness(id: number) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will not be able to recover this item!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.deleteData(`Asset/${id}`).subscribe(res => {
+          this.assets = this.assets.filter(el => el.assetId != id)
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'The item has been deleted.'
+        });
+      }
+    });
   }
 
 }

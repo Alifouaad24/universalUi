@@ -728,8 +728,8 @@
                             Account: {{ one.account_Id }}
                           </small>
                         </div>
-                        <span class="badge bg-primary">
-                          Asset
+                        <span class="badge bg-danger" (click)="deleteAssetFromThisBusiness(one.business_AssetId)">
+                          <c-icon name="cil-trash"></c-icon>
                         </span>
                       </div>
                     </div>

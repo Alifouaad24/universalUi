@@ -61,6 +61,7 @@ export class BusinessComponent implements OnInit {
         providerBusinessRelations: el.providerBusinessRelations,
         consumerBusinessRelations: el.consumerBusinessRelations,
         usersBusinesses: el.usersBusinesses,
+        business_Assets: el.business_Assets,
 
         business_Services: el.business_Services
       }))
