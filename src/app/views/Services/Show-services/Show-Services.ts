@@ -69,12 +69,14 @@ export class ShowServicesComponent implements OnInit {
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+
     this.getAllServices()
   }
 
   getAllServices() {
     this.isLoading = true;
-    this.http.getAllData('Service').subscribe(
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Service/${businessId}`).subscribe(
       (res: any) => {
         console.log(res);
         this.services = (res as any[]).map(item => new ServiceModel({
