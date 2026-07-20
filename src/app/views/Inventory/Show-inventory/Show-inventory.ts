@@ -790,7 +790,7 @@ export class ShowInventoryComponent implements OnInit {
 
   getImagesFromScrapeForDuty() {
 
-    if(this.platformToScrape == 'Fergusonhome'){
+    if (this.platformToScrape == 'Fergusonhome') {
       this.getImagesFromScrapeForDutyFromFergusonhome()
       return
     }
@@ -841,7 +841,7 @@ export class ShowInventoryComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  getImagesFromScrapeForDutyFromFergusonhome(){
+  getImagesFromScrapeForDutyFromFergusonhome() {
     if (!this.sourceCode.trim()) {
       this.toastMessage.set('Please paste the source code to scrape.');
       this.toastVisible.set(true);
@@ -1002,7 +1002,7 @@ export class ShowInventoryComponent implements OnInit {
       this.isAuthInEbay = false;
       this.toastMessage.set('Please login to publish the product on eBay.');
       this.toastVisible.set(true);
-      this.cdr.detectChanges(); 
+      this.cdr.detectChanges();
       console.log('Please login to publish the product on eBay.')
       return;
     }
@@ -1545,6 +1545,82 @@ export class ShowInventoryComponent implements OnInit {
         console.error('Error deleting offer:', err);
       }
     })
+  }
+
+  //////////////
+  showAddItemModal = false;
+  searchText = '';
+  items: any[] = [];
+  selectedItem: any = null;
+  price: number | null = null;
+  quantity: number = 1;
+  messsage = '';
+  messsageEmpty = '';
+
+  openAddItemModal() {
+    this.searchText = ''
+    this.showAddItemModal = true;
+  }
+
+
+  searchItems() {
+    this.messsage = 'Searching ...'
+    this.messsageEmpty = ''
+    this.cdr.detectChanges()
+    this.items = []
+    if (this.searchText.length < 2) {
+      this.items = [];
+      return;
+    }
+
+    this.http.getAllData(`Item/GetItemsFromItemTbl/${this.searchText}`).subscribe((res: any) => {
+      console.log(res)
+      if(res.length == 0){
+        this.messsageEmpty = "No items matched"
+        this.messsage = ''
+        this.cdr.detectChanges()
+        return
+      }
+      this.messsage = ''
+      this.items = res
+      this.cdr.detectChanges()
+    }, (error) => {
+      
+    })
+  }
+
+  selectItemFromDb(item: any) {
+    this.selectedItem = item;
+    this.searchText = item.name;
+    this.items = [];
+  }
+
+
+
+  saveItem() {
+    if (!this.selectedItem) {
+      alert("Please select item");
+      return;
+    }
+
+    let model = {
+      itemId: this.selectedItem.itemId,
+      invPrice: this.price,
+      qty: this.quantity,
+      sizeId: null,
+      PlatformId: null,
+      BusinessId: this.businessId
+    };
+
+    this.http.posteData('Inventory', model).subscribe(res => {
+      this.getInventory()
+    }, (error) => {
+      alert(error)
+    })
+
+
+
+
   }
 }
 

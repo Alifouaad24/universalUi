@@ -29,6 +29,10 @@
             <input cFormCheckInput type="radio" name="scrapeSource" value="UPCItems" (change)="chooseType($event)" />
             <label cFormCheckLabel>&nbsp;UPC Items</label>
           </c-form-check>
+          <c-form-check>
+            <input cFormCheckInput type="radio" name="scrapeSource" value="IHerb" (change)="chooseType($event)" />
+            <label cFormCheckLabel>&nbsp;IHerb</label>
+          </c-form-check>
         </div>
       </div>
       <div *ngIf="useInput" class="col-md-4 d-flex justify-content-center mt-5">
@@ -194,7 +198,7 @@
       </div>
     </div>
     <div>
-      <button class="btn btn-success">
+      <button class="btn btn-success" (click)="SaveItemInDB()">
         Save
       </button>
     </div>

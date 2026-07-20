@@ -1,13 +1,12 @@
-<!-- <div class="m-2 p-2">
-  <button class="btn btn-primary" routerLink="./add-edit-activity">
-    Add
+<div class="m-2 p-2">
+  <button class="btn btn-primary" (click)="openAddItemModal()">
+    Add new item
   </button>
-</div> -->
+</div>
+
 <div class="card">
   <div class="card-header py-3">
-
     <div class="row align-items-center">
-
       <!-- LEFT -->
       <div class="col-md-6 d-flex flex-column gap-2">
         <!-- Inventory -->
@@ -19,7 +18,7 @@
           item{{ inventory.length !== 1 ? 's' : '' }}
         </div>
         <!-- Filter -->
-        <div *ngIf="!currentBusinessName.includes('Duty')">
+        <div *ngIf="currentBusinessName.includes('FHD')">
           <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter"
             (change)="filterInventory($event)">
             <option value="All">All</option>
@@ -871,3 +870,66 @@
     </div>
   </div>
 </div>
+
+
+<!-- Add new inv manual -->
+<c-modal [visible]="showAddItemModal" (visibleChange)="showAddItemModal=$event">
+  <c-modal-header>
+    <h5 cModalTitle>
+      Add New Item
+    </h5>
+    <button cButtonClose (click)="showAddItemModal=false">
+    </button>
+  </c-modal-header>
+  <c-modal-body>
+    <!-- Search Item -->
+    <div class="mb-3">
+      <label class="form-label">
+        Search Item
+      </label>
+      <input type="text" class="form-control" placeholder="Search item..." [(ngModel)]="searchText"
+        (input)="searchItems()" />
+      <!-- Results -->
+      <div class="list-group mt-1" *ngIf="items.length">
+        <button type="button" class="list-group-item list-group-item-action" *ngFor="let item of items"
+          (click)="selectItemFromDb(item)">
+          {{item.itemDescription ?? item.sku }}
+        </button>
+      </div>
+
+      <div class="list-group mt-1 text-center text-danger" *ngIf="messsage.length > 0">
+        {{ messsageEmpty }}
+      </div>
+
+    </div>
+
+    <div class="list-group mt-1 text-center text-success" *ngIf="messsage.length > 0">
+      {{ messsage }}
+    </div>
+    <!-- Selected Item -->
+    <div class="alert alert-info" *ngIf="selectedItem">
+      Selected:
+      {{selectedItem.itemDescription}}
+    </div>
+    <!-- Price -->
+    <div class="mb-3">
+      <label>
+        Price
+      </label>
+      <input type="number" class="form-control" [(ngModel)]="price" />
+    </div>
+    <!-- Quantity -->
+    <div class="mb-3">
+      <label>
+        Quantity
+      </label>
+      <input type="number" class="form-control" [(ngModel)]="quantity" />
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showAddItemModal=false">
+      Cancel
+    </button>
+    <button class="btn btn-success" (click)="saveItem()">
+      Save
+    </button>

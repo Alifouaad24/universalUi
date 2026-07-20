@@ -137,9 +137,13 @@ export class ScrapeItemComponent implements OnInit {
   percentage = signal(0);
   autoHideToast = signal(true);
   message: string = ''
+  IHerb: string = ''
+  buinessId?: number
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.buinessId = Number(localStorage.getItem('businessId'));
+
     this.GetAllCategories()
     this.GetAllCurrencies()
     this.GetAllColors()
@@ -174,7 +178,7 @@ export class ScrapeItemComponent implements OnInit {
   }
 
   GetAllPlatforms() {
-    this.http.getAllData<PlatformModel[]>('Platform').subscribe((response: PlatformModel[]) => {
+    this.http.getAllData<PlatformModel[]>(`Platform${this.buinessId!}`).subscribe((response: PlatformModel[]) => {
       this.platforms = response.map(el => new PlatformModel(el))
     })
   }
@@ -347,12 +351,45 @@ export class ScrapeItemComponent implements OnInit {
         }
       );
     }
+    else if (this.selectedSource === 'IHerb') {
+      this.http.posteData(`Scraper/ByIherb/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.upc = upc
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    }
   }
 
   chooseType(event: any) {
     const type = event.target.value
     this.selectedSource = type;
-    if (type == 'Build' || type == 'Milwaukee' || type == 'Ryobi' || type == 'UPCItems') {
+    if (type == 'Build' || type == 'Milwaukee' || type == 'Ryobi' || type == 'UPCItems' || type == 'IHerb') {
       this.useInput = true
     } else {
       this.useInput = false
@@ -505,30 +542,45 @@ export class ScrapeItemComponent implements OnInit {
     });
   }
 
+SaveIngItemInDB: boolean = false
   SaveItemInDB() {
+    this.SaveIngItemInDB = true;
     const payLoad = {
-      'itemDescription': this.title,
-      'itemDetails': this.description2,
-      'sKU': this.storeSku,
-      'internetId': this.internet,
-      'uPC': this.upc,
-      'model': this.model,
-      'platformId': this.platformId,
-      'height': this.height,
-      'width': this.width,
-      'length': this.length,
-      'unitId': this.unitId,
-      'unitValue': this.unitId,
-      'colorId': this.colorId,
-      'sizeId': this.sizeId,
-      'categoryId': this.categoryId,
-      'basePrice': this.price,
-      'currencyId': this.currencyId,
-      'images': this.images,
+      itemDescription: this.title ?? '',
+      itemDetails: this.description2 ?? '',
+      sku: this.storeSku ?? null,
+      internetId: this.internet ?? null,
+      upc: this.upc ?? null,
+      model: this.model ?? null,
+
+      platformId: this.platformId ? Number(this.platformId) : null,
+
+      height: this.height ? Number(this.height) : null,
+      width: this.width ? Number(this.width) : null,
+      length: this.length ? Number(this.length) : null,
+
+      unitId: this.unitId ?? null,
+      unitValue: this.unitId ?? null,
+
+      colorId: this.colorId ?? null,
+      sizeId: this.sizeId ?? null,
+      categoryId: this.categoryId ?? null,
+
+      basePrice: Number(this.price ?? 0),
+
+      currencyId: this.currencyId ?? null,
+
+      images: this.imgUrl ?? []
     };
 
+
+    console.log(payLoad)
     this.http.posteData('Item', payLoad).subscribe(res => {
+      this.SaveIngItemInDB = false; 
+      window.location.reload()
       console.log(res)
+    },(error) => {
+      this.SaveIngItemInDB = false;
     })
 
   }

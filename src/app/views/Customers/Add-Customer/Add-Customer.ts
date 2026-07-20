@@ -426,12 +426,12 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       }
     }
 
-    const bus = this.selectedBusinessId != null ? this.selectedBusinessId : [this.BusinessId];
-
+    const bus = this.selectedBusinessId.length > 0 ? this.selectedBusinessId : [this.BusinessId];
+    console.log(bus);
     const mainPayLoad = {
       customerName: this.customerName,
       customerMobile: this.customerMobile,
-      businessId: bus,
+      businessesIds: bus,
       country_id: this.countryId ? Number(this.countryId) : null,
       address: addressPayload
     };
