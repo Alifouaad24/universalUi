@@ -502,33 +502,34 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges()
   }
 
-  EditCustData(customer: any): void {
-    const payLoad = {
-      'custArea': customer.custArea,
-      'custCity': customer.custCity,
-      'custLandmark': customer.custLandmark,
-      'custName': customer.custName,
-      'custMob': customer.custMob,
-      'merchantId': customer.merchantId
+  EditCustData(): void {
+    if (this.addingLoad) return;
+    this.addingLoad = true;
+    
+    const bus = this.selectedBusinessId.length > 0 ? this.selectedBusinessId : [this.BusinessId];
+    console.log(bus);
+    const mainPayLoad = {
+      customerName: this.customerName,
+      customerMobile: this.customerMobile,
+      businessesIds: bus,
+      country_id: this.countryId ? Number(this.countryId) : null,
     };
-    console.log(payLoad, this.custId);
-    this.api.putData(`Customers/${customer.id}`, payLoad).subscribe(res => { });
-    this.updated = true;
-    setTimeout(() => {
-      this.updated = !this.updated;
-    }, 3000);
-    //this.toastr.success('تم التعديل بنجاح')
-  }
 
-  UnBlockCustomer() {
-    var customerId = this.CustomerId
-    this.api.putData(`Customers/UnBlockCustomer/${customerId}`, {}).subscribe(res => {
-      console.log(res)
-      //this.toastr.success("تم رفع الحظر بنجاح")
-    }, (error) => {
-      //this.toastr.error("يرجى المحاولة مجددا")
+    console.log(mainPayLoad);
 
-    })
+    this.api.putData(`Customers/${this.customerId}`, mainPayLoad).subscribe(
+      response => {
+        this.isVisible = !this.isVisible;
+        this.showMyToast('Customer updated successfuly');
+        this.addingLoad = false;
+        this.router.navigate(['/Home/customers']);
+        this.cdr.detectChanges();
+      },
+      error => {
+        this.addingLoad = false;
+        this.cdr.detectChanges();
+      }
+    );
   }
 
   LastOrder?: string

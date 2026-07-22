@@ -97,8 +97,8 @@
         <input class="form-control" [(ngModel)]="UsCity" />
       </c-col>
 
-      <button cButton color="primary" (click)="AddCustomer()">
-        Add <c-spinner class="sm" *ngIf="addingLoad"></c-spinner>
+      <button cButton color="primary" (click)="isUpdate ? EditCustData() : AddCustomer()">
+        {{isUpdate ? 'Update' : 'Add'}} <c-spinner class="sm" *ngIf="addingLoad"></c-spinner>
       </button>
     </c-row>
   </c-card-body>
