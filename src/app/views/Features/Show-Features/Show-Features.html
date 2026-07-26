@@ -1,7 +1,8 @@
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div class="col-md-7">
-    <h2 class="mb-0 fw-bold">Tasks Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks}} Task</small></h2>
+    <h2 class="mb-0 fw-bold">Tasks Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks}}
+        Task</small></h2>
     <small class="text-muted">
       Manage and track all system tasks
     </small>
@@ -11,7 +12,8 @@
 
   <div class="d-flex justify-content-between col-md-3">
     <div>
-      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter" #filttered (change)="filterTasks(filttered.value)">
+      <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter" #filttered
+        (change)="filterTasks(filttered.value)">
         <option value="Unscheduled">Unscheduled</option>
         <option value="Waiting response">Waiting response</option>
         <option value="Testing">Testing</option>
@@ -135,7 +137,7 @@
               : feature.body
               }}
             </p>
-            <div class="d-flex gap-4">
+            <div class="d-flex gap-3">
               <div>
                 <small class="text-muted">System</small>
                 <div><strong>{{ feature.system?.globalSystemName }}</strong></div>
@@ -145,6 +147,14 @@
                 <div>
                   <span class="badge bg-primary">
                     {{ feature.comments?.length || 0 }}
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="getUnReadComments(feature.comments) > 0">
+                <small class="text-muted">Un Read Comments</small>
+                <div>
+                  <span class="badge bg-danger">
+                    {{ getUnReadComments(feature.comments) }}
                   </span>
                 </div>
               </div>
@@ -158,7 +168,12 @@
             <button class="btn btn-danger me-2" (click)="confirmDelete(feature)">
               <c-icon name="cil-trash"></c-icon>
             </button>
-            <button *ngIf="feature.status === 'Completed'" class="btn btn-warning" (click)="SetStatusClosed(feature.featureId!)">
+            <button *ngIf="feature.status === 'Completed'" class="btn btn-info"
+              (click)="SetStatusClosed(feature.featureId!)">
+              <c-icon name="cilCheck"></c-icon>
+            </button>
+            <button *ngIf="feature.status === 'Testing'" class="btn btn-warning"
+              (click)="SetStatusComleted(feature.featureId!)">
               <c-icon name="cilCheck"></c-icon>
             </button>
           </div>
@@ -324,12 +339,29 @@
           </div>
           <div class="card border-start border-4 border-primary">
             <div class="card-body py-2">
-              <small class="text-muted">
-                <i class="fas fa-user-circle me-1"></i>
-                Comment
-              </small>
-              <div class="mt-2">
-                {{ c }}
+              <div class="d-flex gap-2 p-2 mt-2 rounded-4"
+                [ngClass]="{'border border-2 border-danger': !c.isRead && myName != c.addedBy}">
+                <!-- Avatar -->
+                <div
+                  class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width:40px;height:40px;">
+                  {{ c.addedBy?.charAt(0) | uppercase }}
+                </div>
+
+                <!-- Comment -->
+                <div class="flex-grow-1">
+                  <div class="fw-bold small">
+                    {{ c.addedBy }}
+                  </div>
+
+                  <div class="bg-dark rounded-4 px-3 py-2 mt-1 shadow-sm">
+                    {{ c.commentContent }}
+                  </div>
+
+                  <div class="text-muted small mt-1">
+                    {{ c.addedOn | date:'short' }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -366,7 +398,7 @@
 
   <c-modal-footer class="border-0">
 
-    <button class="btn btn-light px-4" (click)="showEditModal = false">
+    <button class="btn btn-light px-4" (click)="closeModal(selectedFeatureId!)">
 
       <i class="fas fa-times me-2"></i>
       Cancel

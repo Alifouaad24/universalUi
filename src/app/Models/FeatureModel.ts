@@ -5,7 +5,7 @@ export class FeatureModel {
     featureId?: number;
     body?: string;
     status?: string;
-    comments?: string[];
+    comments?: any[];
     system?: any;
     Business?: BusinessModel
     Service?: ServiceModel

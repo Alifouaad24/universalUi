@@ -80,13 +80,14 @@ export class ShowFeaturesComponent implements OnInit {
   loading: boolean = false
   comment: string = '';
   selectedFeatureId?: number;
-  comments: string[] = [];
+  comments: any[] = [];
   Businesses?: BusinessModel[]
   Services?: ServiceModel[]
   SelectedBusinessId?: number
   SelectedServiceId?: number
   selectedFilter: string = "All"
-allCountOfTasks: number = 0
+  allCountOfTasks: number = 0
+  myName: string = ''
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -94,6 +95,9 @@ allCountOfTasks: number = 0
     this.getAllFeatures()
     this.getAllSystems()
     this.getAllBusiness()
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+    this.myName = currentUser.userName ?? '';
   }
 
   getAllSystems() {
@@ -235,6 +239,7 @@ allCountOfTasks: number = 0
     this.BusinessId = type?.business_id
     this.ServiceId = type?.service_id
     console.log('Edit feature:', type);
+    this.makeAllCommentsRead(this.selectedFeatureId!);
   }
 
   addComment() {
@@ -246,10 +251,15 @@ allCountOfTasks: number = 0
       return;
     }
     this.http.putData(`Feature/AddComment/${this.selectedFeatureId}`, { comment: this.comment }).subscribe(
-      () => {
+      (res) => {
+        console.log(res)
         this.toastMessage.set('Comment added successfully');
         this.toastVisible.set(true);
-        this.comments.push(`${currentUser.userName?.replace('-', ' ')}: ${this.comment}`);
+        this.comments.push({
+          addedBy: this.myName,
+          commentContent: this.comment,
+          addedOn: Date.now()
+        });
         this.cdr.detectChanges();
         this.getAllFeatures();
         this.comment = '';
@@ -310,6 +320,25 @@ allCountOfTasks: number = 0
     );
   }
 
+  SetStatusComleted(id: number) {
+
+    this.http.putData(`Feature/SetStatusComleted/${id}`, {}).subscribe(
+      () => {
+        this.toastMessage.set('Feature updated successfully');
+        this.toastVisible.set(true);
+        this.getAllFeatures();
+        this.showEditModal = false;
+      },
+      (error) => {
+        console.error('Error updating feature:', error);
+        this.toastMessage.set('An error occurred while updating the feature');
+        this.toastVisible.set(true);
+      }
+    );
+  }
+
+
+
   filterTasks(filtter: string) {
     console.log('Filtering tasks with filter:', filtter);
     this.features = this.allFeatures;
@@ -318,6 +347,26 @@ allCountOfTasks: number = 0
       return
     }
     this.features = this.features.filter(x => x.status === filtter.trim());
+  }
+
+  getUnReadComments(commentss?: any[]): number {
+    if (!commentss) return 0;
+
+    return commentss.filter(c => !c.isRead).length;
+  }
+
+  makeAllCommentsRead(taskId: number) {
+    this.http.putData(`Feature/makeAllCommentsRead/${taskId}`, {}).subscribe(res => {
+
+    })
+  }
+
+  closeModal(id: number) {
+    this.showEditModal = false; 
+    var current = this.features.find(el => el.featureId == id)
+    if(current?.comments?.filter(el => el.isRead))
+    this.getAllFeatures();
+    this.cdr.detectChanges();
   }
 
 }
