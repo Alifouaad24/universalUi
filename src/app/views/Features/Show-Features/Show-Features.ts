@@ -362,9 +362,7 @@ export class ShowFeaturesComponent implements OnInit {
   }
 
   closeModal(id: number) {
-    this.showEditModal = false; 
-    var current = this.features.find(el => el.featureId == id)
-    if(current?.comments?.filter(el => el.isRead))
+    this.showEditModal = false;
     this.getAllFeatures();
     this.cdr.detectChanges();
   }
