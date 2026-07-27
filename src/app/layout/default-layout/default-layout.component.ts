@@ -77,6 +77,7 @@ export class DefaultLayoutComponent {
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
     { name: 'auto', text: 'Auto', icon: 'cilContrast' }
   ];
+  
 
   ngOnInit() {
     this.GetBusinesses()
