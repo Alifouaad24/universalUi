@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import {
@@ -33,6 +33,7 @@ import { IconModule } from '@coreui/icons-angular';
 import { Country } from '../../../Models/CountryModel';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { InventoryModel } from '../../../Models/InventoryModel';
+declare const bootstrap: any; // NEW: بدل import { Modal } from 'bootstrap';
 
 @Component({
   selector: 'app-button-groups',
@@ -50,22 +51,23 @@ import { InventoryModel } from '../../../Models/InventoryModel';
     ToasterComponent,
     ToastComponent,
     ToastHeaderComponent,
-    
+
     ToastBodyComponent]
 })
 export class ShowItemsComponent implements OnInit {
 
-  inventory: InventoryModel[] = [];
+  inventory: any[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
-  selectedType?: InventoryModel;
+  selectedItem?: any;
   ///// for toastr ////////
   position = 'top-end';
-  toastVisible = signal(false); 
-  toastMessage = signal(''); 
+  toastVisible = signal(false);
+  toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
+
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -75,12 +77,10 @@ export class ShowItemsComponent implements OnInit {
 
   getInventory() {
     this.isLoading = true;
-    this.http.getAllData('Inventory').subscribe(
+    this.http.getAllData('Item').subscribe(
       (res: any) => {
-        this.inventory = (res as any[]).map(item => new InventoryModel({
-          inventory_id: item.inventory_id,
-          product_name: item.product_name
-        }));
+        console.log(res)
+        this.inventory = res;
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -93,19 +93,19 @@ export class ShowItemsComponent implements OnInit {
     );
   }
 
-  confirmDelete(type: InventoryModel) {
-    this.selectedType = type;
+  confirmDelete(type: any) {
+    this.selectedItem = type;
     this.showDeleteModal = true;
   }
 
-  deleteActivity(type?: InventoryModel) {
+  deleteActivity(type?: any) {
     if (!type) return;
     this.http.deleteData(`Inventory/${type.inventory_id}`,).subscribe(() => {
       this.inventory = this.inventory.filter(t => t.inventory_id !== type.inventory_id);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.product_name} deleted successfully`);
       this.toastVisible.set(true);
-    },(error) =>{
+    }, (error) => {
       this.toastMessage.set(`An error occured during delete (${type.product_name})`);
       this.toastVisible.set(true);
     });
@@ -119,5 +119,12 @@ export class ShowItemsComponent implements OnInit {
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
   }
+
+isItemModalVisible = false;
+
+openItemModal(item: any) {
+  this.selectedItem = item;
+  this.isItemModalVisible = true;
+}
 
 }

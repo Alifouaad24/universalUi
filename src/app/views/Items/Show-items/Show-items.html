@@ -1,11 +1,11 @@
 <div class="m-2 p-2">
   <button class="btn btn-primary" routerLink="./add-edit-item">
-    Add item
+    Add Product
   </button>
 </div>
 <div class="card">
   <div class="card-header">
-    Inventory
+    Products
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -14,32 +14,43 @@
       </div>
     </div>
     <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
-    <table *ngIf="inventory.length > 0" class="table table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Description</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let type of inventory; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ type.product_name }}</td>
-          <td>
-            <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-primary me-1">
-                <c-icon name="cil-pencil"></c-icon>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
-                <c-icon name="cil-trash"></c-icon>
-              </button>
-            </ng-container>
-          </td>
+    <div *ngIf="inventory.length > 0" class="row g-4">
+      <div class="col-6 col-md-4 col-lg-3 col-xl-2" *ngFor="let item of inventory; index as i">
+        <div class="card h-100 shadow-sm">
+          <img (click)="openItemModal(item)" [src]="item.images && item.images.length ? item.images[0].imageUrl : 'assets/no-image.png'"
+            class="card-img-top" style="height: 200px; object-fit: cover;" [alt]="item.itemDescription || item.sku" />
+          <div class="card-body p-2 text-center">
+            <h6 class="card-title mb-1 text-truncate mt-2" [title]="item.itemDescription || item.sku || item.upc">
+              {{ item.itemDescription || item.sku || item.upc || ('Item #' + item.itemId) }}
+            </h6>
 
-        </tr>
-      </tbody>
-    </table>
+            <!-- <small class="text-muted d-block mb-1" *ngIf="item.sku">
+              SKU: {{ item.sku }}
+            </small>
+            <small class="text-muted d-block mb-1" *ngIf="!item.sku && item.upc">
+              UPC: {{ item.upc }}
+            </small> -->
+
+            <div class="fw-bold text-primary">
+              {{ item.basePrice != null ? (item.basePrice | currency) : 'No price' }}
+            </div>
+          </div>
+
+          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
+            <button class="btn btn-sm btn-outline-primary">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(item)">
+              <c-icon name="cil-trash"></c-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="inventory.length === 0" class="text-center text-muted py-5">
+      No items found.
+    </div>
   </div>
 </div>
 
@@ -47,11 +58,11 @@
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.product_name }}?
+    Are you sure you want to delete {{ selectedItem?.product_name }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteActivity(selectedType)">Delete</button>
+    <button class="btn btn-danger" (click)="deleteActivity(selectedItem)">Delete</button>
   </c-modal-footer>
 </c-modal>
 
@@ -68,3 +79,76 @@
     </c-toast-body>
   </c-toast>
 </c-toaster>
+
+
+<c-modal [(visible)]="isItemModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle>
+      {{ selectedItem?.itemDescription || selectedItem?.sku || ('Item #' + selectedItem?.itemId) }}
+    </h5>
+    <button cButtonClose (click)="isItemModalVisible = false"></button>
+  </c-modal-header>
+
+  <c-modal-body *ngIf="selectedItem">
+    <div class="row g-3">
+      <div class="col-md-5 text-center">
+        <img
+          [src]="selectedItem.images && selectedItem.images.length ? selectedItem.images[0].imageUrl : 'assets/no-image.png'"
+          class="img-fluid rounded"
+          [alt]="selectedItem.itemDescription" />
+
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2" *ngIf="selectedItem.images && selectedItem.images.length > 1">
+          <img *ngFor="let img of selectedItem.images"
+            [src]="img.imageUrl"
+            class="rounded border"
+            style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" />
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">SKU</span>
+            <span>{{ selectedItem.sku || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">UPC</span>
+            <span>{{ selectedItem.upc || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Price</span>
+            <span class="fw-bold text-primary">
+              {{ selectedItem.basePrice != null ? (selectedItem.basePrice | currency) : 'N/A' }}
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Category</span>
+            <span>{{ selectedItem.category || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Brand</span>
+            <span>{{ selectedItem.brand || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Color</span>
+            <span>{{ selectedItem.color || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Size</span>
+            <span>{{ selectedItem.size || 'N/A' }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span class="text-muted">Status</span>
+            <span class="badge" [ngClass]="selectedItem.isActive ? 'bg-success' : 'bg-secondary'">
+              {{ selectedItem.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="isItemModalVisible = false">Close</button>
+  </c-modal-footer>
+</c-modal>
