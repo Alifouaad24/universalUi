@@ -79,6 +79,7 @@ export class DefaultLayoutComponent {
   ];
 
   ngOnInit() {
+    this.GetBusinesses()
     this.getStartSettings()
     this.businessCtx.getCurrentBusiness().subscribe(business => {
       this.currBusiness = business;
@@ -103,7 +104,7 @@ export class DefaultLayoutComponent {
 
   }
   getAllServices() {
-     const businessId = localStorage.getItem('businessId')
+    const businessId = localStorage.getItem('businessId')
     this.http.getAllData(`Service/${businessId}`).subscribe(
       (res: any) => {
         console.log(res);
@@ -172,6 +173,27 @@ export class DefaultLayoutComponent {
   get colorScheme(): 'light' | 'dark' | undefined {
     const mode = this.colorMode();
     return (mode === 'light' || mode === 'dark') ? mode : undefined;
+  }
+
+  GetBusinesses() {
+    this.http.getAllData('Account/GetMyData').subscribe((res: any) => {
+      if (res.businesses && res.businesses.length > 0) {
+        if (res.businesses?.length) {
+          const safeBusinesses =
+            JSON.parse(JSON.stringify(res.businesses));
+          this.businessCtx.setBusinesses(
+            safeBusinesses
+          );
+        }
+        this.cdr.detectChanges()
+        setTimeout(() => {
+          this.router.navigate(['Home/dashboard']);
+        }, 1000);
+
+      } else {
+        localStorage.removeItem('businesses');
+      }
+    })
   }
 
 }
