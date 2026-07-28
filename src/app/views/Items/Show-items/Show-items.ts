@@ -77,7 +77,8 @@ export class ShowItemsComponent implements OnInit {
 
   getInventory() {
     this.isLoading = true;
-    this.http.getAllData('Item').subscribe(
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Item/${businessId}`).subscribe(
       (res: any) => {
         console.log(res)
         this.inventory = res;

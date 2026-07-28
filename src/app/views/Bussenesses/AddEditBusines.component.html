@@ -637,7 +637,7 @@
                     Bind with System
                   </div>
                   <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-light">
+                    <div class="card-header ">
                       <strong>Systems</strong>
                     </div>
 
@@ -772,13 +772,84 @@
                         Add Asset
                       </button>
                     </div>
-
                   </div>
                 </div>
-
               </ng-template>
             </c-accordion-item>
           </c-accordion>
+
+
+          <!-- platforms -->
+          <c-accordion>
+            <c-accordion-item #item="cAccordionItem" [visible]="showAssetsPlatformForm">
+              <ng-template cTemplateId="accordionHeaderTemplate">
+                <button cAccordionButton class="btn w-100 text-start fw-semibold"
+                  (click)="showAssetsPlatformForm = !showAssetsPlatformForm">
+                  <i class="fas fa-boxes me-2"></i>
+                  Business Platforms
+                </button>
+              </ng-template>
+              <ng-template cTemplateId="accordionBodyTemplate">
+                <!-- Current Assets -->
+                <div class="card border-0 shadow-sm mb-4">
+                  <div class="card-header">
+                    <strong>Current Platforms</strong>
+                    <div class="card-body">
+                      <div *ngIf="(bus_Platforms?.length ?? 0) > 0">
+                        <div *ngFor="let one of bus_Platforms"
+                          class="d-flex justify-content-between align-items-center border rounded p-3 mb-2">
+                          <div>
+                            <div class="fw-semibold">
+                              {{ one.description }}
+                            </div>
+                      
+                          </div>
+                          <span class="badge bg-danger" (click)="deletePlatformFromThisBusiness(one.platform_id)">
+                            <c-icon name="cil-trash"></c-icon>
+                          </span>
+                        </div>
+                      </div>
+                      <div *ngIf="bus_Platforms.length === 0" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <div>No Platforms added yet</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Add Asset -->
+                <div class="card border-0 shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <strong>Add platforms</strong>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">
+                        platforms
+                      </label>
+                      <select class="form-select" [ngModelOptions]="{standalone: true}"
+                        [(ngModel)]="SelectedPlatformsIds">
+                        <option disabled value="">
+                          Select Multi Platforms
+                        </option>
+                        <option *ngFor="let one of Platforms" [value]="one.platform_id">
+                          {{ one.description }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="d-grid">
+                      <button class="btn btn-primary" [disabled]="loading" (click)="addPlatforms()">
+                        <span *ngIf="addingAsset" class="spinner-border spinner-border-sm me-2">
+                        </span>
+                        Add Platforms
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </ng-template>
+            </c-accordion-item>
+          </c-accordion>
+          <!-- end platforms  -->
+
 
 
         </c-card-body>

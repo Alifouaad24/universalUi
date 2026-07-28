@@ -27,6 +27,7 @@ export class BusinessModel {
   usersBusinesses: any[] = [];
   business_Owners: any[] =[]
   business_Assets: any[] =[]
+  platforms: any[] = []
   insert_on!: string;
   insert_by?: string;
 

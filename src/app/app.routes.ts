@@ -134,6 +134,13 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'privacy-policy',
+    loadComponent: () => import('./privacy-policy/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent),
+    data: {
+      title: 'Page 404'
+    }
+  },
+  {
     path: '500',
     loadComponent: () => import('./views/pages/page500/page500.component').then(m => m.Page500Component),
     data: {

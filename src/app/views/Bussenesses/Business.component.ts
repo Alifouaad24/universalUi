@@ -62,7 +62,7 @@ export class BusinessComponent implements OnInit {
         consumerBusinessRelations: el.consumerBusinessRelations,
         usersBusinesses: el.usersBusinesses,
         business_Assets: el.business_Assets,
-
+        platforms: el.platforms,
         business_Services: el.business_Services
       }))
       this.cdr.detectChanges()

@@ -103,6 +103,7 @@ export class AddEditBusniessComponent implements OnInit {
   showAssetsForm = false;
   Line_1: string = ''
   Line_2: string = ''
+  Platforms?: any[]
   State: number | null = null
   PostCode: string = ''
   selectedCityId: number | null = null;
@@ -112,6 +113,7 @@ export class AddEditBusniessComponent implements OnInit {
   Activites?: any[]
   businessCustomers?: any[] = [];
   BusinessServices: any[] = [];
+  bus_Platforms: any[] = [];
   services: {
     description: string;
     isPublic: boolean;
@@ -162,9 +164,11 @@ export class AddEditBusniessComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(param => {
       const busFromQuery = param.get('bus')
+      
       if (busFromQuery) {
         this.getAllBusinesses()
         this.getAllCountries()
+        this.getPlatforms()
         this.getAllAddresses()
         this.getAllActivities()
         this.getAllAssets()
@@ -173,6 +177,7 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllSystems()
         setTimeout(() => {
           this.business = JSON.parse(busFromQuery);
+          console.log(this.business)
           this.businessForm.patchValue({
             Business_name: this.business!.business_name,
             CountryId: this.business!.countryId,
@@ -196,6 +201,8 @@ export class AddEditBusniessComponent implements OnInit {
           this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
           this.providerBusinessRelations = this.business!.providerBusinessRelations;
           this.business_Assets = this.business!.business_Assets
+          this.bus_Platforms = this.business!.platforms
+           console.log(`99999999999999999${this.bus_Platforms}`)
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
@@ -208,12 +215,24 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllBusinessesTypes()
         this.getAllCountries()
         this.getAlRless()
+        this.getPlatforms()
         this.getAllAssets()
         this.getAllActivities()
         this.getAllSystems()
       }
     })
 
+  }
+
+  SelectedPlatformsIds: number[] = []
+  showAssetsPlatformForm: boolean = false
+  getPlatforms() {
+    const businessId = Number(localStorage.getItem('businessId'));
+    this.http.getAllData(`Platform/${businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+
+    })
   }
 
   SelectedBusinesses: number[] = [];
@@ -1133,6 +1152,23 @@ export class AddEditBusniessComponent implements OnInit {
         });
       }
     });
+  }
+
+
+  addPlatforms(){
+    var payLoad = {
+      business_id: this.business?.business_id,
+      platformsIds: this.SelectedPlatformsIds
+    }
+    this.http.posteData(`Business/BindBusinessWithPlatforms`, payLoad).subscribe(res => {
+      console.log(res)
+    })
+  }
+
+  deletePlatformFromThisBusiness(id: number){
+    this.http.deleteData(`Business/UnBindBusinessWithPlatforms${id}`).subscribe(res => {
+      console.log(res)
+    })
   }
 
 }
