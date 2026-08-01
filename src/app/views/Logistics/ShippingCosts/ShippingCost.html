@@ -1,0 +1,112 @@
+<div class="mb-4">
+  <h5 class="fw-bold mb-1">Shipping Costs</h5>
+  <p class="text-body-secondary small mb-0">Providers this business ships through, with live cost &amp; sale calculation.</p>
+</div>
+
+<!-- Loading state -->
+<div class="text-center py-5" *ngIf="loading">
+  <div class="spinner-border text-warning" role="status"></div>
+</div>
+
+<!-- Empty / error state -->
+<div class="text-center text-body-secondary py-5" *ngIf="!loading && shippingCosts.length === 0">
+  <div class="fs-1 mb-2">📦</div>
+  <p class="mb-0">{{ message || 'No shipping providers linked to this business yet.' }}</p>
+</div>
+
+<c-row class="g-3" *ngIf="!loading && shippingCosts.length > 0">
+  <c-col xs="12" md="6" lg="4" *ngFor="let item of shippingCosts">
+    <c-card class="h-100 shadow-sm border-0 mb-3">
+
+      <c-card-header class="bg-dark text-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-uppercase text-warning fw-semibold mb-1" style="font-size:.65rem; letter-spacing:.08em;">
+              Provider
+            </div>
+            <div class="fw-semibold text-truncate" style="max-width: 180px;">
+              {{ item.logistic?.business?.business_name || '—' }}
+            </div>
+          </div>
+          <span class="badge bg-secondary-subtle text-white border border-secondary">
+            {{ item.logistic?.currency?.code || '—' }}
+          </span>
+        </div>
+      </c-card-header>
+
+      <c-card-body>
+
+        <table class="table table-sm mb-3">
+          <tbody>
+            <tr>
+              <td class="text-body-secondary small">Unit</td>
+              <td class="text-end fw-semibold">{{ item.weight_Unit?.description || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="text-body-secondary small">Value</td>
+              <td class="text-end fw-semibold">{{ item.weight_Value }}</td>
+            </tr>
+            <tr>
+              <td class="text-body-secondary small">Cost</td>
+              <td class="text-end fw-semibold">
+                {{ item.costAmount | number:'1.2-2' }} {{ item.logistic?.currency?.code }}
+              </td>
+            </tr>
+            <tr>
+              <td class="text-body-secondary small">Sale</td>
+              <td class="text-end fw-semibold text-warning">
+                {{ item.saleAmount | number:'1.2-2' }} {{ item.logistic?.currency?.code }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-3">
+
+        <label class="form-label text-body-secondary small mb-1">Actual weight</label>
+        <div class="input-group mb-3">
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="weights[item.shippingCostId]"
+            (ngModelChange)="onWeightChange(item.shippingCostId)"
+            min="0"
+            step="0.1"
+            placeholder="0.0"
+            inputmode="decimal"
+          />
+          <span class="input-group-text bg-warning text-dark fw-semibold">
+            {{ item.weight_Unit?.description }}
+          </span>
+        </div>
+
+        <c-row class="text-center g-2">
+          <c-col xs="4">
+            <div class="border rounded-3 py-2">
+              <div class="text-body-secondary text-uppercase" style="font-size:.6rem; letter-spacing:.05em;">Cost</div>
+              <div class="fw-bold small">{{ getCalculatedCost(item) | number:'1.2-2' }}</div>
+            </div>
+          </c-col>
+          <c-col xs="4">
+            <div class="border rounded-3 py-2">
+              <div class="text-body-secondary text-uppercase" style="font-size:.6rem; letter-spacing:.05em;">Sale</div>
+              <div class="fw-bold small text-warning">{{ getCalculatedSale(item) | number:'1.2-2' }}</div>
+            </div>
+          </c-col>
+          <c-col xs="4">
+            <div class="border rounded-3 py-2">
+              <div class="text-body-secondary text-uppercase" style="font-size:.6rem; letter-spacing:.05em;">Margin</div>
+              <div
+                class="fw-bold small"
+                [ngClass]="getCalculatedMargin(item) >= 0 ? 'text-success' : 'text-danger'"
+              >
+                {{ getCalculatedMargin(item) | number:'1.2-2' }}
+              </div>
+            </div>
+          </c-col>
+        </c-row>
+
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
