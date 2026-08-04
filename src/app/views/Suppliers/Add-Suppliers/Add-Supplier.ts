@@ -25,28 +25,23 @@ export class AddEditBusinessTypeComponent implements OnInit {
   Platforms?: any[]
   businessId?: number
   platformIds?: number[]
+  businessServiceId?: number
 
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.getAllBusiness()
+    this.route.queryParamMap.subscribe(params => {
+      const businessServiceIdParam = params.get('businessServiceId');
+      if (businessServiceIdParam) {
+        this.businessServiceId = Number(businessServiceIdParam);
+      }
+    });
+    const businessIdParam = localStorage.getItem('businessId');
+    if (businessIdParam) {
+      this.businessId = Number(businessIdParam);
+      this.getPlatforms(this.businessId!);
+    }
   }
-
-  getAllBusiness() {
-    this.http.getAllData('Business').subscribe(res => {
-      console.log(res)
-      this.Businesses = (res as any[]).map(el => new BusinessModel({
-        business_id: el.business_id,
-        business_name: el.business_name,
-      }))
-      this.cdr.detectChanges()
-    }, (error) => {
-      console.error(error)
-      this.cdr.detectChanges()
-
-    })
-  }
-
 
   getPlatforms(businessId: number) {
     this.http.getAllData(`Platform/${businessId}`).subscribe((res: any) => {
@@ -61,11 +56,11 @@ export class AddEditBusinessTypeComponent implements OnInit {
     this.loading = true
 
     var data = {
-      businessId: Number(this.businessId),
-      platforms: this.platformIds
+      bsId: this.businessServiceId,
+      platformsIds: this.platformIds
     }
     console.log(data)
-    this.http.posteData('Suppliers', data).subscribe(res => {
+    this.http.posteData('Platform/bindSupplierBusinessWithPlatform', data).subscribe(res => {
       console.log(res)
       this.loading = false
       this.message = 'Supplier added successfully'

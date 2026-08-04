@@ -4,23 +4,10 @@
       <div class="card shadow border-0">
         <div class="card-header bg-primary text-white py-3">
           <h4 class="mb-0">
-            Add Supplier
+            Add Platform Supplier
           </h4>
         </div>
         <div class="card-body p-4">
-          <div class="mb-4">
-            <label class="form-label fw-bold">
-              Business
-            </label>
-            <select class="form-select" [(ngModel)]="businessId" (change)="getPlatforms(businessId!)">
-              <option [ngValue]="null" disabled>
-                Select Business
-              </option>
-              <option *ngFor="let business of Businesses" [value]="business.business_id">
-                {{ business.business_name }}
-              </option>
-            </select>
-          </div>
           <div class="mb-4">
             <label class="form-label fw-bold">
               Platforms
@@ -38,7 +25,7 @@
             <button class="btn btn-primary btn-lg" [disabled]="loading" (click)="addSupplier()">
               <span *ngIf="loading" class="spinner-border spinner-border-sm me-2">
               </span>
-              {{ loading ? 'Saving...' : 'Add Supplier' }}
+              {{ loading ? 'Saving...' : 'Add Platform Supplier' }}
             </button>
           </div>
           <div *ngIf="message" class="alert alert-success mt-4 mb-0">

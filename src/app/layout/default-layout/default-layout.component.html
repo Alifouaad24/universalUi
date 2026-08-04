@@ -4,21 +4,21 @@
   <c-sidebar-header class="border-bottom">
     <c-sidebar-brand [routerLink]="['/Home/dashboard']" style="cursor: pointer;">
       <!-- <svg [class]="{icon: false}" cIcon class="sidebar-brand-full" height="32" name="logo" title="CoreUI Logo"></svg> -->
- 
-        <div class="d-flex align-items-center gap-2">
+
+      <div class="d-flex align-items-center gap-2">
         <img [src]="currBusiness?.business_LogoUrl || defaultBusinessLogo" alt="logo" width="50" height="50"
           class="rounded-circle object-fit-cover" />
 
-        <h4 class="text-danger mx-1">
+        <h4 class="text-danger mx-1 wrap text-truncate" style="max-width: 150px;" title="{{ currBusiness?.business_name }}">
           {{ currBusiness?.business_name ? currBusiness?.business_name : 'No busseness' }}
         </h4>
       </div>
-      
+
 
     </c-sidebar-brand>
   </c-sidebar-header>
 
-  <ng-scrollbar pointerEventsMethod="scrollbar" visibility="hover">
+  <ng-scrollbar pointerEventsMethod="scrollbar" visibility="hover" (click)="onSidebarNavClick($event)">
     <c-sidebar-nav [navItems]="navItems" dropdownMode="close" compact />
   </ng-scrollbar>
 

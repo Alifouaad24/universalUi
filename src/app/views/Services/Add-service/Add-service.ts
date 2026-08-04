@@ -28,6 +28,7 @@ export class AddEditServiceComponent implements OnInit {
   id?: number
   visibility: 'public' | 'local' = 'public';
   selectedIcon: string | null = null;
+  businessServices: any[] = []
 
   icons: string[] = Object.keys(iconSubset);
 
@@ -53,6 +54,7 @@ export class AddEditServiceComponent implements OnInit {
         this.selectedIcon = this.serviceToEdit!.service_icon ?? null
         this.selectedBusinessIds = this.serviceToEdit!.business_Services!.map((b: any) => b.business_id!) || []
         this.selectedActivityIds = this.serviceToEdit!.service_Activities!.map((a: any) => a.activity_id!) || []
+        this.businessServices = this.serviceToEdit!.business_Services || []
       }
 
 
@@ -145,6 +147,26 @@ export class AddEditServiceComponent implements OnInit {
       this.selectedBusinessIds =
         this.selectedBusinessIds.filter(x => x !== id);
     }
+  }
+
+  getBusinessName(id: number): string {
+    var busName = this.businesses?.find(b => b.business_id === id)?.business_name;
+    return busName ?? '';
+  }
+
+  onConsumerChanged(bus: any) {
+    this.http.putData(
+      `Service/toggleBusinessStatusProviderOrConsumer/${bus.business_ServiceId}`,
+      {}
+    ).subscribe({
+      next: (res) => {
+        console.log('Business consumer status toggled successfully:', res);
+        bus.is_consumer = !bus.is_consumer;
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 
 

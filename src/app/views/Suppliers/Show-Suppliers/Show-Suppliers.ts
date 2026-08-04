@@ -30,6 +30,7 @@ import { HttpConnectService } from '../../../Services/http-connect.service';
 import { SupplierModel } from '../../../Models/supplierMode';
 import { CommonModule } from '@angular/common';
 import { IconModule } from '@coreui/icons-angular';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
 
 @Component({
   selector: 'app-button-groups',
@@ -47,43 +48,93 @@ import { IconModule } from '@coreui/icons-angular';
     ToasterComponent,
     ToastComponent,
     ToastHeaderComponent,
-    
+
     ToastBodyComponent]
 })
 export class ShowSuppliersComponent implements OnInit {
 
-  suppliers: SupplierModel[] = [];
+  platformsSup: any[] = [];
+  ProviderService: any[] = [];
   message?: string
   isLoading: boolean = false;
+  isConsumer: boolean = false;
   showDeleteModal: boolean = false;
+  businessServiceId?: number;
   selectedType?: SupplierModel;
+  businesses?: BusinessModel[]
   ///// for toastr ////////
   position = 'top-end';
-  toastVisible = signal(false); 
-  toastMessage = signal(''); 
+  toastVisible = signal(false);
+  toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
+
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.getSuppliers()
+    this.getAllBusinesses()
   }
 
-  getSuppliers() {
+  getAllBusinesses() {
     this.isLoading = true;
-    this.http.getAllData('Suppliers').subscribe(
+    this.http.getAllData('Business').subscribe(res => {
+      this.businesses = (res as BusinessModel[]).map((el) => new BusinessModel({
+        business_id: el.business_id,
+        business_name: el.business_name
+      }))
+      this.cdr.detectChanges()
+      this.getServiceType()
+    }, (error) => {
+      console.error(error)
+    })
+    this.cdr.detectChanges()
+  }
+
+  getServiceType() {
+    const businessId = localStorage.getItem('businessId');
+    const serviceId = localStorage.getItem('selectedServiceId');
+    this.http.getAllData(`Service/GetBusinessService/${businessId}/${serviceId}`).subscribe(
       (res: any) => {
         console.log(res)
-        this.suppliers = (res as any[]).map(item => new SupplierModel({
-         Business_id: item.Business_id,
-         business: item.business,
-         isActive: item.isActive,
-         supplierId: item.supplierId,
-         supplierPlatform: item.supplierPlatform
-        }));
+        this.isConsumer = res.is_Consumer;
+        this.businessServiceId = res.business_ServiceId;
+        if (!this.isConsumer) {
+          this.getPlatformSuppliers();
+        } else {
+          this.GetProviderService();
+        }
+      },
+      (err) => {
+        console.error(err);
         this.isLoading = false;
+      }
+    );
+  }
 
+  getPlatformSuppliers() {
+    this.http.getAllData(`Platform/GetSupplierPlatForms/${this.businessServiceId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.platformsSup = res
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  GetProviderService() {
+    const serviceId = localStorage.getItem('selectedServiceId');
+    this.http.getAllData(`Service/GetProviderService/${serviceId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.ProviderService = res
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       (err) => {
@@ -103,11 +154,11 @@ export class ShowSuppliersComponent implements OnInit {
     if (!type) return;
     this.http.deleteData(`Account/deleteRole/${type.supplierId}`,).subscribe((res) => {
       console.log(res)
-      this.suppliers = this.suppliers.filter(t => t.supplierId !== type.supplierId);
+      this.platformsSup = this.platformsSup.filter(t => t.supplierId !== type.supplierId);
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.business?.business_name} deleted successfully`);
       this.toastVisible.set(true);
-    },(error) =>{
+    }, (error) => {
       this.toastMessage.set(`An error occured during delete (${type.business?.business_name})`);
       this.toastVisible.set(true);
     });
@@ -120,6 +171,11 @@ export class ShowSuppliersComponent implements OnInit {
 
   onTimerChange(value: number) {
     this.percentage.set(value * 25);
+  }
+
+  getBusinessName(businessId: number): string {
+
+    return this.businesses?.find(b => b.business_id === businessId)?.business_name ?? '';
   }
 
 }

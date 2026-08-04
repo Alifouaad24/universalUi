@@ -77,7 +77,7 @@ export class DefaultLayoutComponent {
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
     { name: 'auto', text: 'Auto', icon: 'cilContrast' }
   ];
-  
+
 
   ngOnInit() {
     this.GetBusinesses()
@@ -138,7 +138,9 @@ export class DefaultLayoutComponent {
             name: bs.description,
             url: bs.service_Route,
             iconComponent: { name: bs.service_icon },
-
+            attributes: {
+              'data-service-id': bs.service_id
+            },
             ...(bs.description === 'eTask' && {
               badge: {
                 color: 'danger',
@@ -195,6 +197,18 @@ export class DefaultLayoutComponent {
         localStorage.removeItem('businesses');
       }
     })
+  }
+
+  onSidebarNavClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const link = target.closest('[data-service-id]') as HTMLElement | null;
+
+    if (link) {
+      const serviceId = link.getAttribute('data-service-id');
+      if (serviceId) {
+        localStorage.setItem('selectedServiceId', serviceId);
+      }
+    }
   }
 
 }
