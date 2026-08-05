@@ -32,17 +32,12 @@
             <td>{{ i + 1 }}</td>
             <td>{{ type.platform.description }}</td>
             <td>
-              <ng-container *ngIf="platformsSup.length">
-                <!-- <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-supplier']"
-                [queryParams]="{ supplier: type | json }">
-                <c-icon name="cil-pencil"></c-icon>
-              </button> -->
-                <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
-                  <c-icon name="cil-trash"></c-icon>
-                </button>
-              </ng-container>
+              <div>
+                <img *ngIf="type.platform.logoUrl" [src]="type.platform.logoUrl" alt="Platform Logo"
+                  (click)="openOrdersModal(type.platform.platform_id)"
+                  style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+              </div>
             </td>
-
           </tr>
         </tbody>
       </table>
@@ -74,6 +69,218 @@
       </c-toast-body>
     </c-toast>
   </c-toaster>
+
+  <!-- Orders Modal -->
+  <!-- ==========================================================
+     أيقونة تُوضع براس كل صف بالداتاتيبل (وليس بانل منفصل).
+     مثال دمجها ضمن عمود بالجدول الموجود عندك:
+
+     <td>
+       <button class="btn btn-sm btn-ghost-primary" (click)="ordersModal.openOrders()">
+         <img [src]="row.platformIconUrl" width="18" height="18" alt="platform" />
+       </button>
+     </td>
+========================================================== -->
+
+  <c-modal [(visible)]="showOrdersModal" [size]="view === 'list' ? 'lg' : 'lg'">
+    <c-modal-header>
+      {{ view === 'list' ? 'Orders' : (selectedPreOrderId ? 'تعديل الطلب' : 'طلب جديد') }}
+    </c-modal-header>
+
+    <c-modal-body>
+
+      <!-- =====================================================
+         الشاشة 1: قائمة الـ pre-order
+    ===================================================== -->
+      <ng-container *ngIf="view === 'list'">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-primary" (click)="startNewOrder()">
+            <i class="cil-plus me-1"></i> NEW
+          </button>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let order of preOrders">
+            <div class="card h-100" [class.border-primary]="selectedPreOrderId === order.universalOrderId"
+              style="cursor: pointer;" (click)="selectPreOrder(order)">
+              <div class="card-body">
+                <div class="text-body-secondary small">{{ order.globalCustomer.customerName }}</div>
+                <div class="text-body-secondary small">{{ order.createdDate }}</div>
+                <div class="text-body-secondary small">{{ order.orderStatus.status }}</div>
+                <div class="text-body-secondary small">{{ order.shippingType.name }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 text-center text-body-secondary py-4" *ngIf="preOrders.length === 0">
+            No orders yet
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- =====================================================
+         الشاشة 2: طلب جديد / تعديل طلب
+    ===================================================== -->
+      <ng-container dir="ltr" *ngIf="view === 'new'">
+        <button class="btn btn-link px-0 mb-3" (click)="backToList()">
+          <i class="cil-arrow-right me-1"></i> رجوع للقائمة
+        </button>
+
+        <!-- ---------- بيانات الزبون ---------- -->
+        <div *ngIf="!customerName" class="mb-4">
+          <label class="form-label fw-semibold">رقم هاتف الزبون</label>
+          <div class="position-relative">
+            <input cFormControl (input)="filterSuggestions()" [(ngModel)]="phoneQuery"
+              [disabled]="!!selectedCustomer" />
+
+            <!-- قائمة الاقتراحات -->
+            <div class="list-group position-absolute w-100 shadow" style="z-index: 20;"
+              *ngIf="filteredSuggestions.length > 0">
+              <button type="button" class="list-group-item list-group-item-action" *ngFor="let c of filteredSuggestions"
+                (click)="selectCustomer(c)"> {{ c }}
+              </button>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-2 py-2" *ngIf="customerNotFound">
+            الزبون غير موجود بالنظام — رح نتعامل مع هالحالة لاحقًا.
+          </div>
+
+          <button class="btn btn-sm btn-outline-secondary mt-2" *ngIf="selectedCustomer"
+            (click)="selectedCustomer = null; phoneQuery = ''">
+            تغيير الزبون
+          </button>
+        </div>
+        <div *ngIf="customerName" class="col-12 alert alert-success d-flex justify-content-between mt-3 shadow-sm">
+          <div class="col-9 text-dark fw-bold">{{ customerName }}</div>
+          <div class="col-3 text-danger text-end" (click)="deleteCustomer()"><c-icon name="cil-trash"></c-icon></div>
+        </div>
+
+        <!-- <div class="row g-3 mb-4" *ngIf="selectedCustomer">
+          <div class="col-md-6">
+            <label class="form-label">الاسم</label>
+            <input class="form-control" [value]="selectedCustomer.fullName" disabled />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الهاتف</label>
+            <input class="form-control" [value]="selectedCustomer.phone" disabled />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">العنوان</label>
+            <input class="form-control" [value]="selectedCustomer.address" disabled />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">أقرب نقطة دالة</label>
+            <input class="form-control" [value]="selectedCustomer.nearestLandmark" disabled />
+          </div>
+        </div> -->
+
+        <hr />
+
+        <!-- ---------- نوع الشحن ---------- -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">نوع الشحن</label>
+          <select class="form-select" [(ngModel)]="selectedShippingTypeId">
+            <option [ngValue]="null" disabled>اختر نوع الشحن</option>
+            <option *ngFor="let s of GlobalShippingTypes" [ngValue]="s.shippingTypeId">
+              {{ s.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- ---------- رابط السلة ---------- -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">رابط السلة</label>
+          <input type="text" class="form-control" maxlength="100" [(ngModel)]="cartLink" placeholder="https://..." />
+          <div class="form-text text-end">{{ cartLink.length }} / 100</div>
+        </div>
+        <hr />
+
+        <!-- ---------- حالة الطلب ---------- -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">حالة الطلب</label>
+          <select class="form-select" [(ngModel)]="selectedOrderStatusId">
+            <option [ngValue]="null" disabled>اختر حالة الطلب</option>
+            <option *ngFor="let s of OrderStatus" [ngValue]="s.orderStatusId">
+              {{ s.statusAr }}
+            </option>
+          </select>
+        </div>
+
+        <!-- ---------- إضافة منتجات عبر SKU -------- -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">إضافة منتج </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="الصق الـرابط المشفر هنا"
+              [(ngModel)]="enCodicUrlInput" />
+            <button class="btn btn-outline-primary" (click)="addProductByenCodicUrl()">
+              {{ addingProduct ? 'Searching...' : 'Search' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Code</th>
+                <th>Title</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of productsToAdd">
+                <td style="width: 60px;">
+                  <div class="spinner-border spinner-border-sm" *ngIf="line.loading"></div>
+                  <img *ngIf="line.mainImage" [src]="line.mainImage" width="80" height="100"
+                    style="object-fit: cover; border-radius: 6px;" />
+                </td>
+                <td>{{ line.sku }}</td>
+                <td>
+                  {{ line.name}}
+                </td>
+                <td>
+                  <select class="form-select" [(ngModel)]="line.size_id">
+                    <option [ngValue]="null" disabled>-</option>
+                    <option *ngFor="let s of Sizes" [ngValue]="s.size_id">
+                      {{ s.description }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <input class="form-control" type="number" placeholder="" [(ngModel)]="line.price" />
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-ghost-danger">
+                    <i class="cil-trash"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="productsToAdd.length === 0">
+                <td colspan="5" class="text-center text-body-secondary py-3">
+                  لم تتم إضافة أي منتج بعد
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+    </c-modal-body>
+
+    <c-modal-footer>
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-danger" *ngIf="view === 'new'" [disabled]="saving" (click)="saveOrder()">
+        {{ saving ? 'Saving...' : 'Save' }}
+      </button>
+    </c-modal-footer>
+  </c-modal>
+
+  <!-- End Orders Modal -->
 </div>
 
 
