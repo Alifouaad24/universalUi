@@ -98,21 +98,57 @@
             <i class="cil-plus me-1"></i> NEW
           </button>
         </div>
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <span class="spinner"></span>
+        </div>
 
         <div class="row g-3">
           <div class="col-md-4" *ngFor="let order of preOrders">
-            <div class="card h-100" [class.border-primary]="selectedPreOrderId === order.universalOrderId"
-              style="cursor: pointer;" (click)="selectPreOrder(order)">
-              <div class="card-body">
-                <div class="text-body-secondary small">{{ order.globalCustomer.customerName }}</div>
-                <div class="text-body-secondary small">{{ order.createdDate }}</div>
-                <div class="text-body-secondary small">{{ order.orderStatus.status }}</div>
-                <div class="text-body-secondary small">{{ order.shippingType.name }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 text-center text-body-secondary py-4" *ngIf="preOrders.length === 0">
+  <div class="card h-100 shadow-sm order-card"
+       [class.border-primary]="selectedPreOrderId === order.universalOrderId"
+       style="cursor: pointer;"
+       (click)="selectPreOrder(order)">
+    <div class="card-header d-flex align-items-center justify-content-between bg-white border-0 pt-3 pb-0">
+      <div class="d-flex align-items-center gap-2">
+        <img [src]="order.platform.logoUrl" style="width:32px;height:32px;object-fit:cover;border-radius:6px;">
+        <span class="fw-semibold small">{{ order.platform.description }}</span>
+      </div>
+      <span class="badge bg-light text-secondary">#{{ order.universalOrderId }}</span>
+    </div>
+    <div class="card-body pt-2">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="avatar-circle bg-primary-subtle text-primary">
+          {{ order.globalCustomer.customerName?.charAt(0) }}
+        </div>
+        <div>
+          <div class="fw-semibold">{{ order.globalCustomer.customerName }}</div>
+          <div class="text-muted small">{{ order.globalCustomer.customerMobile }}</div>
+        </div>
+      </div>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted small">تاريخ الطلب</span>
+        <span class="small fw-medium">{{ order.createdDate }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted small">نوع الشحن</span>
+        <span class="small fw-medium">{{ order.shippingType.name }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span class="text-muted small">الحالة</span>
+        <span class="badge"
+              [ngClass]="{
+                'bg-warning-subtle text-warning-emphasis': order.orderStatusId === 1,
+                'bg-success-subtle text-success-emphasis': order.orderStatusId === 2,
+                'bg-danger-subtle text-danger-emphasis': order.orderStatusId === 3
+              }">
+          {{ order.orderStatus.statusAr }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+          <div class="col-12 text-center text-body-secondary py-4" *ngIf="!isLoading && preOrders.length === 0">
             No orders yet
           </div>
         </div>
@@ -235,12 +271,12 @@
               <tr *ngFor="let line of productsToAdd">
                 <td style="width: 60px;">
                   <div class="spinner-border spinner-border-sm" *ngIf="line.loading"></div>
-                  <img *ngIf="line.mainImage" [src]="line.mainImage" width="80" height="100"
+                  <img *ngIf="line.imageUrl" [src]="line.imageUrl" width="80" height="100"
                     style="object-fit: cover; border-radius: 6px;" />
                 </td>
-                <td>{{ line.sku }}</td>
+                <td>{{ line.productId }}</td>
                 <td>
-                  {{ line.name}}
+                  {{ line.productName}}
                 </td>
                 <td>
                   <select class="form-select" [(ngModel)]="line.size_id">

@@ -226,10 +226,16 @@ export class ShowSuppliersComponent implements OnInit {
   }
 
   getUniversalOrders(platformId: number) {
+    this.isLoading = true
     const businessId = localStorage.getItem('businessId');
 
     this.http.getAllData(`Orders/GetUniversalOrders?businessId=${businessId}&platformId=${platformId}`).subscribe((res: any) => {
       this.preOrders = res
+      console.log(res)
+      this.isLoading = false
+      this.cdr.detectChanges()
+    },(error) => {
+      this.isLoading = false
     })
   }
 
@@ -318,9 +324,9 @@ export class ShowSuppliersComponent implements OnInit {
     const encodedUrl = encodeURIComponent(enCodicUrlInput);
     if (!encodedUrl) return;
     this.addingProduct = true
-    this.http.posteData(`Scraper/getDataFromSheInAidedClaude/${encodedUrl}`, {}).subscribe(res => {
+    this.http.getAllData(`Scraper/extract?url=${encodedUrl}&timeoutSeconds=20`).subscribe((res: any) => {
       this.productsToAdd.push({
-        ...res.parsedProduct,
+        ...res,
         size_id: null,
         price: null,
       });
@@ -408,7 +414,7 @@ export class ShowSuppliersComponent implements OnInit {
         this.res1 = null
         this.res1 = result1.customer
         this.customerName = this.res1.customerName + ' - ' + this.res1.customerMobile + ' - ' + this.res1.country.name
-          + ' - ' + this.res1.address?.city?.description + ' - ' + this.res1.address?.area?.description + ' - ' + this.res1.
+          + ' - ' + this.res1.address[0]?.city?.description + ' - ' + this.res1.address[0]?.area?.description + ' - ' + this.res1.
             land_Mark
         this.phoneQuery = ''
         this.cdr.detectChanges()
