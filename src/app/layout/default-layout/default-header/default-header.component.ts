@@ -68,14 +68,14 @@ export class DefaultHeaderComponent extends HeaderComponent {
   });
 
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private albumState: AlbumStateService,
-     private router: Router) {
+    private router: Router) {
     super();
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.showCRMActions =
           event.url.includes('/crm') || event.url.includes('/show-customers') || event.url.includes('/show-add-note')
 
-          this.showCountOfFolders = event.url.includes('/album');
+        this.showCountOfFolders = event.url.includes('/album');
       }
     });
 
@@ -86,6 +86,12 @@ export class DefaultHeaderComponent extends HeaderComponent {
     this.businessCtx.getCurrentBusiness().subscribe(b => {
       this.currentBusiness = b;
     });
+    this.updateTime();
+
+    this.timeInterval = setInterval(() => {
+      this.updateTime();
+      this.cdr.detectChanges();
+    }, 1000);
   }
 
   selectBusiness(b: any) {
@@ -108,6 +114,37 @@ export class DefaultHeaderComponent extends HeaderComponent {
       replaceUrl: true
     });
   }
+
+  baghdadTime = '';
+  damascusTime = '';
+  private timeInterval?: ReturnType<typeof setInterval>;
+  private updateTime(): void {
+    const now = new Date();
+
+    this.baghdadTime = now.toLocaleTimeString('ar-IQ', {
+      timeZone: 'Asia/Baghdad',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      
+    });
+
+    this.damascusTime = now.toLocaleTimeString('ar-SY', {
+      timeZone: 'Asia/Damascus',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
+  }
+
 
   sidebarId = input('sidebar1');
   public newMessages = [
