@@ -121,7 +121,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
   private updateTime(): void {
     const now = new Date();
 
-    this.baghdadTime = now.toLocaleTimeString('ar-IQ', {
+    this.baghdadTime = now.toLocaleTimeString('en-US', {
       timeZone: 'Asia/Baghdad',
       hour: '2-digit',
       minute: '2-digit',

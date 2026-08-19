@@ -1,0 +1,31 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header">
+    {{ complaiment == null ? 'Add Comlaiment' : 'Edit Comlaiment' }}
+  </div>
+  <div class="card-body">
+
+    <div class="mb-3">
+      <label for="description" class="form-label" >Type</label>
+      <select class="form-control" [(ngModel)]="typeId">
+        <option *ngFor="let one of complaimentsTypes" [value]="one.complaintTypeId" >{{ one.name }}</option>
+      </select>
+    </div>
+
+
+    <div class="mb-3">
+      <label for="Value" class="form-label">Value</label>
+      <input type="text" class="form-control" id="value" [(ngModel)]="value" placeholder="enter Value ...">
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <input type="text" class="form-control" id="description" [(ngModel)]="description"
+        placeholder="enter description ...">
+    </div>
+    <button [disabled]="loading" class="btn btn-primary" (click)="addComplaiment()">
+      {{ complaiment == null ? 'Add' : 'Edit' }}
+    </button>
+    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+  </div>
+</div>

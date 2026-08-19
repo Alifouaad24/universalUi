@@ -89,6 +89,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Addresses/routes').then((m) => m.routes)
       },
       {
+        path: 'tech-info',
+        loadChildren: () => import('./views/TechInfo/routes').then((m) => m.routes)
+      },
+      {
         path: 'countries',
         loadChildren: () => import('./views/countries/routes').then((m) => m.routes)
       },
