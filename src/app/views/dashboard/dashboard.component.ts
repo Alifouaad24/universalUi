@@ -331,13 +331,14 @@ export class DashboardComponent implements OnInit {
       };
 
       this.http.posteData(
-        `Orders/AddDetailForOrder?orderId=${this.selectedOrder.globalOrderId}`,
+        `GlobalOrderDetails/AddDetailForOrder?orderId=${this.selectedOrder.globalOrderId}`,
         payload
       ).subscribe({
-        next: (res: any) => {
-          // ملاحظة: الـ Controller الحالي يرجّع Ok() فقط بدون الكائن الجديد
-          // لذلك أعيد تحميل الطلبات بالكامل لضمان تطابق البيانات
-          this.getTheGeistOrders();
+        next: (newDetail: any) => {   
+          if (!this.selectedOrder.globalOrderDetail) {
+            this.selectedOrder.globalOrderDetail = [];
+          }
+          this.selectedOrder.globalOrderDetail.push(newDetail);
 
           this.submittingComplaint = false;
           this.closeComplaintModal();
