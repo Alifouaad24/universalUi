@@ -627,8 +627,8 @@
             <thead class="text-nowrap text-truncate">
               <tr>
                 <th class="bg-body-tertiary text-center" style="width: 60px;"></th>
-                <th class="bg-body-tertiary">الزبون</th>
-                <th class="bg-body-tertiary text-center">عدد الطلبات</th>
+                <th class="bg-body-tertiary">Customer</th>
+                <th class="bg-body-tertiary text-center">Orders count</th>
               </tr>
             </thead>
             <tbody>
@@ -650,7 +650,7 @@
               } @empty {
               <tr>
                 <td colspan="3" class="text-center text-body-secondary py-4">
-                  لا توجد طلبات حالياً
+                  No Orders yet
                 </td>
               </tr>
               }
@@ -669,7 +669,7 @@
         @if (modalView === 'customerOrders') {
         {{ selectedCustomer?.customerName }}
         } @else {
-        تفاصيل الطلب رقم {{ selectedOrder?.globalOrderId }}
+        Order detail No: {{ selectedOrder?.globalOrderId }}
         }
       </h5>
       <button (click)="closeModal()" cButtonClose></button>
@@ -713,14 +713,14 @@
 
           <div>
             <c-badge [color]="getStatusColor(order.orderStatus)">
-              {{ order.orderStatus?.statusAr || order.orderStatus?.statusEn || 'غير محدد' }}
+              {{ order.orderStatus?.statusAr || order.orderStatus?.statusEn || '-' }}
             </c-badge>
           </div>
         </div>
         }
       </div>
       } @else {
-      <p class="text-center text-body-secondary py-3">لا توجد سجلات</p>
+      <p class="text-center text-body-secondary py-3">No records found</p>
       }
       }
 
@@ -729,7 +729,7 @@
       <div class="d-flex flex-column gap-3">
 
         <div class="border rounded p-2">
-          <div class="small text-body-secondary mb-1">الزبون</div>
+          <div class="small text-body-secondary mb-1">Customer</div>
           <div class="d-flex align-items-center">
             <c-avatar size="md" [src]="selectedOrder.customer?.customerImage || 'assets/images/avatars/default.png'"
               class="me-2" />
@@ -741,7 +741,7 @@
         </div>
 
         <div class="border rounded p-2">
-          <div class="small text-body-secondary mb-1">السيارة</div>
+          <div class="small text-body-secondary mb-1">Car</div>
           <div class="d-flex align-items-center">
             <img [src]="selectedOrder.carInfoTbl?.carBrand?.carBrandImgUrl || 'assets/images/brands/default.png'"
               style="max-width: 40px; max-height: 40px; object-fit: contain;" class="me-3" />
@@ -761,7 +761,7 @@
         <div class="row g-2">
           <div class="col-6">
             <div class="border rounded p-2 h-100">
-              <div class="small text-body-secondary">تاريخ الزيارة</div>
+              <div class="small text-body-secondary">Visit date</div>
               <div class="fw-semibold">
                 {{ (selectedOrder.schedule_dt || selectedOrder.insertDate) | date:'yyyy/MM/dd' }}
               </div>
@@ -769,7 +769,7 @@
           </div>
           <div class="col-6">
             <div class="border rounded p-2 h-100">
-              <div class="small text-body-secondary">وقت الزيارة</div>
+              <div class="small text-body-secondary">Visit time</div>
               <div class="fw-semibold">{{ selectedOrder.schedule_time || '—' }}</div>
             </div>
           </div>
@@ -777,10 +777,10 @@
 
         <div>
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-semibold">الخدمات ({{ selectedOrder.globalOrderDetail?.length || 0 }})</div>
+            <div class="fw-semibold">Services ({{ selectedOrder.globalOrderDetail?.length || 0 }})</div>
             <button cButton size="sm" color="danger" variant="outline" (click)="openComplaintModal(null)">
               <svg cIcon name="cilPlus" size="sm" class="me-1"></svg>
-              إضافة شكوى جديدة
+              Add new complaint
             </button>
           </div>
 
@@ -792,7 +792,7 @@
                 <div>
                   <div class="fw-semibold">{{ detail.service?.description }}</div>
                   <div class="small text-body-secondary">
-                    السعر: {{ detail.priceIQ ?? detail.priceDollar ?? detail.cost ?? '—' }}
+                    Cost: {{ detail.priceIQ ?? detail.priceDollar ?? detail.cost ?? '—' }}
                     @if (detail.discount) {
                     <span class="ms-2 text-danger">خصم: {{ detail.discount }}</span>
                     }
@@ -802,7 +802,7 @@
                   }
                 </div>
                 <c-badge [color]="getStatusColor(detail.orderStatus)">
-                  {{ detail.orderStatus?.statusAr || detail.orderStatus?.statusEn || 'غير محدد' }}
+                  {{ detail.orderStatus?.statusAr || detail.orderStatus?.statusEn || '-' }}
                 </c-badge>
               </div>
 
@@ -818,7 +818,7 @@
                 <div class="text-body-secondary">{{ detail.complaint?.complaint_Value?.description }}</div>
                 }
                 @if (detail.cause) {
-                <div class="mt-1"><strong>السبب:</strong> {{ detail.cause?.causeName }}</div>
+                <div class="mt-1"><strong>Cause:</strong> {{ detail.cause?.causeName }}</div>
                 }
               </div>
               }
@@ -826,20 +826,20 @@
               <div class="mt-2 d-flex justify-content-end">
                 <button cButton size="sm" [color]="detail.complaint ? 'warning' : 'danger'" variant="outline"
                   (click)="openComplaintModal(detail)">
-                  {{ detail.complaint ? 'تعديل الشكوى' : 'إضافة شكوى لهذه الخدمة' }}
+                  {{ detail.complaint ? 'Update complaint' : 'Add complaint for this service' }}
                 </button>
               </div>
             </div>
             }
           </div>
           } @else {
-          <p class="text-center text-body-secondary py-3">لا توجد خدمات مسجّلة لهذا الطلب</p>
+          <p class="text-center text-body-secondary py-3">No Details for this order</p>
           }
         </div>
 
         @if (selectedOrder.notes) {
         <div class="border rounded p-2">
-          <div class="small text-body-secondary">ملاحظات عامة</div>
+          <div class="small text-body-secondary">Notes</div>
           <div>{{ selectedOrder.notes }}</div>
         </div>
         }
@@ -862,70 +862,58 @@
     <c-modal-header>
       <h5 cModalTitle>
         {{ selectedDetail
-        ? (selectedDetail.complaint ? 'تعديل الشكوى — ' + selectedDetail.service?.description : 'إضافة شكوى — ' +
+        ? (selectedDetail.complaint ? ' Update complaint — ' + selectedDetail.service?.description : ' Add complaint — '
+        +
         selectedDetail.service?.description)
-        : 'إضافة شكوى جديدة' }}
+        : 'Add new complaint' }}
       </h5>
       <button (click)="closeComplaintModal()" cButtonClose></button>
     </c-modal-header>
 
     <c-modal-body>
+      <div class="mb-3">
+        <label class="form-label small">Complaint</label>
+        <select class="form-select" [(ngModel)]="newComplaint.complaintId" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null" disabled>select Complaint</option>
+          @for (type of comlaints; track type.complaintId) {
+          <option [ngValue]="type.complaintId">{{ type.complaint_Value.value }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small">Cause</label>
+        <select class="form-select" [(ngModel)]="newComplaint.causeId" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null" disabled>select Cause</option>
+          @for (cause of causes; track cause.causeId) {
+          <option [ngValue]="cause.causeId">{{ cause.causeName }}</option>
+          }
+        </select>
+      </div>
 
       <!-- select الخدمة: يظهر فقط عندما لا يوجد تفصيل موجود مسبقاً -->
       @if (!selectedDetail) {
       <div class="mb-3">
-        <label class="form-label small">الخدمة</label>
+        <label class="form-label small">Solution</label>
         <select class="form-select" [(ngModel)]="newComplaint.serviceId" [ngModelOptions]="{standalone: true}">
-          <option [ngValue]="null" disabled>اختر الخدمة</option>
+          <option [ngValue]="null" disabled>Select Solution</option>
           @for (service of services; track service.service_id) {
           <option [ngValue]="service.service_id">{{ service.description }}</option>
           }
         </select>
       </div>
       }
-
-      <div class="mb-3">
-        <label class="form-label small">نوع الشكوى</label>
-        <select class="form-select" [(ngModel)]="newComplaint.complaintTypeId" [ngModelOptions]="{standalone: true}">
-          <option [ngValue]="null" disabled>اختر نوع الشكوى</option>
-          @for (type of complaintTypes; track type.complaintTypeId) {
-          <option [ngValue]="type.complaintTypeId">{{ type.name }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small">القيمة</label>
-        <input type="text" class="form-control" placeholder="...." [(ngModel)]="newComplaint.value"
-          [ngModelOptions]="{standalone: true}" />
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small">التفاصيل</label>
-        <textarea class="form-control" rows="3" placeholder="اكتب تفاصيل الشكوى..."
-          [(ngModel)]="newComplaint.description" [ngModelOptions]="{standalone: true}"></textarea>
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small">السبب</label>
-        <select class="form-select" [(ngModel)]="newComplaint.causeId" [ngModelOptions]="{standalone: true}">
-          <option [ngValue]="null" disabled>اختر السبب</option>
-          @for (cause of causes; track cause.causeId) {
-          <option [ngValue]="cause.causeId">{{ cause.causeName }}</option>
-          }
-        </select>
-      </div>
     </c-modal-body>
 
     <c-modal-footer>
-      <button (click)="closeComplaintModal()" cButton color="secondary">إلغاء</button>
+      <button (click)="closeComplaintModal()" cButton color="secondary">Cancel</button>
       <button cButton color="danger"
-        [disabled]="!newComplaint.complaintTypeId || !newComplaint.causeId || (!selectedDetail && !newComplaint.serviceId) || submittingComplaint"
+        [disabled]="!newComplaint.complaintId || !newComplaint.causeId || (!selectedDetail && !newComplaint.serviceId) || submittingComplaint"
         (click)="submitComplaint()">
         @if (submittingComplaint) {
         <span class="spinner-border spinner-border-sm me-1"></span>
         }
-        حفظ الشكوى
+        Add
       </button>
     </c-modal-footer>
   </c-modal>

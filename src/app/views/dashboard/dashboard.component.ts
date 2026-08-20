@@ -71,7 +71,6 @@ interface Cause {
 }
 
 
-
 @Component({
   templateUrl: 'dashboard.component.html',
   styleUrls: ['dashboard.component.scss'],
@@ -107,12 +106,14 @@ export class DashboardComponent implements OnInit {
   services: any[] = [];
 
   newComplaint = {
-    serviceId: null as number | null,   // ← جديد
-    complaintTypeId: null as number | null,
-    value: '',
-    description: '',
+    serviceId: null as number | null,
+    complaintId: null as number | null,   // ← بدل complaintTypeId، لأنه الآن معرّف شكوى موجودة
     causeId: null as number | null,
   };
+
+  comlaints: any[] = [];
+
+
 
   modalVisible = false;
   modalView: 'customerOrders' | 'orderDetails' = 'customerOrders';
@@ -134,6 +135,7 @@ export class DashboardComponent implements OnInit {
         this.getComplaintTypes();
         this.getCauses();
         this.getServices();
+        this.getComlaints()
       }
       console.log(this.businessName)
     });
@@ -233,6 +235,7 @@ export class DashboardComponent implements OnInit {
 
   complaintTypes: ComplaintType[] = [];
   causes: Cause[] = [];
+
   submittingComplaint = false;
 
 
@@ -251,19 +254,22 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  getComlaints() {
+    this.http.getAllData('Complaint').subscribe((res: any) => {
+      this.comlaints = res;
+    });
+  }
+
 
   // فتح مودال إضافة/عرض شكوى لتفصيل (Detail) معيّن
   openComplaintModal(detail: any | null = null) {
     this.selectedDetail = detail;
     this.resetNewComplaintForm();
 
-    if (detail?.complaint) {
-      const existing = detail.complaint?.complaint_Value;
+    if (detail) {
       this.newComplaint = {
-        serviceId: detail.service?.service_id ?? null,
-        complaintTypeId: existing?.complaintTypeId ?? existing?.complaintType?.complaintTypeId ?? null,
-        value: existing?.value ?? '',
-        description: existing?.description ?? '',
+        serviceId: detail.service?.service_id ?? detail.service_id ?? null,
+        complaintId: detail.complaintId ?? detail.complaint?.complaintId ?? null,
         causeId: detail.causeId ?? detail.cause?.causeId ?? null,
       };
     }
@@ -278,31 +284,29 @@ export class DashboardComponent implements OnInit {
   }
 
   resetNewComplaintForm() {
-    this.newComplaint = { serviceId: null, complaintTypeId: null, value: '', description: '', causeId: null };
+    this.newComplaint = { serviceId: null, complaintId: null, causeId: null };
   }
-
 
 
   submitComplaint() {
     const hasExistingDetail = !!this.selectedDetail;
-    const requiredFieldsOk = this.newComplaint.complaintTypeId && this.newComplaint.causeId
-      && (hasExistingDetail || this.newComplaint.serviceId); // بدون detail، الخدمة إجبارية
+    const requiredFieldsOk = this.newComplaint.complaintId && this.newComplaint.causeId
+      && (hasExistingDetail || this.newComplaint.serviceId);
 
     if (!requiredFieldsOk || !this.selectedOrder) return;
 
     this.submittingComplaint = true;
 
     if (hasExistingDetail) {
-      // ------- الحالة القديمة: تفصيل موجود مسبقاً -------
+      // ------- تعديل تفصيل موجود -------
       const payload = {
-        complaintTypeId: this.newComplaint.complaintTypeId,
-        value: this.newComplaint.value,
-        description: this.newComplaint.description,
+        serviceId: this.newComplaint.serviceId,
         causeId: this.newComplaint.causeId,
+        complaintId: this.newComplaint.complaintId,
       };
 
-      this.http.posteData(
-        `GlobalOrderDetails/${this.selectedDetail.globalOrderDetailId}/AddComplaint`,
+      this.http.putData(
+        `Orders/EditDetailForOrder?orderDetailId=${this.selectedDetail.globalOrderDetailId}`,
         payload
       ).subscribe({
         next: (updatedDetail: any) => {
@@ -310,7 +314,6 @@ export class DashboardComponent implements OnInit {
             (d: any) => d.globalOrderDetailId === this.selectedDetail.globalOrderDetailId
           );
           if (idx > -1) this.selectedOrder.globalOrderDetail[idx] = updatedDetail;
-          else this.selectedOrder.globalOrderDetail.push(updatedDetail);
 
           this.submittingComplaint = false;
           this.closeComplaintModal();
@@ -319,25 +322,22 @@ export class DashboardComponent implements OnInit {
       });
 
     } else {
-      // ------- الحالة الجديدة: لا يوجد تفصيل، ننشئ واحداً مع الشكوى -------
+      // ------- إضافة تفصيل جديد -------
       const payload = {
-        globalOrderId: this.selectedOrder.globalOrderId,
         serviceId: this.newComplaint.serviceId,
-        complaintTypeId: this.newComplaint.complaintTypeId,
-        value: this.newComplaint.value,
-        description: this.newComplaint.description,
         causeId: this.newComplaint.causeId,
+        complaintId: this.newComplaint.complaintId,
+        globalOrderId: this.selectedOrder.globalOrderId,
       };
 
       this.http.posteData(
-        'GlobalOrderDetails/CreateWithComplaint',
+        `Orders/AddDetailForOrder?orderId=${this.selectedOrder.globalOrderId}`,
         payload
       ).subscribe({
-        next: (newDetail: any) => {
-          if (!this.selectedOrder.globalOrderDetail) {
-            this.selectedOrder.globalOrderDetail = [];
-          }
-          this.selectedOrder.globalOrderDetail.push(newDetail);
+        next: (res: any) => {
+          // ملاحظة: الـ Controller الحالي يرجّع Ok() فقط بدون الكائن الجديد
+          // لذلك أعيد تحميل الطلبات بالكامل لضمان تطابق البيانات
+          this.getTheGeistOrders();
 
           this.submittingComplaint = false;
           this.closeComplaintModal();
