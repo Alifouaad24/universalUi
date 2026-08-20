@@ -614,7 +614,11 @@
         </c-card-body>
       </c-card>
     </c-col>
-  </c-row>
+  </c-row> -->
+
+</div>
+
+<div *ngIf="businessName == 'The Geist '" class="col-12">
   <c-row>
     <c-col xs>
       <c-card class="mb-4">
@@ -622,53 +626,31 @@
           <table [hover]="true" [responsive]="true" [striped]="true" align="middle" cTable class="mb-0 border">
             <thead class="text-nowrap text-truncate">
               <tr>
-                <th class="bg-body-tertiary text-center ">
-                  <svg cIcon name="cilPeople"></svg>
-                </th>
-                <th class="bg-body-tertiary">User</th>
-                <th class="bg-body-tertiary text-center">Country</th>
-                <th class="bg-body-tertiary">Usage</th>
-                <th class="bg-body-tertiary text-center">Payment Method</th>
-                <th class="bg-body-tertiary">Activity</th>
+                <th class="bg-body-tertiary text-center" style="width: 60px;"></th>
+                <th class="bg-body-tertiary">الزبون</th>
+                <th class="bg-body-tertiary text-center">عدد الطلبات</th>
               </tr>
             </thead>
             <tbody>
-              @for (user of users; track user.name; let i = $index) {
-              <tr>
+              @for (group of groupedCustomers; track group.customerId) {
+              <tr (click)="openCustomerOrders(group)" style="cursor: pointer;">
                 <td class="text-center">
-                  <c-avatar size="md" src="{{ user.avatar }}" status="{{ user.status }}" />
+                  <c-avatar size="md" [src]="group.customerImage" />
                 </td>
                 <td>
-                  <div>{{ user.name }}</div>
+                  <div>{{ group.customerName }}</div>
                   <div class="small text-body-secondary text-nowrap">
-                    <span>
-                      {{ user.state }} | Registered: {{ user.registered }}
-                    </span>
+                    {{ group.customerMobile }}
                   </div>
                 </td>
                 <td class="text-center">
-                  <svg cIcon id="{{ user.country + user.name }}" name="cif{{ user.country }}" size="xl"
-                    title="{{ user.country }}"></svg>
+                  <c-badge color="info">{{ group.ordersCount }}</c-badge>
                 </td>
-                <td>
-                  <div class="d-flex justify-content-between">
-                    <div class="float-start">
-                      <strong>{{ user.usage }}%</strong>
-                    </div>
-                    <div class="float-end ms-1 text-nowrap">
-                      <small class="text-body-secondary">
-                        {{ user.period }}
-                      </small>
-                    </div>
-                  </div>
-                  <c-progress thin [value]="user.usage" color="{{ user.color }}" aria-label="Usage" />
-                </td>
-                <td class="text-center">
-                  <svg cIcon name="cibCc{{ user.payment }}" size="xl"></svg>
-                </td>
-                <td>
-                  <div class="small text-body-secondary">Last login</div>
-                  <div class="fw-semibold text-nowrap">{{ user.activity }}</div>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="3" class="text-center text-body-secondary py-4">
+                  لا توجد طلبات حالياً
                 </td>
               </tr>
               }
@@ -677,5 +659,277 @@
         </c-card-body>
       </c-card>
     </c-col>
-  </c-row> -->
+  </c-row>
+
+  <!-- المودال الموحّد: قائمة الطلبات + تفاصيل الطلب -->
+  <c-modal #mainModal [(visible)]="modalVisible" size="lg" (visibleChange)="!$event && closeModal()">
+
+    <c-modal-header>
+      <h5 cModalTitle>
+        @if (modalView === 'customerOrders') {
+        {{ selectedCustomer?.customerName }}
+        } @else {
+        تفاصيل الطلب رقم {{ selectedOrder?.globalOrderId }}
+        }
+      </h5>
+      <button (click)="closeModal()" cButtonClose></button>
+    </c-modal-header>
+
+    <c-modal-body>
+
+      <!-- ========== محتوى: قائمة طلبات الزبون ========== -->
+      @if (modalView === 'customerOrders') {
+      @if (selectedCustomer?.orders?.length) {
+      <div class="d-flex flex-column gap-2">
+        @for (order of selectedCustomer!.orders; track order.globalOrderId) {
+        <div (click)="openOrderDetails(order)" class="d-flex align-items-center border rounded p-2"
+          style="cursor: pointer;">
+          <div class="text-center me-3" style="width: 50px;">
+            <img [src]="order.carInfoTbl?.carBrand?.carBrandImgUrl || 'assets/images/brands/default.png'"
+              [alt]="order.carInfoTbl?.carBrand?.carBrandName"
+              style="max-width: 40px; max-height: 40px; object-fit: contain;" />
+          </div>
+
+          <div class="flex-grow-1">
+            <div class="fw-semibold">
+              {{ order.carInfoTbl?.carYear?.carYearNumber }}
+              {{ order.carInfoTbl?.carBrand?.carBrandName }}
+              {{ order.carInfoTbl?.carModel?.carModelName }}
+            </div>
+            <div class="small text-body-secondary">
+              VIN: {{ order.carInfoTbl?.vinNumber || '—' }}
+            </div>
+            <div class="small text-body-secondary text-nowrap">
+              <svg cIcon name="cilCalendar" size="sm" class="me-1"></svg>
+              {{ (order.schedule_dt || order.insertDate) | date:'yyyy/MM/dd' }}
+              @if (order.schedule_time) {
+              <span class="ms-2">
+                <svg cIcon name="cilClock" size="sm" class="me-1"></svg>
+                {{ order.schedule_time }}
+              </span>
+              }
+            </div>
+          </div>
+
+          <div>
+            <c-badge [color]="getStatusColor(order.orderStatus)">
+              {{ order.orderStatus?.statusAr || order.orderStatus?.statusEn || 'غير محدد' }}
+            </c-badge>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="text-center text-body-secondary py-3">لا توجد سجلات</p>
+      }
+      }
+
+      <!-- ========== محتوى: تفاصيل الطلب ========== -->
+      @if (modalView === 'orderDetails' && selectedOrder) {
+      <div class="d-flex flex-column gap-3">
+
+        <div class="border rounded p-2">
+          <div class="small text-body-secondary mb-1">الزبون</div>
+          <div class="d-flex align-items-center">
+            <c-avatar size="md" [src]="selectedOrder.customer?.customerImage || 'assets/images/avatars/default.png'"
+              class="me-2" />
+            <div>
+              <div class="fw-semibold">{{ selectedOrder.customer?.customerName }}</div>
+              <div class="small text-body-secondary">{{ selectedOrder.customer?.customerMobile }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border rounded p-2">
+          <div class="small text-body-secondary mb-1">السيارة</div>
+          <div class="d-flex align-items-center">
+            <img [src]="selectedOrder.carInfoTbl?.carBrand?.carBrandImgUrl || 'assets/images/brands/default.png'"
+              style="max-width: 40px; max-height: 40px; object-fit: contain;" class="me-3" />
+            <div>
+              <div class="fw-semibold">
+                {{ selectedOrder.carInfoTbl?.carYear?.carYearNumber }}
+                {{ selectedOrder.carInfoTbl?.carBrand?.carBrandName }}
+                {{ selectedOrder.carInfoTbl?.carModel?.carModelName }}
+              </div>
+              <div class="small text-body-secondary">
+                VIN: {{ selectedOrder.carInfoTbl?.vinNumber || '—' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="border rounded p-2 h-100">
+              <div class="small text-body-secondary">تاريخ الزيارة</div>
+              <div class="fw-semibold">
+                {{ (selectedOrder.schedule_dt || selectedOrder.insertDate) | date:'yyyy/MM/dd' }}
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="border rounded p-2 h-100">
+              <div class="small text-body-secondary">وقت الزيارة</div>
+              <div class="fw-semibold">{{ selectedOrder.schedule_time || '—' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="fw-semibold">الخدمات ({{ selectedOrder.globalOrderDetail?.length || 0 }})</div>
+            <button cButton size="sm" color="danger" variant="outline" (click)="openComplaintModal(null)">
+              <svg cIcon name="cilPlus" size="sm" class="me-1"></svg>
+              إضافة شكوى جديدة
+            </button>
+          </div>
+
+          @if (selectedOrder.globalOrderDetail?.length) {
+          <div class="d-flex flex-column gap-2">
+            @for (detail of selectedOrder.globalOrderDetail; track detail.globalOrderDetailId) {
+            <div class="border rounded p-2">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-semibold">{{ detail.service?.description }}</div>
+                  <div class="small text-body-secondary">
+                    السعر: {{ detail.priceIQ ?? detail.priceDollar ?? detail.cost ?? '—' }}
+                    @if (detail.discount) {
+                    <span class="ms-2 text-danger">خصم: {{ detail.discount }}</span>
+                    }
+                  </div>
+                  @if (detail.notes) {
+                  <div class="small text-body-secondary">{{ detail.notes }}</div>
+                  }
+                </div>
+                <c-badge [color]="getStatusColor(detail.orderStatus)">
+                  {{ detail.orderStatus?.statusAr || detail.orderStatus?.statusEn || 'غير محدد' }}
+                </c-badge>
+              </div>
+
+              @if (detail.complaint) {
+              <div class="alert alert-warning py-2 px-2 mt-2 mb-0 small">
+                <div class="fw-semibold">
+                  شكوى: {{ detail.complaint?.complaint_Value?.complaintType?.name }}
+                </div>
+                @if (detail.complaint?.complaint_Value?.value) {
+                <div>{{ detail.complaint?.complaint_Value?.value }}</div>
+                }
+                @if (detail.complaint?.complaint_Value?.description) {
+                <div class="text-body-secondary">{{ detail.complaint?.complaint_Value?.description }}</div>
+                }
+                @if (detail.cause) {
+                <div class="mt-1"><strong>السبب:</strong> {{ detail.cause?.causeName }}</div>
+                }
+              </div>
+              }
+
+              <div class="mt-2 d-flex justify-content-end">
+                <button cButton size="sm" [color]="detail.complaint ? 'warning' : 'danger'" variant="outline"
+                  (click)="openComplaintModal(detail)">
+                  {{ detail.complaint ? 'تعديل الشكوى' : 'إضافة شكوى لهذه الخدمة' }}
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <p class="text-center text-body-secondary py-3">لا توجد خدمات مسجّلة لهذا الطلب</p>
+          }
+        </div>
+
+        @if (selectedOrder.notes) {
+        <div class="border rounded p-2">
+          <div class="small text-body-secondary">ملاحظات عامة</div>
+          <div>{{ selectedOrder.notes }}</div>
+        </div>
+        }
+      </div>
+      }
+    </c-modal-body>
+
+    <c-modal-footer>
+      @if (modalView === 'orderDetails') {
+      <button (click)="backToCustomerOrders()" cButton color="secondary" variant="outline">رجوع</button>
+      }
+      <button (click)="closeModal()" cButton color="secondary">إغلاق</button>
+    </c-modal-footer>
+  </c-modal>
+
+  <!-- Add complaint -->
+
+  <c-modal #complaintModal [(visible)]="complaintModalVisible" size="sm"
+    (visibleChange)="!$event && closeComplaintModal()">
+    <c-modal-header>
+      <h5 cModalTitle>
+        {{ selectedDetail
+        ? (selectedDetail.complaint ? 'تعديل الشكوى — ' + selectedDetail.service?.description : 'إضافة شكوى — ' +
+        selectedDetail.service?.description)
+        : 'إضافة شكوى جديدة' }}
+      </h5>
+      <button (click)="closeComplaintModal()" cButtonClose></button>
+    </c-modal-header>
+
+    <c-modal-body>
+
+      <!-- select الخدمة: يظهر فقط عندما لا يوجد تفصيل موجود مسبقاً -->
+      @if (!selectedDetail) {
+      <div class="mb-3">
+        <label class="form-label small">الخدمة</label>
+        <select class="form-select" [(ngModel)]="newComplaint.serviceId" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null" disabled>اختر الخدمة</option>
+          @for (service of services; track service.service_id) {
+          <option [ngValue]="service.service_id">{{ service.description }}</option>
+          }
+        </select>
+      </div>
+      }
+
+      <div class="mb-3">
+        <label class="form-label small">نوع الشكوى</label>
+        <select class="form-select" [(ngModel)]="newComplaint.complaintTypeId" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null" disabled>اختر نوع الشكوى</option>
+          @for (type of complaintTypes; track type.complaintTypeId) {
+          <option [ngValue]="type.complaintTypeId">{{ type.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small">القيمة</label>
+        <input type="text" class="form-control" placeholder="...." [(ngModel)]="newComplaint.value"
+          [ngModelOptions]="{standalone: true}" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small">التفاصيل</label>
+        <textarea class="form-control" rows="3" placeholder="اكتب تفاصيل الشكوى..."
+          [(ngModel)]="newComplaint.description" [ngModelOptions]="{standalone: true}"></textarea>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small">السبب</label>
+        <select class="form-select" [(ngModel)]="newComplaint.causeId" [ngModelOptions]="{standalone: true}">
+          <option [ngValue]="null" disabled>اختر السبب</option>
+          @for (cause of causes; track cause.causeId) {
+          <option [ngValue]="cause.causeId">{{ cause.causeName }}</option>
+          }
+        </select>
+      </div>
+    </c-modal-body>
+
+    <c-modal-footer>
+      <button (click)="closeComplaintModal()" cButton color="secondary">إلغاء</button>
+      <button cButton color="danger"
+        [disabled]="!newComplaint.complaintTypeId || !newComplaint.causeId || (!selectedDetail && !newComplaint.serviceId) || submittingComplaint"
+        (click)="submitComplaint()">
+        @if (submittingComplaint) {
+        <span class="spinner-border spinner-border-sm me-1"></span>
+        }
+        حفظ الشكوى
+      </button>
+    </c-modal-footer>
+  </c-modal>
+
+
+
 </div>

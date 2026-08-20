@@ -81,6 +81,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/Features/routes').then((m) => m.routes)
       },
       {
+        path: 'causes',
+        loadChildren: () => import('./views/Causes/routes').then((m) => m.routes)
+      },
+      {
         path: 'business-types',
         loadChildren: () => import('./views/BusinessType/routes').then((m) => m.routes)
       },
