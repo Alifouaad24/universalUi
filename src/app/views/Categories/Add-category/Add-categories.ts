@@ -26,10 +26,14 @@ export class AddEditCategoryComponent implements OnInit {
   Businesses?: BusinessModel[] = [];
   isLoading: boolean = false
   selectedBusinessId?: number
+  selectedParentId?: number
+  selectedLinkedId?: number
+  Categories: any[] = [];
 
   constructor(private http: HttpConnectService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.getAllCategories()
     this.getAllBusinesses()
     this.route.queryParamMap.subscribe(params => {
       const countryFromQyery = params.get('Category')
@@ -58,14 +62,40 @@ export class AddEditCategoryComponent implements OnInit {
     this.cdr.detectChanges()
   }
 
+  getAllCategories() {
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Category/${businessId}`).subscribe(
+
+      (res: any) => {
+        console.log(res)
+        this.Categories = res
+        this.isLoading = false;
+
+        if(this.categoryForEdit){
+          this.selectedParentId = this.categoryForEdit.parentId
+          this.selectedLinkedId = this.categoryForEdit.linkedCategoryId
+        }
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
   addCategory() {
     this.loading = true
 
     var payload = {
-        Name: this.description,
-        ebayCategoryId: this.EbayCategryId,
-        business_id: this.selectedBusinessId
-      }
+      Name: this.description,
+      ebayCategoryId: this.EbayCategryId,
+      business_id: this.selectedBusinessId,
+      linkedCategoryId: this.selectedLinkedId,
+      parentId: this.selectedParentId
+    }
 
     if (this.categoryForEdit == null) {
       if (!this.description) {
@@ -74,7 +104,7 @@ export class AddEditCategoryComponent implements OnInit {
         return;
       }
 
-      
+
 
       this.http.posteData('Category', payload).subscribe(res => {
         this.router.navigate(['Home/categories'])

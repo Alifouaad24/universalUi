@@ -1,31 +1,29 @@
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div class="col-md-7">
-    <h2 class="mb-0 fw-bold">Tasks Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks}}
-        Task</small></h2>
+    <h2 class="mb-0 fw-bold">Orders Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks }}
+        Order</small></h2>
     <small class="text-muted">
-      Manage and track all system tasks
+      Manage and track all system orders
     </small>
   </div>
-
-
 
   <div class="d-flex justify-content-between col-md-3">
     <div>
       <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter" #filttered
         (change)="filterTasks(filttered.value)">
-        <option value="Unscheduled">Unscheduled</option>
-        <option value="Waiting response">Waiting response</option>
-        <option value="Testing">Testing</option>
+        <option value="All">All</option>
+        <option value="New">New</option>
+        <option value="On progress">On progress</option>
+        <option value="Completed">Completed</option>
         <option value="Closed">Closed</option>
       </select>
     </div>
     <button class="btn btn-primary shadow-sm" routerLink="./add-edit-feature">
       <i class="fas fa-plus me-2"></i>
-      Add task
+      Add order
     </button>
   </div>
-
 </div>
 
 <!-- Statistics -->
@@ -35,8 +33,8 @@
       <div class="card-body">
         <div class="d-flex justify-content-between">
           <div>
-            <h3>{{ features.length }}</h3>
-            <div>Total Features</div>
+            <h3>{{ orders.length }}</h3>
+            <div>Total Orders</div>
           </div>
           <i class="fas fa-layer-group fa-2x"></i>
         </div>
@@ -78,34 +76,28 @@
         <div class="d-flex justify-content-between">
           <div>
             <h3>{{ newCount }}</h3>
-            <div>New Features</div>
+            <div>New Orders</div>
           </div>
           <i class="fas fa-star fa-2x"></i>
         </div>
       </div>
     </div>
   </div>
-
 </div>
 
 <!-- Loading -->
 <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 300px">
-
-  <div class="spinner-border text-primary" role="status">
-  </div>
-
+  <div class="spinner-border text-primary" role="status"></div>
 </div>
 
 <!-- Error -->
 <div *ngIf="!isLoading && message" class="alert alert-danger">
-
   {{ message }}
-
 </div>
 
-<!-- Feature Cards -->
-<div *ngIf="!isLoading && features.length">
-  <div class="mb-3" *ngFor="let feature of features">
+<!-- Order Cards -->
+<div *ngIf="!isLoading && orders.length">
+  <div class="mb-3" *ngFor="let order of orders">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
         <div class="row align-items-center">
@@ -113,67 +105,88 @@
           <div class="col-lg-9">
             <div class="d-flex align-items-center mb-2">
               <span class="badge me-3" [ngClass]="{
-                'bg-success': feature.status === 'Completed',
-                'bg-warning text-dark': feature.status === 'On progress',
-                'bg-danger': feature.status === 'New',
-                'bg-info': feature.status === 'Testing',
-                'bg-secondary': feature.status === 'Unscheduled',
-                'bg-dark': feature.status === 'Waiting response' || feature.status === 'Closed',
-                
+                'bg-success': order.orderStatus?.statusEn === 'Completed',
+                'bg-warning text-dark': order.orderStatus?.statusEn === 'On progress',
+                'bg-danger': order.orderStatus?.statusEn === 'New',
+                'bg-secondary': order.orderStatus?.statusEn === 'Closed'
               }">
-                {{ feature.status }}
+                {{ order.orderStatus?.statusEn || 'Unknown' }}
               </span>
               <strong class="text-dark">
-                {{ feature.system?.globalSystemName }}
+                Order #{{ order.globalOrderId }}
               </strong>
             </div>
+
             <small class="text-muted d-block mb-1">
-              Description
+              Notes
             </small>
             <p class="mb-2">
               {{
-              (feature.body?.length ?? 0) > 150
-              ? (feature.body | slice:0:150) + '...'
-              : feature.body
+              (order.notes?.length ?? 0) > 150
+              ? (order.notes | slice:0:150) + '...'
+              : (order.notes || '—')
               }}
             </p>
-            <div class="d-flex gap-3">
+
+            <div class="d-flex gap-3 flex-wrap">
               <div>
-                <small class="text-muted">System</small>
-                <div><strong>{{ feature.system?.globalSystemName }}</strong></div>
+                <small class="text-muted">Details</small>
+                <div>
+                  <span class="badge bg-info">
+                    {{ order.globalOrderDetail?.length || 0 }}
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="order.assignerName">
+                <small class="text-muted">Assigner</small>
+                <div>
+                  <span class="badge bg-dark">
+                    <i class="fas fa-user-tag me-1"></i>{{ order.assignerName }}
+                  </span>
+                </div>
+              </div>
+
+              <div *ngIf="order.assigneeName">
+                <small class="text-muted">Assignee</small>
+                <div>
+                  <span class="badge bg-secondary">
+                    <i class="fas fa-user-check me-1"></i>{{ order.assigneeName }}
+                  </span>
+                </div>
               </div>
               <div>
                 <small class="text-muted">Comments</small>
                 <div>
                   <span class="badge bg-primary">
-                    {{ feature.comments?.length || 0 }}
+                    {{ order.comments?.length || 0 }}
                   </span>
                 </div>
               </div>
-              <div *ngIf="getUnReadComments(feature.comments) > 0">
+              <div *ngIf="getUnReadComments(order.comments) > 0">
                 <small class="text-muted">Un Read Comments</small>
                 <div>
                   <span class="badge bg-danger">
-                    {{ getUnReadComments(feature.comments) }}
+                    {{ getUnReadComments(order.comments) }}
                   </span>
                 </div>
               </div>
             </div>
           </div>
+
           <!-- Right Side (Buttons) -->
           <div class="col-lg-3 text-end">
-            <button class="btn btn-primary me-2" (click)="openEditModal(feature)">
+            <button class="btn btn-primary me-2" (click)="openEditModal(order)">
               <c-icon name="cil-pencil"></c-icon>
             </button>
-            <button class="btn btn-danger me-2" (click)="confirmDelete(feature)">
+            <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
               <c-icon name="cil-trash"></c-icon>
             </button>
-            <button *ngIf="feature.status === 'Completed'" class="btn btn-info"
-              (click)="SetStatusClosed(feature.featureId!)">
+            <button *ngIf="order.orderStatus?.statusEn === 'Completed'" class="btn btn-info"
+              (click)="SetStatusClosed(order.globalOrderId)">
               <c-icon name="cilCheck"></c-icon>
             </button>
-            <button *ngIf="feature.status === 'Testing'" class="btn btn-warning"
-              (click)="SetStatusComleted(feature.featureId!)">
+            <button *ngIf="order.orderStatus?.statusEn === 'On progress'" class="btn btn-warning"
+              (click)="SetStatusCompleted(order.globalOrderId)">
               <c-icon name="cilCheck"></c-icon>
             </button>
           </div>
@@ -184,24 +197,25 @@
 </div>
 
 <!-- Empty State -->
-<div *ngIf="!isLoading && !features.length" class="card border-0 shadow-sm">
+<div *ngIf="!isLoading && !orders.length" class="card border-0 shadow-sm">
   <div class="card-body text-center py-5">
     <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
-    <h5>No Features Found</h5>
+    <h5>No Orders Found</h5>
     <p class="text-muted">
-      There are no features available yet.
+      There are no orders available yet.
     </p>
   </div>
 </div>
 
+<!-- Delete Confirmation -->
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete {{ selectedType?.featureId }}?
+    Are you sure you want to delete order #{{ selectedOrder?.globalOrderId }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteFeature(selectedType)">Delete</button>
+    <button class="btn btn-danger" (click)="deleteOrder(selectedOrder)">Delete</button>
   </c-modal-footer>
 </c-modal>
 
@@ -210,7 +224,7 @@
   <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
     [autohide]="autoHideToast()" [delay]="3000">
     <c-toast-header>
-      Delete!
+      Notification
     </c-toast-header>
     <c-toast-body>
       <p>{{ toastMessage() }}</p>
@@ -219,37 +233,35 @@
   </c-toast>
 </c-toaster>
 
-<!--  Update Feature  -->
-
+<!-- Edit Order -->
 <c-modal [(visible)]="showEditModal" [size]="'xl'">
   <c-modal-header class="bg-primary text-white">
     <h5 cModalTitle class="mb-0">
       <i class="fas fa-edit me-2"></i>
-      Edit Feature
+      Edit Order #{{ selectedOrderId }}
     </h5>
   </c-modal-header>
 
   <c-modal-body>
 
-    <!-- Feature Details -->
+    <!-- Order Details (header info) -->
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-light">
         <h6 class="mb-0 text-dark">
           <i class="fas fa-info-circle me-2"></i>
-          Feature Details
+          Order Info
         </h6>
       </div>
 
       <div class="card-body">
         <div class="row">
 
-          <!-- Body -->
+          <!-- Notes -->
           <div class="col-md-12 mb-3">
             <label class="form-label fw-semibold">
-              Description
+              Notes
             </label>
-            <textarea rows="5" class="form-control" [(ngModel)]="body" name="body">
-            </textarea>
+            <textarea rows="4" class="form-control" [(ngModel)]="notes" name="notes"></textarea>
           </div>
 
           <!-- Status -->
@@ -257,47 +269,21 @@
             <label class="form-label fw-semibold">
               Status
             </label>
-
-            <select class="form-select" [(ngModel)]="status" name="status">
-
-              <option>Unscheduled</option>
+            <select class="form-select" [(ngModel)]="statusEn" name="statusEn">
               <option>New</option>
               <option>On progress</option>
-              <option>Waiting response</option>
-              <option>Testing</option>
               <option>Completed</option>
-
+              <option>Closed</option>
             </select>
           </div>
-
-          <!-- System -->
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">
-              System
-            </label>
-
-            <select class="form-select" [(ngModel)]="globalSystemId" name="globalSystemId">
-
-              <option *ngFor="let system of Systems" [value]="system.globalSystemId">
-
-                {{ system.globalSystemName }}
-
-              </option>
-
-            </select>
-          </div>
-
 
           <!-- Business -->
           <div class="col-md-6 mb-3">
             <label class="form-label fw-semibold">
               Business
             </label>
-
             <select class="form-select" [(ngModel)]="BusinessId" name="Business">
-
-              <option *ngFor="let bus of Businesses" [value]="bus.business_id">{{bus.business_name}}</option>
-
+              <option *ngFor="let bus of Businesses" [value]="bus.business_id">{{ bus.business_name }}</option>
             </select>
           </div>
 
@@ -306,19 +292,89 @@
             <label class="form-label fw-semibold">
               Service
             </label>
-
             <select class="form-select" [(ngModel)]="ServiceId" name="Service">
-
-              <option *ngFor="let ser of Services" [value]="ser.service_id">
-
-                {{ ser.description }}
-
-              </option>
-
+              <option *ngFor="let ser of Services" [value]="ser.service_id">{{ ser.description }}</option>
             </select>
           </div>
 
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Assigner</label>
+            <div class="form-control" style="cursor: default;">
+              <span *ngIf="selectedOrder?.assignerName; else noAssigner">
+                <i class="fas fa-user-tag me-1 text-muted"></i>
+                {{ selectedOrder?.assignerName }}
+                <small class="text-muted">({{ selectedOrder?.assignerType?.type }})</small>
+              </span>
+              <ng-template #noAssigner>
+                <span class="text-muted">Not assigned</span>
+              </ng-template>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Assignee</label>
+            <div class="form-control" style="cursor: default;">
+              <span *ngIf="selectedOrder?.assigneeName; else noAssignee">
+                <i class="fas fa-user-check me-1 text-muted"></i>
+                {{ selectedOrder?.assigneeName }}
+                <small class="text-muted">({{ selectedOrder?.assigneeType?.type }})</small>
+              </span>
+              <ng-template #noAssignee>
+                <span class="text-muted">Not assigned</span>
+              </ng-template>
+            </div>
+          </div>
+
         </div>
+      </div>
+    </div>
+
+    <!-- Order Item Details (GlobalOrderDetail[]) -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-dark">
+          <i class="fas fa-list me-2"></i>
+          Order Details
+        </h6>
+        <span class="badge bg-info">
+          {{ selectedOrder?.globalOrderDetail?.length || 0 }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div *ngIf="selectedOrder?.globalOrderDetail?.length; else noDetails" class="d-flex flex-column gap-2">
+          <div class="border rounded p-2" *ngFor="let detail of selectedOrder?.globalOrderDetail">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold">{{ detail.service?.description || 'Service #' + detail.service_id }}</div>
+                <div class="small text-muted">
+                  Cost: {{ detail.priceIQ ?? detail.priceDollar ?? detail.cost ?? '—' }}
+                  <span *ngIf="detail.discount" class="ms-2 text-danger">Discount: {{ detail.discount }}</span>
+                </div>
+                <div class="small text-muted" *ngIf="detail.notes">
+                  {{ detail.notes }}
+                </div>
+              </div>
+              <span class="badge" [ngClass]="'bg-' + getDetailStatusColor(detail)">
+                {{ detail.orderStatus?.statusEn || 'Unknown' }}
+              </span>
+            </div>
+
+            <div class="alert alert-warning py-2 px-2 mt-2 mb-0 small" *ngIf="detail.complaint">
+              <div class="fw-semibold">Complaint reported</div>
+              <div *ngIf="detail.cause">
+                <strong>Cause:</strong> {{ detail.cause?.causeName }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noDetails>
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-box-open fa-2x mb-2"></i>
+            <div>No details added to this order yet</div>
+          </div>
+        </ng-template>
       </div>
     </div>
 
@@ -385,8 +441,7 @@
       </div>
       <div class="card-body">
         <textarea class="form-control mb-3" rows="4" placeholder="Write your comment here..." [(ngModel)]="comment"
-          name="comment">
-        </textarea>
+          name="comment"></textarea>
         <button type="button" class="btn btn-primary" (click)="addComment()">
           <i class="fas fa-paper-plane me-2"></i>
           Add Comment
@@ -397,20 +452,14 @@
   </c-modal-body>
 
   <c-modal-footer class="border-0">
-
-    <button class="btn btn-light px-4" (click)="closeModal(selectedFeatureId!)">
-
+    <button class="btn btn-light px-4" (click)="closeModal()">
       <i class="fas fa-times me-2"></i>
       Cancel
-
     </button>
 
-    <button class="btn btn-success px-4" (click)="updateFeature(selectedFeatureId!)">
-
+    <button class="btn btn-success px-4" (click)="updateOrder(selectedOrderId!)">
       <i class="fas fa-save me-2"></i>
       Save Changes
-
     </button>
-
   </c-modal-footer>
 </c-modal>

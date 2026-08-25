@@ -1,15 +1,15 @@
 <div class="card-header mb-3 d-flex justify-content-between align-items-center">
-    <div class="">
-      Album
-    </div>
-    <div>
-      <select name="" id="" class="form-select form-select-sm" style="width: auto; display: inline-block;" #filterSelect
-        (change)="filterAlbum(filterSelect.value)" [(ngModel)]="selectedFilter">
-        <option value="All">All</option>
-        <option value="Unprocessed">Un processed</option>
-      </select>
-    </div>
+  <div class="">
+    Album
   </div>
+  <div>
+    <select name="" id="" class="form-select form-select-sm" style="width: auto; display: inline-block;" #filterSelect
+      (change)="filterAlbum(filterSelect.value)" [(ngModel)]="selectedFilter">
+      <option value="All">All</option>
+      <option value="Unprocessed">Un processed</option>
+    </select>
+  </div>
+</div>
 
 <c-card>
   <c-card-body>
@@ -23,8 +23,8 @@
         </div>
         <div class="text-center" *ngIf="isLoading">
           <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+            <span class="visually-hidden">Loading...</span>
+          </div>
         </div>
         <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let folder of groupedAlbums">
           <div style="cursor: pointer;" class="ratio ratio-1x1 rounded overflow-hidden cursor-pointer border"
@@ -41,6 +41,11 @@
                   class="position-absolute top-0 end-0 mt-1 p-2"
                   style="font-size:30px; background: rgba(0,0,0,0.5); color: #ab0202; cursor:pointer; z-index:10;">
                   <c-icon name="cil-trash"></c-icon>
+                </div>
+                <div *ngIf="shhowAddToInvBtn(folder)" (click)="ShowAddToInvModal(folder.folderId); $event.stopPropagation()"
+                  class="position-absolute top-0 start-0 pt-4"
+                  style="font-size:14px; background: rgb(139, 159, 132); color: #f30000; cursor:pointer; z-index:10;">
+                  <c-icon name="cilPlus"></c-icon> Inventory
                 </div>
               </div>
               <div class="m-1">folder-{{folder.folderId}}</div>
@@ -69,6 +74,10 @@
 <c-progress *ngIf="loadingService.loading | async" [value]="percentage()" max="100" animated>
   {{percentage()}}%
 </c-progress>
+
+
+
+
 
 <!-- image Modal -->
 <c-modal [(visible)]="modalVisible" size="xl" alignment="center">
@@ -113,7 +122,7 @@
         </div>
         <div class="col">
           <button class="btn btn-sm rounded bg-success" style="cursor: pointer;" (click)="SaveInInvAndItem()">
-           {{isLoading ? 'Saving...' : 'Save item' }}
+            {{isLoading ? 'Saving...' : 'Save item' }}
           </button>
         </div>
       </div>
@@ -132,9 +141,7 @@
           <div style="height: 80vh;" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)"
             (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
             <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
-              [canvasRotation]="rotation" [transform]="transform" format="png"
-              
-              (imageCropped)="onImageCropped($event)">
+              [canvasRotation]="rotation" [transform]="transform" format="png" (imageCropped)="onImageCropped($event)">
             </image-cropper>
           </div>&nbsp;
           <c-button class="btn btn-sm rounded bg-success m-1" color="primary" style="cursor: pointer;"
@@ -150,5 +157,82 @@
 
     <c-button color="secondary" style="cursor: pointer;" (click)="rotateImage()">Rotate</c-button>
     <c-button color="success" style="cursor: pointer;" (click)="saveCroppedImage()">Save crop</c-button>
+  </c-modal-footer>
+</c-modal>
+
+
+
+
+
+
+<!-- Add to Inventory Modal -->
+<c-modal [(visible)]="addToInvModalVisible" size="sm" alignment="center">
+  <c-modal-header>
+    <div class="d-flex justify-content-between">
+      <h5 class="mb-0">Add to Inventory</h5>
+    </div>
+  </c-modal-header>
+
+  <c-modal-body>
+    <div class="text-center mb-3" *ngIf="selectedFolderForInv">
+      <img *ngIf="selectedFolderForInv.images.length > 0" [src]="selectedFolderForInv.images[0].imageUrl"
+        style="width: 100px; height: 100px; object-fit: cover;" class="rounded border mb-2" />
+      <div class="text-muted small">
+        folder-{{ selectedFolderForInv.folderId }} | {{ selectedFolderForInv.images.length }} images
+      </div>
+    </div>
+    <br />
+    <div class="col">
+      <label class="form-label">Condition</label>
+      <select class="form-select" [(ngModel)]="conditionIdToAddToInv">
+        <option [ngValue]="null" disabled selected disabled>Item Condition</option>
+        <option *ngFor="let ic of itemConditions" [ngValue]="ic.itemConditionId">{{ic.description}}
+        </option>
+      </select>
+    </div>
+    <br />
+    <div class="col">
+      <label class="form-label">Category</label>
+      <select class="form-select" [(ngModel)]="CategorydToAddToInv">
+        <option [ngValue]="null" disabled selected disabled>Category</option>
+        <option *ngFor="let category of Categories" [ngValue]="category.category_id">{{category.name}}</option>
+      </select>
+    </div>
+    <br />
+    <div class="col">
+      <label class="form-label">Size</label>
+      <select class="form-select" [(ngModel)]="SizeIdToAddToInv">
+        <option [ngValue]="null" disabled selected disabled>Size</option>
+        <option *ngFor="let size of Sizes" [ngValue]="size.size_id">{{size.description}}</option>
+      </select>
+    </div>
+    <br />
+
+    <div class="col">
+      <label class="form-label">Platform</label>
+      <select class="form-select" [(ngModel)]="PlatformIdToAddToInv">
+        <option [ngValue]="null" disabled selected disabled>Platform</option>
+        <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}
+        </option>
+      </select>
+    </div>
+    <br />
+    <div class="mb-2">
+      <label class="form-label">Quantity</label>
+      <input type="number" min="1" class="form-control" [(ngModel)]="inventoryQuantity" placeholder="Enter quantity" />
+    </div>
+<br />
+    <div class="mb-2">
+      <label class="form-label">Inv Price</label>
+      <input type="number" min="1" class="form-control" [(ngModel)]="InvPrice" placeholder="Enter Inventory Price" />
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer class="justify-content-between">
+    <c-button color="secondary" style="cursor: pointer;" (click)="closeAddToInvModal()">Cancel</c-button>
+    <c-button color="success" style="cursor: pointer;" [disabled]="isSavingToInventory"
+      (click)="confirmAddToInventory()">
+      {{ isSavingToInventory ? 'Adding...' : 'Add to Inventory' }}
+    </c-button>
   </c-modal-footer>
 </c-modal>

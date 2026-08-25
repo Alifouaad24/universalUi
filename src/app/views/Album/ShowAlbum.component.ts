@@ -92,6 +92,11 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       'rgba(30, 204, 7, 0.5)' : 'rgba(0,0,0,0.5)';
   }
 
+  shhowAddToInvBtn(folder: { images: AlbumModel[] }): boolean {
+    const hasProcessed = folder.images.some(img => img.itemId);
+    return hasProcessed
+  }
+
   getCategories() {
     this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
       console.log(res)
@@ -133,6 +138,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
         this.allAlbums = (res as AlbumModel[]).map(el => new AlbumModel({
           userImagesId: el.userImagesId,
           imageUrl: el.imageUrl,
+          itemId: el.itemId,
           folderId: el.folderId,
           isProccessed: el.isProccessed
         }));
@@ -432,6 +438,10 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   }
 
   SaveInInvAndItem() {
+    if (!this.PlatformId) {
+      alert("please select Platform")
+      return
+    }
     this.isLoading = true;
     const imageUrls = this.folderImages.map(img => img.imageUrl);
     const payload = {
@@ -491,4 +501,68 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
     }
   }
 
+  addToInvModalVisible = false;
+  selectedFolderForInv: { folderId: number, images: AlbumModel[] } | null = null;
+  inventoryQuantity: number = 1;
+  isSavingToInventory = false;
+  PlatformIdToAddToInv?: number
+  SizeIdToAddToInv?: number
+  CategorydToAddToInv?: number
+  InvPrice?: number
+  conditionIdToAddToInv?: number
+
+
+  ShowAddToInvModal(folderId: number) {
+    const folder = this.groupedAlbums.find(f => f.folderId === folderId);
+    if (!folder) return;
+
+    this.selectedFolderForInv = folder;
+    this.inventoryQuantity = 1;
+    this.addToInvModalVisible = true;
+  }
+
+  closeAddToInvModal() {
+    this.addToInvModalVisible = false;
+    this.selectedFolderForInv = null;
+    this.inventoryQuantity = 1;
+  }
+
+  confirmAddToInventory() {
+    if (!this.selectedFolderForInv) return;
+
+    if (!this.inventoryQuantity || this.inventoryQuantity < 1) {
+      alert('Please enter a valid quantity');
+      return;
+    }
+
+    this.isSavingToInventory = true;
+
+    const imageUrls = this.selectedFolderForInv.images.map(img => img.imageUrl);
+
+    const payload = {
+      itemId: !this.selectedFolderForInv.images[0].itemId,
+      qty: this.inventoryQuantity,
+      businessId: Number(localStorage.getItem('businessId')),
+      platformId: this.PlatformIdToAddToInv,
+      invPrice: this.InvPrice,
+      sizeId: this.SizeIdToAddToInv,
+      categoryId: this.CategorydToAddToInv,
+      conditionId: this.conditionIdToAddToInv
+    };
+
+    // ⚠️ افتراض: عدّل اسم الـ endpoint حسب الفعلي عندك لإضافة الكمية للمخزون
+    this.http.posteData('Inventory/AddNewInvManual', payload).subscribe(
+      (res: any) => {
+        this.isSavingToInventory = false;
+        this.closeAddToInvModal();
+        this.toastMessage.set('Added to inventory successfully');
+        this.toastVisible.set(true);
+        this.getAlbum();
+      },
+      (error) => {
+        this.isSavingToInventory = false;
+        alert('Error adding to inventory');
+      }
+    );
+  }
 }

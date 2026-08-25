@@ -193,7 +193,7 @@ export class ShowInventoryComponent implements OnInit {
         }));
 
         this.tempInventory = [...this.inventory];
-        this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold') && !inv.status?.includes('Partially Sold'));
+        this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold'));
         this.isLoading = false;
         this.selectedFilter = 'All';
 
@@ -1575,7 +1575,7 @@ export class ShowInventoryComponent implements OnInit {
 
     this.http.getAllData(`Item/GetItemsFromItemTbl/${this.searchText}`).subscribe((res: any) => {
       console.log(res)
-      if(res.length == 0){
+      if (res.length == 0) {
         this.messsageEmpty = "No items matched"
         this.messsage = ''
         this.cdr.detectChanges()
@@ -1585,7 +1585,7 @@ export class ShowInventoryComponent implements OnInit {
       this.items = res
       this.cdr.detectChanges()
     }, (error) => {
-      
+
     })
   }
 
@@ -1617,10 +1617,34 @@ export class ShowInventoryComponent implements OnInit {
     }, (error) => {
       alert(error)
     })
+  }
 
+  decrisingQty = false;
+  selectedInvId?: number;
 
+  DecreaseQty(invId: number) {
+    this.selectedInvId = invId;
+    this.decrisingQty = true;
 
+    this.http.putData(`Inventory/DecreaseQty/${invId}`, {}).subscribe(
+      (res: any) => {
+        this.decrisingQty = false;
 
+        const item = this.inventory.find(t => t.inventory_id === invId); 
+        if (item) {
+          item.qty = Math.max(0, (item.qty ?? 0) - 1);
+        }
+
+        this.selectedInvId = undefined;
+        this.cdr.detectChanges();
+      },
+      (error) => {
+        this.decrisingQty = false;
+        this.selectedInvId = undefined;
+        this.cdr.detectChanges();
+        alert(error.message)
+      }
+    );
   }
 }
 

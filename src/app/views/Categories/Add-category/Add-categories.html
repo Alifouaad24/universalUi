@@ -17,10 +17,28 @@
     <label class="form-label d-block">Businesses</label>
 
     <select class="form-control" [(ngModel)]="selectedBusinessId">
-      <option *ngFor="let one of Businesses"  [value]="one.business_id">{{ one.business_name }}
+      <option *ngFor="let one of Businesses" [value]="one.business_id">{{ one.business_name }}
       </option>
     </select>
-    <br/>
+
+    <br />
+
+    <label class="form-label d-block">Parent</label>
+
+    <select class="form-control" [(ngModel)]="selectedParentId">
+      <option *ngFor="let one of Categories" [value]="one.category_id">{{ one.name }}
+      </option>
+    </select>
+    <br />
+    <label class="form-label d-block">Linked Category</label>
+
+    <select class="form-control" [(ngModel)]="selectedLinkedId">
+      <option *ngFor="let one of Categories" [value]="one.category_id">{{ one.name }}
+      </option>
+    </select>
+
+
+    <br />
     <button [disabled]="loading" class="btn btn-primary" (click)="addCategory()">
       {{ categoryForEdit == null ? 'Add' : 'Edit' }}
     </button>

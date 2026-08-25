@@ -44,7 +44,7 @@
       <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0">
         <!-- eBay link -->
         <div>
-          <a href="https://developer.ebay.com/DevZone/build-test/test-tool/default.aspx?index=0&env=production&api=browse&call=item_summary_search__GET&variation=json"
+          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production"
             target="_blank" class="text-decoration-none fw-semibold text-primary">
             🔗 Go to eBay
           </a>
@@ -154,6 +154,15 @@
                 class="btn btn-sm btn-primary mt-1" (click)="showMarketPlaceModal(type.inventory_id)">
                 {{ isChangeStatus ? 'Toggling...' : type?.isPublishedOnMarketPlace ? 'Published on market place' :
                 'Publish on market place' }}
+              </button>
+              <button class="btn btn-sm btn-danger mt-1 ms-1"
+                [disabled]="decrisingQty && selectedInvId === type?.inventory_id"
+                (click)="DecreaseQty(type!.inventory_id!)">
+                <span *ngIf="decrisingQty && selectedInvId === type?.inventory_id"
+                  class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span *ngIf="!(decrisingQty && selectedInvId === type?.inventory_id)">
+                  {{ type?.qty }}
+                </span>
               </button>
 
             </ng-container>
