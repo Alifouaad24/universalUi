@@ -18,7 +18,7 @@
           item{{ inventory.length !== 1 ? 's' : '' }}
         </div>
         <!-- Filter -->
-        <!-- <div *ngIf="currentBusinessName.includes('FHD')">
+        <div *ngIf="currentBusinessName.includes('FHD')">
           <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedFilter"
             (change)="filterInventory($event)">
             <option value="All">All</option>
@@ -39,18 +39,18 @@
             <option value="parcialSold">Partially Sold</option>
           </select>
         </div>
-      </div> -->
+      </div>
       <!-- RIGHT -->
-      <!-- <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0"> -->
+      <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0">
         <!-- eBay link -->
-        <!-- <div>
+        <div>
           <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production"
             target="_blank" class="text-decoration-none fw-semibold text-primary">
             🔗 Go to eBay
           </a>
-        </div> -->
+        </div>
         <!-- Login -->
-        <!-- <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
+        <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
           <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;"
             [ngClass]="{ 'd-none': isAuthInEbay }" />
           <button class="btn btn-sm"
@@ -61,8 +61,8 @@
           <button class="btn btn-info btn-sm" (click)="GetSoldItems()">
             {{ isLoading11 ? 'Retrieving...' : 'Get sold items' }}
           </button>
-        </div> -->
-      <!-- </div> -->
+        </div>
+      </div>
     </div>
 
   </div>
@@ -85,7 +85,7 @@
           <th style="width: 8%;">Price</th>
           <th style="width: 8%;">Qty In Store</th>
           <!-- <th style="width: 8%;">Published Qty</th> -->
-          <!-- <th style="width: 5%;">Folder</th> -->
+          <th style="width: 5%;">Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -105,7 +105,7 @@
           </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
-          <td><img 
+          <td><img (click)="ShowDetailsModal(type)"
               [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
               alt="Image" style="width: 60px; height: 75px;"></td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
@@ -117,7 +117,7 @@
           <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
           <!-- <td>{{ type.publishedQty }}</td> -->
-          <!-- <td>{{ type.folderImages }}</td> -->
+          <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
               <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 

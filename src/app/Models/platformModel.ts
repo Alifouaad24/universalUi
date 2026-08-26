@@ -3,6 +3,7 @@ export class PlatformModel {
     description: string = ''
     productUrl: string = ''
     productKey: string = ''
+    businessPlatforms: any
     
 
     constructor(init?: Partial<PlatformModel>){

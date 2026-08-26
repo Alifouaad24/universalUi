@@ -21,6 +21,7 @@ import { iconSubset } from '../../../icons/icon-subset';
 export class AddEditServiceComponent implements OnInit {
   description?: String;
   message: string = '';
+  parentId?: number 
   loading: boolean = false
   activities?: ActiviityModel[]
   businesses?: BusinessModel[]
@@ -29,9 +30,9 @@ export class AddEditServiceComponent implements OnInit {
   visibility: 'public' | 'local' = 'public';
   selectedIcon: string | null = null;
   businessServices: any[] = []
-
+  services: ServiceModel[] = [];
   icons: string[] = Object.keys(iconSubset);
-
+  isLoading: boolean = false;
   selectIcon(icon: string) {
     this.selectedIcon = icon;
     console.log('Selected icon:', icon);
@@ -43,6 +44,7 @@ export class AddEditServiceComponent implements OnInit {
   ngOnInit(): void {
     this.getAllActivities();
     this.getAllBusinesses();
+    this.getAllServices()
     this.route.queryParamMap.subscribe(param => {
       const serFromQuery = param.get('service')
       if (serFromQuery) {
@@ -59,6 +61,33 @@ export class AddEditServiceComponent implements OnInit {
 
 
     })
+  }
+
+  getAllServices() {
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Service/${businessId}`).subscribe(
+      (res: any) => {
+        console.log(res);
+        this.services = (res as any[]).map(item => new ServiceModel({
+          service_id: item.service_id,
+          description: item.description,
+          insert_on: item.insert_on,
+          service_icon: item.service_icon,
+          isPublic: item.isPublic,
+          business_Services: item.business_Services,
+          service_Activities: item.activity_Services
+        }));
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
   }
 
   getAllActivities() {
@@ -103,7 +132,8 @@ export class AddEditServiceComponent implements OnInit {
       "isPublic": this.visibility === 'public' ? true : false,
       "businessesId": this.selectedBusinessIds,
       "activitiesId": this.selectedActivityIds,
-      "service_icon": this.selectedIcon ?? ''
+      "service_icon": this.selectedIcon ?? '',
+      'parentId': this.parentId
     }
 
     console.log('Payload:', payLoad);

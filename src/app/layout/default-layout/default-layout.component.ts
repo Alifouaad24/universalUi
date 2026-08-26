@@ -105,13 +105,13 @@ export class DefaultLayoutComponent {
 
   }
   getAllServices() {
-    const businessId = localStorage.getItem('businessId')
+    const businessId = localStorage.getItem('businessId');
     this.http.getAllData(`Service/${businessId}`).subscribe(
       (res: any) => {
-        console.log(res);
         this.services = (res as any[]).map(item => new ServiceModel({
           service_id: item.service_id,
           description: item.description,
+          parentId: item.parentId,
           insert_on: item.insert_on,
           service_icon: item.service_icon,
           isPublic: item.isPublic,
@@ -119,6 +119,7 @@ export class DefaultLayoutComponent {
           service_Activities: item.activity_Services,
           service_Route: item.service_Route
         }));
+
         setTimeout(() => {
           const businessServiceIds = this.currBusiness.business_Services
             .map((bs: any) => bs.service_id);
@@ -127,36 +128,72 @@ export class DefaultLayoutComponent {
             businessServiceIds.includes(s.service_id)
           );
 
-          // this.navItems = this.services
-          //   .map((bs: any) => ({
-          //     name: bs.description,
-          //     url: bs.service_Route,
-          //     iconComponent: { name: bs.service_icon }
-          //   }));
-
-          this.navItems = this.services.map((bs: any) => ({
-            name: bs.description,
-            url: bs.service_Route,
-            iconComponent: { name: bs.service_icon },
-            attributes: {
-              'data-service-id': bs.service_id
-            },
-            ...(bs.description === 'eTask' && {
-              badge: {
-                color: 'danger',
-                text: this.taskCount.toString()
-              }
-            })
-          }));
+          // ← بناء الشجرة الهرمية بدل القائمة المسطحة
+          this.navItems = this.buildNavTree(this.services);
 
           this.cdr.detectChanges();
         }, 100);
         this.cdr.detectChanges();
       },
-      (err) => {
-      }
+      (err) => { }
     );
   }
+
+  // ---------------------------------------------------------------------
+  // بناء شجرة Parent/Children من القائمة المسطحة اعتماداً على parentId
+  // ---------------------------------------------------------------------
+  private buildNavTree(services: ServiceModel[]): INavData[] {
+    // مرحلة 1: أنشئ كل عنصر بشكله الأساسي بدون children بعد
+    const navMap = new Map<number, INavData & { children?: INavData[] }>();
+
+    services.forEach(s => {
+      navMap.set(s.service_id!, {
+        name: s.description! ?? '',
+        url: s.service_Route,
+        iconComponent: { name: s.service_icon },
+        attributes: {
+          'data-service-id': s.service_id
+        },
+        ...(s.description === 'eTask' && {
+          badge: {
+            color: 'danger',
+            text: this.taskCount.toString()
+          }
+        })
+      });
+    });
+
+    const roots: INavData[] = [];
+
+    // مرحلة 2: اربط كل عنصر بأبيه (لو موجود)، وإلا اعتبره Root
+    services.forEach(s => {
+      const navItem = navMap.get(s.service_id!)!;
+
+      if (s.parentId) {
+        const parentNav = navMap.get(s.parentId);
+
+        if (parentNav) {
+          if (!parentNav.children) {
+            parentNav.children = [];
+            // عنصر عنده أبناء → أزل الـ url منه، بحيث الضغط عليه
+            // يوسّع/يطوي فقط بدل ما ينتقل لشاشة
+            delete (parentNav as any).url;
+          }
+          parentNav.children.push(navItem);
+        } else {
+          // الأب غير موجود بقائمة الخدمات الحالية (مثلاً غير مفعّل بهالبزنس)
+          // نعتبره Root حتى ما يضيع
+          roots.push(navItem);
+        }
+      } else {
+        roots.push(navItem);
+      }
+    });
+
+    return roots;
+  }
+
+
 
   getStartSettings() {
     const businessId = localStorage.getItem('businessId')

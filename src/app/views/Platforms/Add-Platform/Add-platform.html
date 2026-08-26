@@ -1,0 +1,63 @@
+<!-- add-business-type.component.html -->
+<div class="card">
+  <div class="card-header">
+    {{isUpdate ? 'Edit' : 'Add'}} Platform
+  </div>
+  <div class="card-body">
+
+    <!-- Platform Name -->
+    <div class="mb-4">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="name" [(ngModel)]="name" placeholder="Enter platform name">
+    </div>
+
+    <!-- Business Linking -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold mb-2">Linked Businesses</label>
+
+      <div *ngIf="!Businesses?.length" class="text-muted small">
+        Loading businesses...
+      </div>
+
+      <div class="table-responsive" *ngIf="Businesses?.length">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr class="text-muted small">
+              <th style="width: 40px;"></th>
+              <th>Business</th>
+              <th class="text-center" style="width: 120px;">For Scraping</th>
+              <th class="text-center" style="width: 120px;">For Selling</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bus of Businesses">
+              <td>
+                <input type="checkbox" class="form-check-input" style="cursor: pointer;"
+                  [checked]="isBusinessSelected(bus.business_id)"
+                  (change)="toggleBusinessSelection(bus.business_id, $event)" />
+              </td>
+              <td>{{ bus.business_name }}</td>
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input" style="cursor: pointer;"
+                  [disabled]="!isBusinessSelected(bus.business_id)"
+                  [checked]="getSelection(bus.business_id)?.isForScrape"
+                  (change)="updateScrapeFlag(bus.business_id, $event)" />
+              </td>
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input" style="cursor: pointer;"
+                  [disabled]="!isBusinessSelected(bus.business_id)"
+                  [checked]="getSelection(bus.business_id)?.isForSell"
+                  (change)="updateSellFlag(bus.business_id, $event)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button [disabled]="loading" class="btn btn-primary" (click)="addPlatform()">
+      {{isUpdate ? 'Update' : 'Add'}} Platform
+    </button>
+    <div *ngIf="message" class="mt-3 alert alert-info">{{ message }}</div>
+  </div>
+</div>

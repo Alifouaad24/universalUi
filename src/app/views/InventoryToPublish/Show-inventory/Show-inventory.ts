@@ -1,0 +1,1685 @@
+import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
+
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import {
+  ButtonDirective,
+  ButtonGroupComponent,
+  ButtonToolbarComponent,
+  CardBodyComponent,
+  CardComponent,
+  CardHeaderComponent,
+  ColComponent,
+  DropdownComponent,
+
+  DropdownDividerDirective,
+  DropdownItemDirective,
+  DropdownMenuDirective,
+  DropdownToggleDirective,
+  FormCheckLabelDirective,
+  FormControlDirective,
+  InputGroupComponent,
+  InputGroupTextDirective,
+  ModalModule,
+  RowComponent,
+  ProgressComponent,
+
+  ToastBodyComponent,
+  ToastComponent,
+  ToasterComponent,
+  ToastHeaderComponent,
+  ButtonModule
+} from '@coreui/angular';
+import { HttpConnectService } from '../../../Services/http-connect.service';
+import { BusinessType } from '../../../Models/Business/BusinessType';
+import { CommonModule } from '@angular/common';
+import { IconModule } from '@coreui/icons-angular';
+import { Country } from '../../../Models/CountryModel';
+import { ServiceModel } from '../../../Models/ServiceModel';
+import { InventoryModel } from '../../../Models/InventoryModel';
+import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
+import { AppConstants } from '../../../shared/constant';
+import { StorageService } from '../../../core/Services/StorageService';
+import { BusinessModel } from '../../../Models/Business/BusinessModel';
+
+@Component({
+  selector: 'app-button-groups',
+  templateUrl: './Show-inventory.html',
+  imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule,
+    CardHeaderComponent, CardBodyComponent, ButtonGroupComponent,
+    ButtonDirective, ReactiveFormsModule,
+    FormCheckLabelDirective, ButtonToolbarComponent,
+    InputGroupComponent, InputGroupTextDirective, RouterLink, RouterOutlet,
+    FormControlDirective, DropdownComponent, FormsModule, CommonModule,
+    DropdownToggleDirective, DropdownMenuDirective,
+    DropdownItemDirective, DropdownDividerDirective,
+    ButtonDirective, ImageCropperComponent,
+    ProgressComponent,
+    ToasterComponent, ButtonModule,
+    ToastComponent,
+    ToastHeaderComponent,
+
+    ToastBodyComponent]
+})
+export class ShowInventoryComponent implements OnInit {
+
+  inventory: InventoryModel[] = [];
+  message?: string
+  selectedSource: string = 'homeDepot';
+  isLoading: boolean = false;
+  showScrapeModal: boolean = false;
+  showScrapeDutyModal: boolean = false;
+  selectedType?: InventoryModel;
+  ImagesUrlsFromScrape: string[] = [];
+  ///// for toastr ////////
+  position = 'top-end';
+  toastVisible = signal(false);
+  toastMessage = signal('');
+  percentage = signal(0);
+  autoHideToast = signal(true);
+  businessId?: number;
+  currentBusiness?: BusinessModel;
+  sourceCode: string = '';
+  priceFromScrape: string = '';
+  productNameFromScrape: string = '';
+  SizeId: number | null = null;
+  CategoryId: number | null = null;
+  Categories?: any[]
+  Sizes?: any[]
+  notFound: boolean = false;
+  notFoundMsg: string = 'Item not found. You can try to scrape it or set it as not found.';
+  tempInventory: InventoryModel[] = [];
+  skuToScrapeByAinAlfhd: string = '';
+  Msg: string = 'No results found for the provided SKU.';
+  showMsg: boolean = false;
+  SKUFOREDIT: string = '';
+  UPCFOREDIT: string = '';
+  isLoadingScrape = false;
+  CategoryIdForScrape?: number;
+  defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
+  height: string = ''
+  width: string = ''
+  length: string = ''
+  desc?: string
+  Model?: string
+  Internet?: string
+  Brand?: string
+  Dimention?: string
+  SKU?: string
+  weight: string = ''
+  DetailsModalVisible: boolean = false;
+  currentBusinessName: string = 'Business';
+  itemConditions?: any[]
+  ItemConditionId: number | null = null;
+  UPCFromScrape: string = '';
+  isAuthInEbay: boolean = false;
+  errorGetFromEbay = '';
+  selectedFiles: File[] = [];
+  loadingImages: boolean = false;
+  selectedEbayType: string = 'UPC';
+  QuantityItem: number = 0
+  BrandToEdit: string = ''
+  proccessedInInv: boolean = false
+
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
+    private storage: StorageService) { }
+
+  ngOnInit(): void {
+    this.isAuthInEbay = this.storage.getWithExpiry('ebayToken') != null ? true : false;
+
+    this.businessId = Number(localStorage.getItem('businessId'));
+    this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
+    console.log('Current MY Business:', this.currentBusiness);
+    this.currentBusinessName = this.currentBusiness?.business_name ?? 'Business';
+    this.getInventory()
+    this.getCategories()
+    this.getSizes()
+    this.getPlatforms()
+    this.getItemConditions()
+  }
+
+  getItemConditions() {
+    this.http.getAllData(`ItemCondition`).subscribe((res: any) => {
+      console.log(res)
+      this.itemConditions = res;
+    })
+  }
+
+  getCategories() {
+    this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Categories = res;
+    })
+  }
+
+  getSizes() {
+    this.http.getAllData('Size').subscribe((res: any) => {
+      console.log(res)
+      this.Sizes = res;
+    })
+  }
+
+
+  getInventory() {
+    this.isLoading = true;
+    this.http.getAllData(`Inventory/GetAllWhereReadyToPublish/${this.businessId}`).subscribe(
+      (res: any) => {
+        console.log(res);
+        this.inventory = (res as any[]).map(item => new InventoryModel({
+          inventory_id: item.inventory_id,
+          item: item.item,
+          platform: item.platform,
+          folderImages: item.folderImages,
+          size_id: item.size_id,
+          platform_id: item.platform_id,
+          category_id: item.category_id,
+          size: item.size,
+          sku: item.sku,
+          sitePrice: item.sitePrice,
+          ebayOfferID: item.ebayOfferID,
+          qty: item.qtyPublished,
+          publishedQty: item.qtyInInventory,
+          status: item.status,
+          category: item.category,
+          ebayListingId: item.ebayListingId,
+          notFound: item.notFound,
+          Product_name: item.product_name,
+          product_description: item.product_description,
+          itemCondition: item.itemCondition,
+          isProccessedInInventory: item.isProccessedInInventory,
+          isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
+        }));
+
+        this.tempInventory = [...this.inventory];
+        this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold'));
+        this.isLoading = false;
+        this.selectedFilter = 'All';
+
+        this.route.queryParams.subscribe(param => {
+          var filtter = param['filtter']
+          if (filtter)
+            this.filterDutyInventory(filtter);
+        })
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+  PlatformId: number | null = null;
+  Platforms?: any[]
+  getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+      if (this.Platforms && this.Platforms.length > 0) {
+        this.PlatformId = this.Platforms[0].platform_id;
+      }
+    })
+  }
+  platformToScrape?: string
+  platform?: string;
+  idItemForBindWithImages?: number;
+  fullFkuToScrapeByAinAlfhd?: string;
+  currentInventoryId?: number;
+  fullUPCToScrapeByAinAlfhd?: string
+  ShowScrape(itemId?: number, inventoryId?: number, platform?: string) {
+    this.platformToScrape = platform
+    console.log(platform);
+    if (platform == 'SHEIN') {
+      this.platform = platform;
+      this.showMsg = false
+      this.ImagesUrlsFromScrape = [];
+      this.idItemForBindWithImages = itemId;
+      this.fullFkuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || 'no sku';
+      this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.sku || '';
+
+      console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+      console.log('Selected Inventory ID for Scraping:', inventoryId);
+      this.currentInventoryId = inventoryId;
+      this.showScrapeModal = true;
+    } else if (platform == 'Home Depot' || 'Fergusonhome') {
+      this.showScrapeDutyModal = true;
+      this.showMsg = false
+      this.currentInventoryId = inventoryId;
+      this.ImagesUrlsFromScrape = [];
+      this.idItemForBindWithImages = itemId;
+      this.fullUPCToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.upc ?? 'no upc';
+      this.skuToScrapeByAinAlfhd = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.upc || 'no upc';
+      console.log('Selected Item ID for Scraping:', this.idItemForBindWithImages);
+      console.log('Selected Inventory ID for Scraping:', inventoryId);
+    }
+
+
+  }
+
+
+  // onVisibleChange(visible: boolean) {
+  //   this.showScrapeModal = false;
+  //   this.idItemForBindWithImages = undefined;
+  //   this.toastVisible.set(visible);
+  //   if (!visible) this.percentage.set(0);
+  // }
+  onVisibleChange(visible: boolean) {
+    this.toastVisible.set(visible);
+    if (!visible) this.percentage.set(0);
+  }
+
+  onTimerChange(value: number) {
+    this.percentage.set(value * 25);
+  }
+
+  getImagesFromScrape() {
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('htmlFile', file);
+    this.http.posteData(`Scraper/getImagesFromShein`, formData, true).subscribe(
+      (res: any) => {
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.productNameFromScrape = res.name;
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        if (err.status === 400) {
+          this.toastMessage.set('change shein website currency to $ USD and try again.');
+          console.error('Error scraping from Shein:', err.error);
+
+        } else {
+          this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        }
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  SaveImagesForItem() {
+    if (!this.idItemForBindWithImages) {
+      this.toastMessage.set('No item selected for binding images.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+
+    const payLoad = {
+      itemId: this.idItemForBindWithImages,
+      ImagesUrls: this.ImagesUrlsFromScrape
+    }
+
+    console.log('Payload for binding images:', payLoad);
+    this.http.posteData(`Item/BindImagesWithItem`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.AddPriceAndTitle()
+        this.toastMessage.set('Images successfully bound to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error binding images to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  AddPriceAndTitle() {
+    if (!this.currentInventoryId) {
+      this.toastMessage.set('No item selected for adding price and title.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    const payLoad = {
+      Price: this.priceFromScrape,
+      Title: this.productNameFromScrape,
+      categoryId: this.CategoryIdForScrape,
+    }
+
+    console.log('Payload for adding price and title:', payLoad);
+    this.http.putData(`Inventory/AddPriceTitleToInv/${this.currentInventoryId}`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.getInventory()
+        this.toastMessage.set('Price and title successfully added to the item.');
+        this.toastVisible.set(true);
+        this.priceFromScrape = '';
+        this.productNameFromScrape = '';
+        this.CategoryIdForScrape = undefined;
+        this.showScrapeModal = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error adding price and title to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+
+  showFactoryImagesModal = false;
+  factoryImages: string[] = [];
+
+
+
+  ShowFactoryImages(itemId?: number) {
+    const factoryImagesTemp = this.inventory.find(inv => inv.item?.itemId === itemId)?.item?.images || [];
+    this.factoryImages = factoryImagesTemp.map((img: any) => img.imageUrl);
+    console.log('Factory Images for Item ID', itemId, ':', this.factoryImages);
+    this.showFactoryImagesModal = true;
+
+  }
+
+  removeImage(index: number) {
+    this.ImagesUrlsFromScrape.splice(index, 1);
+  }
+
+  scrapeItemFromAinAlfhd() {
+    this.showMsg = false;
+    console.log('Scraping SKU from AinAlfhd:', this.skuToScrapeByAinAlfhd);
+    this.isLoadingScrape = true;
+    this.http.getAllData(`Item/getItemFromAinAlfhdDB/${this.skuToScrapeByAinAlfhd}`).subscribe(
+      (res: any) => {
+        this.isLoadingScrape = false;
+        this.ImagesUrlsFromScrape = res as string[];
+        console.log('Scraped Images from AinAlfhd:', this.ImagesUrlsFromScrape);
+        if (this.ImagesUrlsFromScrape.length == 0) {
+          this.showMsg = true
+          this.Msg = 'No results found for the provided SKU.';
+          this.cdr.detectChanges();
+        }
+        this.cdr.detectChanges();
+      }, (error) => {
+        this.isLoadingScrape = false;
+        console.error('Error scraping from AinAlfhd:', error);
+        this.showMsg = true
+        this.Msg = 'Error scraping from AinAlfhd. Please try again later.';
+        this.cdr.detectChanges();
+
+      }
+    );
+  }
+
+  removeImageFromDb(imageUrl: string) {
+    this.isLoading = true;
+    const imageName = imageUrl.substring(imageUrl.lastIndexOf('/') + 1);
+    this.http.deleteData(`ItemImages/${imageName}`).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.factoryImages = this.factoryImages.filter(url => url !== imageUrl);
+        this.inventory = this.inventory.map(inv => {
+          if (inv.item?.images) {
+            inv.item.images = inv.item.images.filter((img: any) => img.imageUrl !== imageUrl);
+          } return inv;
+        });
+        this.toastMessage.set('Image successfully removed from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error removing image from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  selectedFilter: string = 'All';
+  filterInventory(event: any) {
+    this.inventory = [...this.tempInventory];
+
+    const filterValue = event.target.value;
+    this.selectedFilter = filterValue;
+    if (filterValue === 'Unprocessed') {
+      this.inventory = this.inventory.filter(inv => !inv.item?.images || inv.item.images.length === 1 && !inv.notFound);
+    } else if (filterValue === 'NotFound') {
+      this.inventory = this.inventory.filter(inv => inv.notFound);
+    }
+    else {
+      this.inventory = [];
+      this.getInventory();
+      this.cdr.detectChanges();
+    }
+  }
+  selectedDutyFilter: string = 'All';
+
+  filterDutyInventory(event: string) {
+    this.inventory = [...this.tempInventory];
+
+    const filterValue = event;
+    this.selectedDutyFilter = filterValue;
+    if (filterValue === 'needUpdates') {
+      this.inventory = this.inventory.filter(inv => !inv.category == null ||
+        inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
+    } else if (filterValue === 'published') {
+      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
+    }
+    else if (filterValue === 'unpublished') {
+      this.inventory = this.inventory.filter(inv => inv.status == null && inv.isProccessedInInventory);
+    }
+    else if (filterValue === 'needScrape') {
+      this.inventory = this.inventory.filter(inv => !inv.isProccessedInInventory);
+    }
+    else if (filterValue === 'Sold') {
+      this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
+    }
+    else if (filterValue === 'parcialSold') {
+      this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
+    }
+    else if (filterValue === 'unpublishedOnMarketPlace') {
+      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory && !inv.isPublishedOnMarketPlace);
+    }
+    else {
+      this.inventory = [];
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+      this.getInventory();
+      this.cdr.detectChanges();
+    }
+    this.cdr.detectChanges();
+  }
+
+  setInvItemNotFound() {
+    if (!this.currentInventoryId) {
+      this.toastMessage.set('No item selected to set as not found.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    this.http.putData(`Inventory/${this.currentInventoryId}`, {}).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Item successfully set as not found.');
+        this.toastVisible.set(true);
+        this.inventory.map(inv => {
+          if (inv.inventory_id === this.currentInventoryId) {
+            inv.notFound = true;
+          } return inv;
+        });
+        this.currentInventoryId = undefined;
+        this.showScrapeModal = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error setting item as not found.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  PriceFOREDIT: string = '';
+  title: string = '';
+  descriptionToEdit: string = '';
+
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean) {
+    this.currentInventoryId = inventoryId;
+    this.SizeId = sizeId || null;
+    this.CategoryId = categoryId || null;
+    this.PlatformId = platformId || null;
+    this.SKUFOREDIT = sku || '';
+    this.QuantityItem = qty || 0
+    this.UPCFOREDIT = upc || '';
+    this.PriceFOREDIT = price || '';
+    this.BrandToEdit = brand || '';
+    this.proccessedInInv = isproccessed || false
+    this.title = title || ''
+    this.descriptionToEdit = description || ';'
+    this.showEditModal = true;
+  }
+
+
+  showEditModal = false;
+  EditInventoryItem() {
+    if (!this.currentInventoryId) {
+
+      this.toastMessage.set('No inventory item selected for editing.');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.isLoading = true;
+    const realPrice = this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT.replace(/\$/g, '') + '$' : undefined;
+    const payload = {
+      CategoryId: this.CategoryId,
+      SizeId: this.SizeId,
+      SKU: this.SKUFOREDIT,
+      upc: this.UPCFOREDIT,
+      price: realPrice,
+      platformId: this.PlatformId,
+      itemCondition: this.ItemConditionId,
+      title: this.title,
+      description: this.descriptionToEdit,
+      qty: this.QuantityItem,
+      isProccessedInInventory: this.proccessedInInv,
+      brand: this.BrandToEdit
+    };
+    console.log('Payload for editing inventory item:', payload);
+    this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Inventory item successfully updated.');
+        this.toastVisible.set(true);
+        this.showEditModal = false;
+        this.CategoryId = null;
+        this.SizeId = null;
+        this.SKUFOREDIT = '';
+        this.cdr.detectChanges();
+        this.getInventory();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error updating inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+  imagesForCurrentAlbum: string = '';
+  showAlbumImages() {
+    const albumImages = this.inventory.find(inv => inv.item?.itemId === this.idItemForBindWithImages)?.item?.images || [];
+    this.imagesForCurrentAlbum = albumImages[0]?.imageUrl || '';
+    this.openModal(this.imagesForCurrentAlbum);
+  }
+  modalVisible: boolean = false;
+  closeModal() {
+    this.modalVisible = false;
+  }
+
+  zoom = 1;
+  offsetX = 0;
+  offsetY = 0;
+  translateH = 0;
+  translateV = 0;
+  isDragging = false;
+  startX = 0;
+  startY = 0;
+  currentImageBase64: string = '';
+  croppedImage: string | null = null;
+  rotation = 0;
+
+  openModal(url: string) {
+    const imgUrl = url;
+    if (!imgUrl) return;
+
+    this.convertImageToBase64(imgUrl).then(base64 => {
+      this.currentImageBase64 = base64;
+      this.croppedImage = base64;
+      this.modalVisible = true;
+
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 0);
+    });
+  }
+
+  convertImageToBase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) reject('Cannot get canvas context');
+        ctx!.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = err => reject(err);
+      img.src = url;
+    });
+  }
+
+  transform = {
+    scale: this.zoom,
+    translateH: this.translateH,
+    translateV: this.translateV
+  };
+
+
+  updateTransform() {
+    this.transform = {
+      scale: this.zoom,
+      translateH: this.translateH,
+      translateV: this.translateV
+    };
+  }
+  onMouseDown(event: MouseEvent) {
+    this.isDragging = true;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+  }
+
+  onMouseMove(event: MouseEvent) {
+    if (!this.isDragging) return;
+
+    const dx = event.clientX - this.startX;
+    const dy = event.clientY - this.startY;
+
+    this.translateH += dx;
+    this.translateV += dy;
+
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+
+    this.updateTransform();
+  }
+
+  onMouseUp() {
+    this.isDragging = false;
+  }
+
+  zoomIn() {
+    this.zoom += 0.1;
+
+    this.updateTransform();
+  }
+
+  zoomOut() {
+    if (this.zoom == 1) return;
+    this.zoom = Math.max(0.1, this.zoom - 0.1);
+    this.updateTransform();
+  }
+
+  onImageCropped(event: ImageCroppedEvent) {
+    if (event.base64) {
+      this.croppedImage = event.base64;
+    } else if (event.blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.croppedImage = reader.result as string;
+      };
+      reader.readAsDataURL(event.blob);
+    }
+  }
+
+  rotateImage() {
+    console.log('rotate');
+    this.rotation = (this.rotation + 1) % 4;
+  }
+
+  getFromEbay() {
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      console.log('Source code is empty. Cannot scrape from eBay.');
+      this.cdr.detectChanges();
+      return;
+    }
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      this.isAuthInEbay = false;
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.isLoading = true;
+    this.http.getAllData(`Ebay/search-ebay-product/${token}/${this.sourceCode}`).subscribe(
+      (res: any) => {
+
+        console.log(res)
+        if (res.message) {
+          this.errorGetFromEbay = res.message;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.UPCFromScrape = this.sourceCode;
+        this.productNameFromScrape = res.title;
+        this.height = res.height ?? ''
+        this.width = res.width ?? ''
+        this.length = res.length ?? ''
+        this.desc = res.description ?? ''
+        this.weight = res.weight ?? ''
+        this.Model = res.mpn ?? ''
+        this.Internet = res.internet ?? ''
+        this.Brand = res.brand ?? ''
+        this.Dimention = res.dimention ?? ''
+        this.SKU = res.sKU ?? ''
+        this.sourceCode = '';
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+    this.isLoading = false;
+    this.cdr.detectChanges();
+
+  }
+
+  getImagesFromScrapeForDuty() {
+
+    if (this.platformToScrape == 'Fergusonhome') {
+      this.getImagesFromScrapeForDutyFromFergusonhome()
+      return
+    }
+    console.log('Selected Source for Scraping:', this.selectedSource);
+    if (this.selectedSource === 'ebay') {
+      this.errorGetFromEbay = '';
+      this.getFromEbay()
+      return
+    }
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('file', file);
+    this.http.posteData(`Scraper/HomeDepotFileHtmlAnalyse`, formData, true).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.UPCFromScrape = res.upc != "Does not Apply" ? res.upc : this.inventory.filter(el => el.inventory_id == this.idItemForBindWithImages)[0].item?.upc;
+        this.productNameFromScrape = res.title;
+        this.height = res.height
+        this.width = res.width
+        this.length = res.length
+        this.desc = res.desc
+        this.weight = res.weight
+        this.Model = res.model
+        this.Internet = res.internet
+        this.Brand = res.brand
+        this.Dimention = res.dimention
+        this.SKU = res.sku
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+    this.cdr.detectChanges();
+  }
+
+  getImagesFromScrapeForDutyFromFergusonhome() {
+    if (!this.sourceCode.trim()) {
+      this.toastMessage.set('Please paste the source code to scrape.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    var formData = new FormData();
+    var file = new File([this.sourceCode], 'sourceCode.html', { type: 'text/html' });
+    formData.append('htmlFile', file);
+    this.http.posteData(`Scraper/ScrapeByFergusonhomeHtml`, formData, true).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.sourceCode = '';
+        this.ImagesUrlsFromScrape = res.images as string[];
+        this.priceFromScrape = res.price;
+        this.UPCFromScrape = this.inventory.filter(el => el.inventory_id == this.idItemForBindWithImages)[0].item?.upc;
+        this.productNameFromScrape = res.title;
+        this.height = res.height
+        this.width = res.width
+        this.length = res.length
+        this.desc = res.desc
+        this.weight = res.weight
+        this.Model = res.model
+        this.Internet = res.internet
+        this.Brand = res.brand
+        this.Dimention = res.dimention
+        this.SKU = res.sku
+        console.log(this.ImagesUrlsFromScrape);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error scraping the source code. Please ensure it is valid HTML.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+    this.cdr.detectChanges();
+  }
+
+  SaveItemForDuty() {
+    if (!this.idItemForBindWithImages) {
+      this.toastMessage.set('No item selected for binding images.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+
+    const payLoad = {
+      itemId: this.idItemForBindWithImages,
+      ImagesUrls: this.ImagesUrlsFromScrape,
+      title: this.productNameFromScrape,
+      description: this.desc,
+      brand: this.Brand,
+      price: parseFloat(this.priceFromScrape) ?? 0,
+      height: parseFloat(this.height) ?? 0,
+      width: parseFloat(this.width) ?? 0,
+      length: parseFloat(this.length) ?? 0,
+      model: this.Model,
+      weight: parseFloat(this.weight) ?? 0,
+      internet: this.Internet,
+      sKU: this.SKU,
+      upc: this.UPCFromScrape,
+      currentInventoryId: this.currentInventoryId
+    }
+
+    console.log('Payload for binding images:', payLoad);
+    this.http.posteData(`Item/BindImagesWithItemForDuty`, payLoad).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        console.log('res: ', res);
+        this.toastMessage.set('Images successfully bound to the item.');
+        this.toastVisible.set(true);
+        this.showScrapeDutyModal = false
+        this.getInventory();
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error binding images to the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+  isDeleteingImages: boolean = false;
+  deleteSelectedImages() {
+    if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
+      this.toastMessage.set('Please select at least one image to delete.');
+      this.cdr.detectChanges();
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const imageNamesToDelete = this.selectedImagesToEbay.map(img => img.itemImageId);
+    console.log('Deleting selected images with IDs:', imageNamesToDelete);
+    this.isDeleteingImages = true;
+    this.http.putData(`Item/DeleteImages`, { imagesIds: imageNamesToDelete }).subscribe(
+      (res: any) => {
+        this.isDeleteingImages = false;
+        this.toastMessage.set('Selected images successfully deleted from the item.');
+        this.toastVisible.set(true);
+        this.selectedType!.item.images = this.selectedType?.item?.images.filter((img: any) => !this.selectedImagesToEbay.some(selImg => selImg.imageUrl === img.imageUrl));
+        this.selectedImagesToEbay = [];
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isDeleteingImages = false;
+        this.toastMessage.set('Error deleting selected images from the item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  ShowDetailsModal(inventory: InventoryModel) {
+    this.selectedImagesToEbay = [];
+    this.selectedType = inventory;
+    this.DetailsModalVisible = true;
+    inventory.item.images.map((el: any) => {
+      if (el.isPublishedOnEbay) {
+        this.selectedImagesToEbay.push(el)
+      }
+    })
+  }
+
+  selectedImagesToEbay: any[] = [];
+
+  toggleImage(image: any) {
+    const index = this.selectedImagesToEbay.findIndex(i => i.imageUrl === image.imageUrl);
+
+    if (index === -1) {
+      // إضافة
+      this.selectedImagesToEbay.push(image);
+    } else {
+      // حذف
+      this.selectedImagesToEbay.splice(index, 1);
+    }
+  }
+
+  // جلب رقم الصورة
+  getImageIndex(image: any): number {
+    return this.selectedImagesToEbay.findIndex(i => i.imageUrl === image.imageUrl) + 1;
+  }
+
+  // هل الصورة مختارة؟
+  isSelected(image: any): boolean {
+    return this.selectedImagesToEbay.some(i => i.imageUrl === image.imageUrl);
+  }
+
+  ///// Ebay /////////////////////////////////////
+  ///////////////////////////////////////////////
+  rePublishByEbay(product: any) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      this.isAuthInEbay = false;
+      this.toastMessage.set('Please login to publish the product on eBay.');
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+      console.log('Please login to publish the product on eBay.')
+      return;
+    }
+    this.PublishingByEbay = true;
+    const skuValue = product.item.sku && product.item.sku.trim() !== ''
+      ? product.item.sku
+      : this.generateUniqueSku();
+
+    const titleValue = product.Product_name
+      ? product.Product_name.substring(0, 80)
+      : 'Untitled Item';
+
+    const payload = {
+      'sku': skuValue,
+      'title': titleValue,
+      'description': product.product_description,
+      'brand': product.item.brand,
+      'quantity': Number(product.qty),
+      'condition': product.itemCondition?.description ?? 'NEW',
+      'imageUrls': (() => {
+        const imageUrls = this.selectedImagesToEbay.map(img => img.imageUrl);
+
+        while (imageUrls.length < 8) {
+          imageUrls.push(imageUrls[imageUrls.length - 1]);
+        }
+
+        return imageUrls;
+      })(),
+
+      'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
+      'currency': "USD",
+      'fulfillmentPolicyId': '373826822023',
+      'paymentPolicyId': '373648989023',
+      'returnPolicyId': '373648988023',
+      'categoryId': (product.category?.ebayCategoryId).toString(),
+      'upc': product.item.upc,
+      'ebayOfferID': product.ebayOfferID
+
+    };
+
+    console.log(payload)
+
+    this.http.putData(`Ebay/update-product/${token}`, payload).subscribe({
+      next: (res) => {
+        // this.toastr.success('تم نشر المنتج بنجاح');
+        this.toastMessage.set('Product republished successfully');
+        this.toastVisible.set(true);
+        product.status = "Auto Published"
+        this.PublishingByEbay = false;
+        console.error(res);
+      },
+      error: (err) => {
+        this.PublishingByEbay = false;
+        this.toastMessage.set('Error republishing product');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        alert('Error republishing product: ' + err.message);
+        console.error(err);
+      }
+    });
+
+  }
+
+  PublishingByEbay: boolean = false;
+
+  isLoading1: boolean = false;
+  generateUniqueSku(): string {
+    return 'SKU-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+
+  PublishByEbay(product: any) {
+
+    if (product.ebayOfferID && product.status?.trim()?.includes('Auto Published')) {
+      this.rePublishByEbay(product)
+      return
+    }
+
+    if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
+      this.toastMessage.set('Please select at least one image to publish the product on eBay.');
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+      return;
+    }
+    if (product.ebayInvID == null || product.ebayInvID == '') {
+      const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+      if (!token) {
+        this.isAuthInEbay = false;
+        // this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+        this.toastMessage.set('You must log in to eBay first');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        return;
+      }
+      this.isLoading1 = true;
+
+      const skuValue = product.item.sku && product.item.sku.trim() !== ''
+        ? product.item.sku
+        : this.generateUniqueSku();
+
+      const titleValue = product.Product_name
+        ? product.Product_name.substring(0, 80)
+        : 'Untitled Item';
+
+      const payload = {
+        'sku': skuValue,
+        'title': titleValue,
+        'description': product.product_description,
+        'brand': product.item.brand,
+        'quantity': Number(product.qty),
+        'condition': product.itemCondition?.description ?? 'NEW',
+        'imageUrls': (() => {
+          const imageUrls = this.selectedImagesToEbay.map(img => img.imageUrl);
+
+          while (imageUrls.length < 8) {
+            imageUrls.push(imageUrls[imageUrls.length - 1]);
+          }
+
+          return imageUrls;
+        })(),
+        'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
+        'currency': "USD",
+        'fulfillmentPolicyId': '373826822023',
+        'paymentPolicyId': '373648989023',
+        'returnPolicyId': '373648988023',
+        'categoryId': (product.category?.ebayCategoryId).toString(),
+        'upc': product.item.upc,
+        'ebayOfferID': product.ebayOfferID
+      };
+
+      console.log(payload)
+      this.PublishingByEbay = true;
+      this.http.posteData(`Ebay/publish-product/${token}`, payload).subscribe({
+        next: () => {
+          // this.toastr.success('تم نشر المنتج بنجاح');
+          this.toastMessage.set('Product published successfully');
+          this.toastVisible.set(true);
+          product.status = "Auto Published"
+          this.PublishingByEbay = false;
+          this.getInventory()
+          this.cdr.detectChanges();
+
+        },
+        error: (err) => {
+          this.PublishingByEbay = false;
+          console.error(err);
+          let errorMessage = 'Unknown error';
+          if (err.error) {
+            if (typeof err.error === 'string') {
+              errorMessage = err.error;
+            } else {
+              errorMessage = JSON.stringify(err.error, null, 2);
+            }
+          }
+          if (err.status === 400) {
+            alert(errorMessage);
+          }
+          this.toastMessage.set('Error republishing product');
+          this.toastVisible.set(true);
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      this.updateProductOnEbay(product)
+    }
+
+  }
+
+  updateProductOnEbay(product: any) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading1 = true;
+
+    const imageUrls: string[] = product.item.itemImages
+      .filter((img: any) => img.imageSourceLink && img.imageSourceLink.trim() !== '').slice(0, 7)
+      .map((img: any) => img.imageSourceLink);
+
+    const skuValue = product.item.sku && product.item.sku.trim() !== ''
+      ? product.item.sku
+      : this.generateUniqueSku();
+
+    const titleValue = product.item.engName
+      ? product.item.engName.substring(0, 80)
+      : 'Untitled Item';
+
+    const payload = {
+      'sku': skuValue,
+      'title': titleValue,
+      'description': product.product_description,
+      'brand': product.item.brand,
+      'quantity': Number(product.qty),
+      'condition': product.itemCondition?.description ?? 'NEW',
+      'imageUrls': this.selectedImagesToEbay.map(img => img.imageUrl),
+      'price': Number(product.sitePrice.replace('$', '').trim()) ?? product.item?.basePrice,
+      'currency': "USD",
+      'fulfillmentPolicyId': '373826822023',
+      'paymentPolicyId': '373648989023',
+      'returnPolicyId': '373648988023',
+      'categoryId': (product.category?.ebayCategoryId).toString(),
+      'upc': product.item.upc,
+      'ebayOfferID': product.ebayOfferID
+      /////////////////////////////////////////////
+    };
+
+    console.log(payload)
+
+    this.http.putData(`Ebay/update-product/${token}`, payload).subscribe({
+      next: () => {
+        this.isLoading1 = false;
+
+        // this.toastr.info('تم تعديل المنتج بنجاح');
+        this.toastMessage.set('Product updated successfully');
+        this.toastVisible.set(true);
+      },
+      error: (err) => {
+        this.isLoading1 = false;
+
+        // this.toastr.error('حدث خطأ أثناء تعديل المنتج الرجاء المحاولة مجددًا');
+        this.toastMessage.set('Error updating product');
+        this.toastVisible.set(true);
+        console.error(err);
+      }
+    });
+  }
+
+  loginingInToEbay = false;
+  LogInToEbayDiredty(token: string, inputElement: HTMLInputElement) {
+    this.loginingInToEbay = true;
+    this.http.posteData('Ebay/save-token', {
+      'accessToken': token
+    }).subscribe(res => {
+      console.log(res);
+      this.storage.setItem('ebayToken', res.tokenId, 1 * 60 * 60 * 1000) // localStorage.setItem('tokenId', res.tokenId);
+      this.toastMessage.set('Token stored successfully');
+      this.loginingInToEbay = false;
+      this.toastVisible.set(true);
+      inputElement.value = '';
+      this.isAuthInEbay = true;
+    }, (err) => {
+      this.toastMessage.set('Failed to store token, please try again');
+      this.loginingInToEbay = false;
+      this.toastVisible.set(true);
+      console.error(err);
+    })
+  }
+
+  countOfSoldItems: number = 0;
+  invIdsSoldOnEbay: { invId: number, qty: number }[] = [];
+  isLoading11: boolean = false;
+  soldItems: any[] = [];
+
+  GetSoldItems() {
+    const token = this.storage.getWithExpiry('ebayToken');
+    console.log('Retrieved eBay token:', token);
+
+    if (!token) {
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.isLoading11 = true;
+    this.http.getAllData(`Ebay/GetSoldItemsAsync/${token}`).subscribe((res: any) => {
+      this.soldItems = res
+      this.toastMessage.set('Sold items retrieved successfully');
+      this.toastVisible.set(true);
+
+      this.countOfSoldItems = res.filter((item: any) =>
+        this.isMatchedSku(item)
+      ).length;
+
+      this.invIdsSoldOnEbay = res.filter((item: any) =>
+        this.isMatchedSku(item)
+      ).map((item: any) => {
+        const matchingInv = this.inventory.find(inv => inv.item?.sku?.trim() != ''
+          && inv.item?.sku?.trim() != null
+          && inv.item?.sku?.trim() === item.sku?.trim());
+
+        return { invId: matchingInv?.inventory_id, qty: item.quantity };
+      });
+
+      this.showSoldPopup = true;
+      this.isLoading11 = false;
+      this.cdr.detectChanges();
+
+    }, (err) => {
+      this.isLoading11 = false;
+      this.toastMessage.set('Failed to retrieve sold items \n please login to eBay and try again');
+      this.toastVisible.set(true);
+    });
+  }
+  showSoldPopup = false;
+
+  markAsSold() {
+    console.log('Inventory IDs to mark as sold:', this.invIdsSoldOnEbay);
+    if (this.invIdsSoldOnEbay.length === 0) return;
+
+    this.http.putData('Inventory/SetRecordsSold', {
+      invIds: this.invIdsSoldOnEbay
+    })
+      .subscribe(() => {
+        this.toastMessage.set('Items updated successfully');
+        this.toastVisible.set(true);
+        this.showSoldPopup = false;
+
+      }, () => {
+        this.toastMessage.set('Error updating items');
+        this.toastVisible.set(true);
+      });
+  }
+
+
+  isMatchedSku(item: any): boolean {
+    return this.inventory.some(inv =>
+      inv.item?.sku?.trim() != '' && inv.item?.sku?.trim() != null
+      && inv.item?.sku?.trim() === item.sku?.trim()
+      && inv.status?.includes('Published')
+    );
+  }
+
+  DeleteInventoryItem(inventoryId?: number) {
+    if (!inventoryId) {
+      this.toastMessage.set('No inventory item selected for deletion.');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.isLoading = true;
+    this.http.deleteData(`Inventory/${inventoryId}`).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastVisible.set(true);
+        this.inventory = this.inventory.filter(inv => inv.inventory_id !== inventoryId);
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error deleting inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+  isChangeStatus = false
+
+  togglePublishStatusOnMarketPlase(id: number) {
+
+  }
+
+
+  copyText(text: string | undefined) {
+
+    if (!text) return;
+
+    navigator.clipboard.writeText(text);
+    this.toastMessage.set('Text copied successfully');
+    this.toastVisible.set(true);
+    this.cdr.detectChanges();
+
+  }
+
+  async downloadAllImages() {
+
+    const images =
+      this.selectedImagesToEbay;
+    if (!images?.length) {
+      return;
+    }
+    const upc =
+      this.selectedType?.item?.upc ??
+      'images';
+
+    const body = {
+      folderName: upc,
+      urls: images.map(
+        (x: any) => x.imageUrl
+      )
+    };
+
+    const response = await fetch(
+      'https://apxapi.somee.com/api/Inventory/download-images',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }
+    );
+
+    const blob = await response.blob();
+    saveAs(blob, `${upc}.zip`);
+  }
+  selctedInvId: number = 0
+  MarketPlaceOfferUrl: string = ''
+  showMarketPlacePopup: boolean = false
+  showMarketPlaceModal(id: number | undefined) {
+    this.selctedInvId = id ?? 0
+    this.showMarketPlacePopup = true
+  }
+
+  SetAsPublishedInMarketPlace() {
+    if (this.MarketPlaceOfferUrl.length == 0) {
+      return;
+    }
+
+    this.isChangeStatus = true;
+    var payLoad = {
+      id: this.selctedInvId,
+      url: this.MarketPlaceOfferUrl
+    }
+    this.http.putData(`Inventory/SetPublishOnMarketPlase`, payLoad).subscribe(
+      (res: any) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastVisible.set(true);
+        this.inventory.find(inv => inv.inventory_id == this.selctedInvId)!.isPublishedOnMarketPlace = res.status;
+        this.showMarketPlacePopup = false
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isChangeStatus = false;
+        this.toastMessage.set('Error deleting inventory item.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+
+  onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files) return;
+
+    this.selectedFiles = Array.from(input.files);
+
+    console.log(this.selectedFiles);
+  }
+
+  uploadImages(folderId: number) {
+    this.loadingImages = true;
+    const formData = new FormData();
+
+    this.selectedFiles.forEach(file => {
+      formData.append('Images', file);
+    });
+
+    formData.append('BusinessId', this.businessId?.toString() || '');
+    formData.append('FolderId', folderId.toString());
+
+    this.http.posteData('ImageUploader', formData, true).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.loadingImages = false;
+        window.location.reload();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error uploading images.');
+        this.loadingImages = false;
+      }
+    });
+  }
+
+  results: any[] = [];
+  loadingResults: boolean = false;
+  noDataFound: boolean = false;
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('imageFile', file);
+
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      //this.toastr.error("يجب تسجيل الدخول إلى eBay أولاً");
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+    this.results = [];
+    this.noDataFound = false;
+    this.loadingResults = true;
+    this.http.posteData(
+      `Ebay/SearchByImage/${token}`,
+      formData
+    ).subscribe({
+      next: (res) => {
+        if (!res || res.length === 0) {
+          this.noDataFound = true;
+          this.loadingResults = false;
+          return;
+        }
+        this.results = res;
+        this.loadingResults = false;
+        this.cdr.detectChanges();
+        console.log('RESULT:', res);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loadingResults = false;
+        this.noDataFound = true;
+        console.error('ERROR:', err);
+      }
+    });
+  }
+
+  selectItem(item: any) {
+    console.log('Selected item:', item);
+    this.cdr.detectChanges();
+  }
+
+
+  DeleteOffer(offerId: number) {
+    const token = this.storage.getWithExpiry('ebayToken') //localStorage.getItem('tokenId');
+    if (!token) {
+      this.toastMessage.set('You must log in to eBay first');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.http.deleteData(`Ebay/delete-ebay-offer/${token}/${offerId}`).subscribe({
+      next: (res) => {
+        this.toastMessage.set('Offer deleted successfully');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        window.location.reload();
+      },
+      error: (err) => {
+        this.toastMessage.set('Error deleting offer');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+        console.error('Error deleting offer:', err);
+      }
+    })
+  }
+
+  //////////////
+  showAddItemModal = false;
+  searchText = '';
+  items: any[] = [];
+  selectedItem: any = null;
+  price: number | null = null;
+  quantity: number = 1;
+  messsage = '';
+  messsageEmpty = '';
+
+  openAddItemModal() {
+    this.searchText = ''
+    this.showAddItemModal = true;
+  }
+
+
+  searchItems() {
+    this.messsage = 'Searching ...'
+    this.messsageEmpty = ''
+    this.cdr.detectChanges()
+    this.items = []
+    if (this.searchText.length < 2) {
+      this.items = [];
+      return;
+    }
+
+    this.http.getAllData(`Item/GetItemsFromItemTbl/${this.searchText}`).subscribe((res: any) => {
+      console.log(res)
+      if (res.length == 0) {
+        this.messsageEmpty = "No items matched"
+        this.messsage = ''
+        this.cdr.detectChanges()
+        return
+      }
+      this.messsage = ''
+      this.items = res
+      this.cdr.detectChanges()
+    }, (error) => {
+
+    })
+  }
+
+  selectItemFromDb(item: any) {
+    this.selectedItem = item;
+    this.searchText = item.name;
+    this.items = [];
+  }
+
+
+
+  saveItem() {
+    if (!this.selectedItem) {
+      alert("Please select item");
+      return;
+    }
+
+    let model = {
+      itemId: this.selectedItem.itemId,
+      invPrice: this.price,
+      qty: this.quantity,
+      sizeId: null,
+      PlatformId: null,
+      BusinessId: this.businessId
+    };
+
+    this.http.posteData('Inventory', model).subscribe(res => {
+      this.getInventory()
+    }, (error) => {
+      alert(error)
+    })
+  }
+
+  decrisingQty = false;
+  selectedInvId?: number;
+
+  DecreaseQty(invId: number) {
+    this.selectedInvId = invId;
+    this.decrisingQty = true;
+
+    this.http.putData(`Inventory/DecreaseQty/${invId}`, {}).subscribe(
+      (res: any) => {
+        this.decrisingQty = false;
+
+        const item = this.inventory.find(t => t.inventory_id === invId); 
+        if (item) {
+          item.qty = Math.max(0, (item.qty ?? 0) - 1);
+        }
+
+        this.selectedInvId = undefined;
+        this.cdr.detectChanges();
+      },
+      (error) => {
+        this.decrisingQty = false;
+        this.selectedInvId = undefined;
+        this.cdr.detectChanges();
+        alert(error.message)
+      }
+    );
+  }
+}
+
+
+
+// {
+//   "sku": "SKU-mrafm7ro-GSW2U6",
+//   "title": "Chapman and Myers Collection Wall Sconce In Brushed Nickel",
+//   "description": "Chapman and Myers Collection Wall Sconce In Brushed Nickel condition is new just opened box to inspect CHAPMAN & MYERS SUSSEX SMALL FRAMED SCONCE IN POLISHED NICKEL WITH ANTIQUE MIRROR WALL LIGHT W5\" X H12.25",
+//   "brand": "Visual Comfort",
+//   "quantity": 1,
+//   "condition": "NEW",
+//   "imageUrls": [
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783115049/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/mxyotluvospegc6s8zxe.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783139645/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/x8kmvadadsu1ghjbsq7p.jpg",
+// "https://i.ebayimg.com/images/g/sv8AAeSwjcxqGdYe/s-l1600.jpg",
+// "https://i.ebayimg.com/images/g/JFIAAeSwq~tqGdYf/s-l1600.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367569/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/pyqps0kzb7styxv9tts6.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg",
+// "https://res.cloudinary.com/dianvimfq/image/upload/v1783367572/users/681c26b2-62c6-4ae0-ab7c-3c851e91c3d6/qzxz5b3bzgtydrij2ox0.jpg"
+//   ],
+//   "price": 435,
+//   "currency": "USD",
+//   "fulfillmentPolicyId": "373826822023",
+//   "paymentPolicyId": "373648989023",
+//   "returnPolicyId": "373648988023",
+//   "categoryId": "116880",
+//   "ebayOfferID": "",
+//   "upc": "206311922305",
+// }
+
+
+
+
+
+
+

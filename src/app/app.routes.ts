@@ -44,7 +44,7 @@ export const routes: Routes = [
         path: 'album',
         loadChildren: () => import('./views/Album/routes').then((m) => m.routes)
       },
-            {
+      {
         path: 'systems',
         loadChildren: () => import('./views/Systems/routes').then((m) => m.routes)
       },
@@ -52,7 +52,7 @@ export const routes: Routes = [
         path: 'customers',
         loadChildren: () => import('./views/Customers/routes').then((m) => m.routes)
       },
-            {
+      {
         path: 'categories',
         loadChildren: () => import('./views/Categories/routes').then((m) => m.routes)
       },
@@ -87,6 +87,18 @@ export const routes: Routes = [
       {
         path: 'business-types',
         loadChildren: () => import('./views/BusinessType/routes').then((m) => m.routes)
+      },
+      {
+        path: 'publish',
+        loadChildren: () => import('./views/InventoryToPublish/routes').then((m) => m.routes)
+      },
+      {
+        path: 'active-list',
+        loadChildren: () => import('./views/ActiveList/routes').then((m) => m.routes)
+      },
+      {
+        path: 'platforms',
+        loadChildren: () => import('./views/Platforms/routes').then((m) => m.routes)
       },
       {
         path: 'allAddresses',

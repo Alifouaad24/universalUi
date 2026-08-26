@@ -65,6 +65,9 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   startX = 0;
   startY = 0;
   itemConditions?: any[]
+
+
+  addToInv = true
   ItemConditionId: number | null = null;
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute,
     public loadingService: LoadingService, private albumState: AlbumStateService,
@@ -453,7 +456,8 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       imageUrl: imageUrls,
       folderId: this.selectedFolderId,
       businessId: this.businessId,
-      itemConditionId: this.ItemConditionId
+      itemConditionId: this.ItemConditionId,
+      addToInv: this.addToInv
     }
 
     console.log(payload)

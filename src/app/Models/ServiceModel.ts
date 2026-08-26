@@ -1,5 +1,6 @@
 export class ServiceModel {
     service_id?: number
+    parentId?: number
     description?: String
     activiity?: any
     insert_on?: string
