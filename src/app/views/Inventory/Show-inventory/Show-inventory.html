@@ -136,11 +136,11 @@
               <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
                 <c-icon name="cil-trash"></c-icon>
               </button> -->
-              <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
+              <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
                 [disabled]="type.notFound">
                 Scrape item
-              </button> -->
+              </button>
               <!-- <button *ngIf="type.isProccessedInInventory" class="btn btn-sm btn-primary me-1"
                 (click)="ShowFactoryImages(type.item?.itemId)">
                 Show images
