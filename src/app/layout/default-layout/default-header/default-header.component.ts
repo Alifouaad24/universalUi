@@ -52,6 +52,8 @@ export class DefaultHeaderComponent extends HeaderComponent {
   currentBusiness: any;
   showCRMActions = false;
   showCountOfFolders = false;
+  showAddProductMethods = false
+  showAddFromProduct = false
   countOfFolders = computed(() =>
     this.albumState.countOfFolders().toString()
   );
@@ -76,6 +78,8 @@ export class DefaultHeaderComponent extends HeaderComponent {
           event.url.includes('/crm') || event.url.includes('/show-customers') || event.url.includes('/show-add-note')
 
         this.showCountOfFolders = event.url.includes('/album');
+        this.showAddProductMethods = event.url.includes('/products/add-edit-item');
+        this.showAddFromProduct = event.url.includes('/publish');
       }
     });
 

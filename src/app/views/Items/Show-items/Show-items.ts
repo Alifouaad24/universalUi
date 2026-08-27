@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import {
   ButtonDirective,
   ButtonGroupComponent,
@@ -67,18 +67,46 @@ export class ShowItemsComponent implements OnInit {
   toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
+  ForDropShipping: boolean = false
 
-
-  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
+  constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.getInventory()
+    this.route.queryParams.subscribe(params => {
+      var isDropShipping = params['dropShpping']
+      if (isDropShipping) {
+        this.ForDropShipping = true
+        this.getComplatedItems()
+      } else {
+        this.getItems()
+      }
+    })
+
   }
 
-  getInventory() {
+  getItems() {
     this.isLoading = true;
     const businessId = localStorage.getItem('businessId')
     this.http.getAllData(`Item/${businessId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.inventory = res;
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  getComplatedItems() {
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Item/CompatedItems/${businessId}`).subscribe(
       (res: any) => {
         console.log(res)
         this.inventory = res;
@@ -121,11 +149,11 @@ export class ShowItemsComponent implements OnInit {
     this.percentage.set(value * 25);
   }
 
-isItemModalVisible = false;
+  isItemModalVisible = false;
 
-openItemModal(item: any) {
-  this.selectedItem = item;
-  this.isItemModalVisible = true;
-}
+  openItemModal(item: any) {
+    this.selectedItem = item;
+    this.isItemModalVisible = true;
+  }
 
 }

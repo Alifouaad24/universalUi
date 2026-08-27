@@ -53,7 +53,7 @@ export class AddEditServiceComponent implements OnInit {
         this.description = this.serviceToEdit!.description!
         this.id = this.serviceToEdit!.service_id,
           this.visibility = this.serviceToEdit!.isPublic ? 'public' : 'local'
-        this.selectedIcon = this.serviceToEdit!.service_icon ?? null
+        this.selectedIcon = this.serviceToEdit!.service_icon ?? null 
         this.selectedBusinessIds = this.serviceToEdit!.business_Services!.map((b: any) => b.business_id!) || []
         this.selectedActivityIds = this.serviceToEdit!.service_Activities!.map((a: any) => a.activity_id!) || []
         this.businessServices = this.serviceToEdit!.business_Services || []
@@ -79,6 +79,8 @@ export class AddEditServiceComponent implements OnInit {
           service_Activities: item.activity_Services
         }));
         this.isLoading = false;
+
+        this.parentId = this.serviceToEdit!.parentId
 
         this.cdr.detectChanges();
       },

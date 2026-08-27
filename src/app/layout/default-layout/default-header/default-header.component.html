@@ -52,21 +52,21 @@
 
 
     <c-header-nav class="d-none d-md-flex justify-content-center">
-  <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
 
-    <!-- Baghdad -->
-    <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-3 border bg-body-tertiary">
-      <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
-           style="width: 28px; height: 28px;">
-        <svg cIcon name="cilClock" size="sm">B</svg>
+        <!-- Baghdad -->
+        <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-3 border bg-body-tertiary">
+          <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+            style="width: 28px; height: 28px;">
+            <svg cIcon name="cilClock" size="sm">B</svg>
+          </div>
+          <div class="d-flex flex-column lh-1">
+            <small class="text-muted fw-semibold mb-1" style="font-size: 13px;">Baghdad</small>
+            <span class="fw-bold " style="font-size: 16px;">{{ baghdadTime }}</span>
+          </div>
+        </div>
       </div>
-      <div class="d-flex flex-column lh-1">
-        <small class="text-muted fw-semibold mb-1" style="font-size: 13px;">Baghdad</small>
-        <span class="fw-bold " style="font-size: 16px;">{{ baghdadTime }}</span>
-      </div>
-    </div>
-  </div>
-</c-header-nav>
+    </c-header-nav>
 
     <c-header-nav class="d-none d-md-flex ms-auto ">
       <a cNavLink>
@@ -98,7 +98,6 @@
   <c-container [fluid]="true" class="px-4">
     <c-breadcrumb-router></c-breadcrumb-router>
     <div class="d-flex justify-content-between align-items-center">
-
       <!-- actions -->
       <div class="d-flex gap-2" *ngIf="showCRMActions">
         <a class="btn btn-outline-primary border border-0" [routerLink]="['/Home/crm/show-customers']">
@@ -112,6 +111,47 @@
           Customers notes
         </a>
 
+      </div>
+
+      <div class="d-flex gap-4" *ngIf="showAddProductMethods">
+        <a class="btn btn-outline-primary border border-0" [routerLink]="['/Home/products/add-edit-item']">
+          Manual
+        </a><span class="text-center mt-1" style="color: beige;">|</span>
+        <a class="btn btn-outline-success border border-0" [routerLink]="['/Home/scraper']">
+          Scraping
+        </a>
+        <span class="text-center mt-1" style="color: beige;">|</span>
+        <a class="btn btn-outline-info border border-0" [routerLink]="['/Home/album/album']"
+          [queryParams]="{ justScraped: 'justScraped' }">
+          Album
+        </a>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+
+      <div class="d-flex gap-4" *ngIf="showAddFromProduct">
+        <a class="btn btn-outline-primary border border-0" [routerLink]="['/Home/products']"
+          [queryParams]="{ dropShpping: true }">
+          Drop Shipping
+        </a>
+
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
       </div>
       <div class="d-flex gap-2" *ngIf="showCountOfFolders">
         <span class="text-muted">Count of folders: {{ countOfFolders() }}</span>

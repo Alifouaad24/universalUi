@@ -44,8 +44,8 @@
       <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0">
         <!-- eBay link -->
         <div>
-          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production"
-            target="_blank" class="text-decoration-none fw-semibold text-primary">
+          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production" target="_blank"
+            class="text-decoration-none fw-semibold text-primary">
             🔗 Go to eBay
           </a>
         </div>
@@ -105,7 +105,7 @@
           </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
-          <td><img (click)="ShowDetailsModal(type)"
+          <td><img (click)="ShowAllImages(type.item?.images)"
               [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
               alt="Image" style="width: 60px; height: 75px;"></td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
@@ -133,9 +133,9 @@
                 Go to album
               </a> -->
 
-              <!-- <button class="btn btn-sm btn-danger me-1" (click)="confirmDelete(type)">
-                <c-icon name="cil-trash"></c-icon>
-              </button> -->
+              <button class="btn btn-sm btn-info me-1" (click)="ShowDetailsModal(type)">
+                <c-icon name="cilTags"></c-icon>
+              </button>
               <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
                 [disabled]="type.notFound">
@@ -879,6 +879,44 @@
     </div>
   </div>
 </div>
+
+<!-- Images Gallery Modal -->
+<c-modal [(visible)]="imagesModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <h5 class="mb-0">Item Images</h5>
+    <button class="btn btn-sm btn-secondary" (click)="closeImagesModal()">✕</button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <!-- الصورة المكبّرة الحالية -->
+    <div class="text-center mb-3">
+      <img *ngIf="selectedImages[selectedImageIndex]"
+        [src]="selectedImages[selectedImageIndex].imageUrl"
+        class="rounded border"
+        style="max-width: 100%; max-height: 400px; object-fit: contain;" />
+    </div>
+
+    <!-- شريط الصور بسكرول أفقي -->
+    <div class="d-flex gap-2 overflow-auto pb-2" style="white-space: nowrap;">
+      <div *ngFor="let img of selectedImages; let i = index"
+        (click)="selectImage(i)"
+        class="flex-shrink-0"
+        style="cursor: pointer;">
+        <img [src]="img.imageUrl"
+          class="rounded border"
+          [style.border]="i === selectedImageIndex ? '3px solid #0d6efd' : '1px solid #dee2e6'"
+          style="width: 70px; height: 70px; object-fit: cover; transition: border 0.2s;" />
+      </div>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer class="justify-content-between">
+    <span class="text-muted small">
+      {{ selectedImageIndex + 1 }} / {{ selectedImages.length }}
+    </span>
+    <button class="btn btn-secondary" (click)="closeImagesModal()">Close</button>
+  </c-modal-footer>
+</c-modal>
 
 
 <!-- Add new inv manual -->

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, inject, Renderer2 } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { IconComponent, IconDirective } from '@coreui/icons-angular';
@@ -66,7 +66,8 @@ export class DefaultLayoutComponent {
   defaultBusinessLogo = AppConstants.DEFAULT_BUSINESS_LOGO;
 
   constructor(private businessCtx: BusinessContextService, private cdr: ChangeDetectorRef, private ebayService: StorageService,
-    private http: HttpConnectService, public loader: LoadingService) { }
+    private http: HttpConnectService, public loader: LoadingService, private elementRef: ElementRef,      // ← جديد
+    private renderer: Renderer2) { }
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
   user?: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -77,6 +78,26 @@ export class DefaultLayoutComponent {
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
     { name: 'auto', text: 'Auto', icon: 'cilContrast' }
   ];
+
+  private closeInitiallyOpenGroups() {
+  // ننتظر دورتين من الرندر: الأولى لبناء navItems، والثانية
+  // حتى تنتهي مكتبة CoreUI من إضافة كلاس 'show' على المجموعات المفتوحة
+  setTimeout(() => {
+    const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
+    if (!sidebarEl) return;
+
+    // كل مجموعة (Service أب) مفتوحة حالياً تحمل كلاس 'show'
+    const openGroups = sidebarEl.querySelectorAll('.nav-group.show');
+
+    openGroups.forEach((group: HTMLElement) => {
+      // العنصر القابل للنقر داخل كل مجموعة (الرابط اللي يفتح/يقفل)
+      const toggleLink = group.querySelector('.nav-link') as HTMLElement | null;
+      if (toggleLink) {
+        toggleLink.click();
+      }
+    });
+  }, 200); // تأخير كافٍ حتى يخلص Angular من رسم كل شيء
+}
 
 
   ngOnInit() {
@@ -132,6 +153,7 @@ export class DefaultLayoutComponent {
           this.navItems = this.buildNavTree(this.services);
 
           this.cdr.detectChanges();
+          this.closeInitiallyOpenGroups(); 
         }, 100);
         this.cdr.detectChanges();
       },

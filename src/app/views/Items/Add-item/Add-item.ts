@@ -187,6 +187,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     formData.append('ItemDetails', this.ItemDetails || '');
     formData.append('sku', this.sku || '');
     formData.append('upc', this.upc || '');
+    formData.append('businessId', localStorage.getItem('businessId')!)
     formData.append('InternetId', this.InternetId || '');
     if (this.BasePrice != null) formData.append('BasePrice', this.BasePrice.toString());
     if (this.CategoryId != null) formData.append('CategoryId', this.CategoryId.toString());
@@ -200,6 +201,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     if (this.Height != null) formData.append('Height', this.Height.toString());
     if (this.Width != null) formData.append('Width', this.Width.toString());
     if (this.Length != null) formData.append('Length', this.Length.toString());
+    
 
     // إرفاق ملفات الصور الفعلية — الاسم "Images" يطابق حقل ItemDto.Images
     this.selectedImages.forEach(img => {

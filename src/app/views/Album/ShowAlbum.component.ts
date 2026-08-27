@@ -79,7 +79,16 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
   Businesses?: any[]
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'));
-    this.getAlbum()
+    this.route.queryParams.subscribe(params => {
+      const justScraped = params['justScraped'];
+      if (justScraped) {
+        this.getAlbumToAddToInventory()
+        this.cdr.detectChanges();
+      } else {
+        this.getAlbum()
+      }
+    });
+
     this.getCategories()
     this.getSizes()
     this.getPlatforms()
@@ -159,6 +168,65 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
           }
           return acc;
         }, [] as { folderId: number, images: AlbumModel[] }[]);
+
+        this.filterAlbum('Unprocessed')
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        this.albumState.setCount(this.groupedAlbums.length);
+        this.route.queryParams.subscribe(params => {
+          const folderSelected = params['folderSelected'];
+          if (folderSelected) {
+            this.selectedFolderId = Number(folderSelected);
+            this.openFolder(this.selectedFolderId);
+            this.cdr.detectChanges();
+          }
+        });
+        this.route.queryParams.subscribe(params => {
+          const filtter = params['filtter'];
+          if (filtter) {
+            this.filterAlbum(filtter)
+            this.selectedFilter = filtter;
+            this.cdr.detectChanges();
+          }
+        });
+      },
+        (err) => {
+          this.isLoading = false;
+          this.message = 'Error loading data';
+          this.cdr.detectChanges();
+        });
+  }
+
+  getAlbumToAddToInventory() {
+    const businessId = localStorage.getItem('businessId');
+    this.isLoading = true;
+    this.http.getAllData(`ImageUploader/JustScraped/${businessId}`)
+      .subscribe((res: any) => {
+        console.log(res)
+        this.allAlbums = (res as AlbumModel[]).map(el => new AlbumModel({
+          userImagesId: el.userImagesId,
+          imageUrl: el.imageUrl,
+          itemId: el.itemId,
+          folderId: el.folderId,
+          isProccessed: el.isProccessed
+        }));
+
+        // Group by folderId
+        this.groupedAlbums = this.allAlbums.reduce((acc, curr) => {
+          const found = acc.find(x => x.folderId === curr.folderId);
+          if (found) {
+            found.images.push(curr);
+          } else {
+            acc.push({
+              folderId: curr.folderId!,
+              images: [curr]
+            });
+          }
+          return acc;
+        }, [] as { folderId: number, images: AlbumModel[] }[]);
+
+        this.filterAlbum('Unprocessed')
 
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -457,7 +525,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
       folderId: this.selectedFolderId,
       businessId: this.businessId,
       itemConditionId: this.ItemConditionId,
-      addToInv: this.addToInv
+      addToInv: this.addToInv,
     }
 
     console.log(payload)

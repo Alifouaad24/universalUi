@@ -552,24 +552,17 @@ SaveIngItemInDB: boolean = false
       internetId: this.internet ?? null,
       upc: this.upc ?? null,
       model: this.model ?? null,
-
       platformId: this.platformId ? Number(this.platformId) : null,
-
       height: this.height ? Number(this.height) : null,
       width: this.width ? Number(this.width) : null,
       length: this.length ? Number(this.length) : null,
-
       unitId: this.unitId ?? null,
       unitValue: this.unitId ?? null,
-
       colorId: this.colorId ?? null,
       sizeId: this.sizeId ?? null,
       categoryId: this.categoryId ?? null,
-
       basePrice: Number(this.price ?? 0),
-
       currencyId: this.currencyId ?? null,
-
       images: this.imgUrl ?? []
     };
 

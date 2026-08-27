@@ -1630,7 +1630,7 @@ export class ShowInventoryComponent implements OnInit {
       (res: any) => {
         this.decrisingQty = false;
 
-        const item = this.inventory.find(t => t.inventory_id === invId); 
+        const item = this.inventory.find(t => t.inventory_id === invId);
         if (item) {
           item.qty = Math.max(0, (item.qty ?? 0) - 1);
         }
@@ -1645,6 +1645,27 @@ export class ShowInventoryComponent implements OnInit {
         alert(error.message)
       }
     );
+  }
+
+  imagesModalVisible = false;
+  selectedImages: any[] = [];
+  selectedImageIndex = 0;
+
+  ShowAllImages(images: any[] | undefined) {
+    if (!images || images.length === 0) return;
+
+    this.selectedImages = images;
+    this.selectedImageIndex = 0;
+    this.imagesModalVisible = true;
+  }
+
+  closeImagesModal() {
+    this.imagesModalVisible = false;
+    this.selectedImages = [];
+  }
+
+  selectImage(index: number) {
+    this.selectedImageIndex = index;
   }
 }
 

@@ -105,7 +105,7 @@
           </td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
-          <td><img 
+          <td><img (click)="ShowAllImages(type.item?.images)"
               [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
               alt="Image" style="width: 60px; height: 75px;"></td>
           <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
@@ -786,6 +786,45 @@
   <c-modal-footer class="justify-content-between">
   </c-modal-footer>
 </c-modal>
+
+<!-- Images Gallery Modal -->
+<c-modal [(visible)]="imagesModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <h5 class="mb-0">Item Images</h5>
+    <button class="btn btn-sm btn-secondary" (click)="closeImagesModal()">✕</button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <!-- الصورة المكبّرة الحالية -->
+    <div class="text-center mb-3">
+      <img *ngIf="selectedImages[selectedImageIndex]"
+        [src]="selectedImages[selectedImageIndex].imageUrl"
+        class="rounded border"
+        style="max-width: 100%; max-height: 400px; object-fit: contain;" />
+    </div>
+
+    <!-- شريط الصور بسكرول أفقي -->
+    <div class="d-flex gap-2 overflow-auto pb-2" style="white-space: nowrap;">
+      <div *ngFor="let img of selectedImages; let i = index"
+        (click)="selectImage(i)"
+        class="flex-shrink-0"
+        style="cursor: pointer;">
+        <img [src]="img.imageUrl"
+          class="rounded border"
+          [style.border]="i === selectedImageIndex ? '3px solid #0d6efd' : '1px solid #dee2e6'"
+          style="width: 70px; height: 70px; object-fit: cover; transition: border 0.2s;" />
+      </div>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer class="justify-content-between">
+    <span class="text-muted small">
+      {{ selectedImageIndex + 1 }} / {{ selectedImages.length }}
+    </span>
+    <button class="btn btn-secondary" (click)="closeImagesModal()">Close</button>
+  </c-modal-footer>
+</c-modal>
+
 
 
 <div *ngIf="showSoldPopup" class="modal fade show d-block">
