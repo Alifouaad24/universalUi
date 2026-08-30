@@ -1,7 +1,7 @@
 <!-- Add-item.html -->
 <div class="card">
   <div class="card-header row justify-content-between align-items-center col-md-12 mx-1">
-    <p class="col-md-2 mb-0">Add new item</p>
+    <p class="col-md-2 mb-0">{{ isEditMode ? 'Edit item' : 'Add new item' }}</p>
     <p *ngIf="message" class="alert alert-info col-md-6 mb-0">{{ message }}</p>
   </div>
 
@@ -138,9 +138,24 @@
         <input type="number" step="0.01" class="form-control" [(ngModel)]="Length" placeholder="0.00">
       </div>
 
-      <!-- Images -->
+      <!-- Current Images (Edit mode only) -->
+      <div class="col-md-9" *ngIf="isEditMode && existingImages.length > 0">
+        <label class="form-label">Current Images</label>
+        <div class="d-flex flex-wrap gap-2 border rounded p-3 bg-body-tertiary">
+          <div class="position-relative" style="width: 90px;" *ngFor="let img of existingImages">
+            <img [src]="img.imageUrl" class="rounded border w-100" style="height: 90px; object-fit: cover;" />
+            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle"
+              style="width: 22px; height: 22px; padding: 0; line-height: 1; font-size: 12px; transform: translate(30%, -30%);"
+              (click)="removeExistingImage(img)">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images (new uploads) -->
       <div class="col-md-9">
-        <label class="form-label">Images</label>
+        <label class="form-label">{{ isEditMode ? 'Add More Images' : 'Images' }}</label>
 
         <div class="border rounded p-3 bg-body-tertiary">
           <input #fileInput type="file" accept="image/*" multiple class="d-none" (change)="onFilesSelected($event)" />
@@ -177,8 +192,8 @@
 
     <hr class="my-4" />
 
-    <button [disabled]="loading" class="btn btn-primary" (click)="AddItem()">
-      {{ loading ? 'Saving...' : 'Add To Inventory' }}
+    <button [disabled]="loading" class="btn btn-primary" (click)="isEditMode ? UpdateItem() : AddItem()">
+      {{ loading ? 'Saving...' : (isEditMode ? 'Update Item' : 'Add To Inventory') }}
     </button>
   </div>
 </div>

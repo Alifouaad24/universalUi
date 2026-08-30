@@ -17,7 +17,8 @@
     <div *ngIf="inventory.length > 0" class="row g-4">
       <div class="col-6 col-md-4 col-lg-3 col-xl-2" *ngFor="let item of inventory; index as i">
         <div class="card h-100 shadow-sm">
-          <img (click)="openItemModal(item)" [src]="item.images && item.images.length ? item.images[0].imageUrl : 'assets/no-image.png'"
+          <img (click)="openItemModal(item)"
+            [src]="item.images && item.images.length ? item.images[0].imageUrl : 'assets/no-image.png'"
             class="card-img-top" style="height: 200px; object-fit: cover;" [alt]="item.itemDescription || item.sku" />
           <div class="card-body p-2 text-center">
             <h6 class="card-title mb-1 text-truncate mt-2" [title]="item.itemDescription || item.sku || item.upc">
@@ -36,10 +37,13 @@
             </div>
           </div>
 
-          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
-            <button class="btn btn-sm btn-outline-primary">
-              <c-icon name="cil-pencil"></c-icon>
+          <div  class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
+            <button *ngIf="ForDropShipping" class="btn btn-sm btn-outline-info" (click)="ShowDetailsModal(item)">
+              <c-icon name="cilShare"></c-icon>
             </button>
+<button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
+  <c-icon name="cil-pencil"></c-icon>
+</button>
             <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(item)">
               <c-icon name="cil-trash"></c-icon>
             </button>
@@ -48,23 +52,14 @@
       </div>
     </div>
 
-    <div *ngIf="inventory.length === 0" class="text-center text-muted py-5">
+    <div *ngIf="inventory.length === 0 && !isLoading" class="text-center text-muted py-5">
       No items found.
     </div>
   </div>
 </div>
 
 
-<c-modal [(visible)]="showDeleteModal" [size]="'sm'">
-  <c-modal-header>Confirm Delete</c-modal-header>
-  <c-modal-body>
-    Are you sure you want to delete {{ selectedItem?.product_name }}?
-  </c-modal-body>
-  <c-modal-footer>
-    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
-    <button class="btn btn-danger" (click)="deleteActivity(selectedItem)">Delete</button>
-  </c-modal-footer>
-</c-modal>
+
 
 <!-- Toaster -->
 <c-toaster placement="top-end" class="p-3">
@@ -94,13 +89,11 @@
       <div class="col-md-5 text-center">
         <img
           [src]="selectedItem.images && selectedItem.images.length ? selectedItem.images[0].imageUrl : 'assets/no-image.png'"
-          class="img-fluid rounded"
-          [alt]="selectedItem.itemDescription" />
+          class="img-fluid rounded" [alt]="selectedItem.itemDescription" />
 
-        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2" *ngIf="selectedItem.images && selectedItem.images.length > 1">
-          <img *ngFor="let img of selectedItem.images"
-            [src]="img.imageUrl"
-            class="rounded border"
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2"
+          *ngIf="selectedItem.images && selectedItem.images.length > 1">
+          <img *ngFor="let img of selectedItem.images" [src]="img.imageUrl" class="rounded border"
             style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" />
         </div>
       </div>
@@ -150,5 +143,164 @@
 
   <c-modal-footer>
     <button cButton color="secondary" (click)="isItemModalVisible = false">Close</button>
+  </c-modal-footer>
+</c-modal>
+
+
+<!-- publish on ebay -->
+
+<c-modal [(visible)]="DetailsModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <button color="secondary" style="cursor: pointer;" (click)="DetailsModalVisible = false">X</button>
+  </c-modal-header>
+  <c-modal-body class="text-center">
+    <div class="container mt-3">
+
+      <div class="row g-3">
+
+        <!-- SKU -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">SKU</small>
+            <input type="text" class="form-control mt-1" [(ngModel)]="selectedType.sku" name="sku">
+          </div>
+        </div>
+
+        <!-- UPC -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">UPC</small>
+            <input type="text" class="form-control mt-1" [(ngModel)]="selectedType.upc" name="upc">
+          </div>
+        </div>
+
+        <!-- Quantity -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">Quantity</small>
+            <input type="number" class="form-control mt-1" [(ngModel)]="selectedQuantity" name="quantity">
+          </div>
+        </div>
+
+        <!-- Brand -> Select -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">Brand</small>
+            <select class="form-select mt-1" [(ngModel)]="selectedBrand" name="brand">
+              <option [ngValue]="null" disabled>Select Brand</option>
+              <option *ngFor="let b of brands" [value]="b.carBrandName">{{ b.carBrandName }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Condition -> Select -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start" [ngClass]="{ 'border-danger': !selectedType?.condition }">
+            <small class="text-muted">Condition</small>
+            <select class="form-select mt-1" [(ngModel)]="selectedCondition" name="condition">
+              <option [ngValue]="null" disabled>Select Condition</option>
+              <option *ngFor="let c of itemConditions" [value]="c.description">{{ c.description }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CategoryId -> Select -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start" [ngClass]="{ 'border-danger': !selectedType?.categoryId }">
+            <small class="text-muted">Category</small>
+            <select class="form-select mt-1" [(ngModel)]="selectedCategory" name="categoryId">
+              <option [ngValue]="null" disabled>Select Category</option>
+              <option *ngFor="let cat of categories" [value]="cat.ebayCategoryId">{{ cat.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">Price</small>
+            <input type="number" step="0.01" class="form-control mt-1" [(ngModel)]="selectedType.basePrice" name="price">
+          </div>
+        </div>
+
+        <!-- Currency -> Select -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2 text-start">
+            <small class="text-muted">Currency</small>
+            <select class="form-select mt-1" [(ngModel)]="selectedCurrency" name="currency">
+              <option *ngFor="let cur of currencies" [value]="cur.currencyId">{{ cur.code }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!--  Title -->
+        <div class="col-12">
+          <div class="card shadow-sm p-3 text-start">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">Title</small>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="copyText(selectedType?.title)">
+                <i class="fas fa-copy me-1"></i>
+                Copy
+              </button>
+            </div>
+            <textarea class="form-control mt-2" rows="2" [(ngModel)]="selectedType.itemDescription" name="title">{{selectedType.itemDescription}}</textarea>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+          <div class="card shadow-sm p-3 text-start">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">Description</small>
+              <button type="button" class="btn btn-sm btn-outline-primary"
+                (click)="copyText(selectedType?.description)">
+                <i class="fas fa-copy me-1"></i>
+                Copy
+              </button>
+            </div>
+            <textarea class="form-control mt-2" rows="4" [(ngModel)]="selectedType.itemDetails"
+              name="description">{{selectedType.itemDetails}}</textarea>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="col-12" *ngIf="selectedType?.images?.length > 0">
+          <div class="card shadow-sm p-3">
+            <small class="text-muted">Images (select more than 7 images to publish)</small>
+            <div class="row mt-2">
+              <div class="col-2" *ngFor="let image of selectedType?.images; let i = index">
+                <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
+                  <img height="100" width="80" [src]="image.imageUrl" class="img-fluid rounded"
+                    [class.border]="isSelected(image)" [class.border-danger]="isSelected(image)"
+                    [class.border-3]="isSelected(image)">
+                  <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
+                    {{ getImageIndex(image) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <button class="btn btn-primary" (click)="PublishByEbay(selectedType)">
+            {{ PublishingByEbay ? 'Publishing...' : 'Publish on eBay' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer class="justify-content-between">
+  </c-modal-footer>
+</c-modal>
+
+<c-modal [(visible)]="showDeleteModal" [size]="'sm'">
+  <c-modal-header>Confirm Delete</c-modal-header>
+  <c-modal-body>
+    Are you sure you want to delete {{ selectedItem?.product_name }}?
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
+    <button class="btn btn-danger" (click)="deleteActivity(selectedItem)">Delete</button>
   </c-modal-footer>
 </c-modal>

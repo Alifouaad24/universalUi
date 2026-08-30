@@ -50,6 +50,12 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
   Width: number | null = null;
   Length: number | null = null;
 
+  isEditMode: boolean = false;
+  editingItemId: number | null = null;
+  existingImages: any[] = [];
+  deletedExistingImageIds: number[] = [];
+
+
   // ✅ الصور: ملفات فعلية بدل روابط نصية
   selectedImages: SelectedImage[] = [];
 
@@ -87,6 +93,100 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     this.getUnits();
     this.getColors();
     this.getCurrencies();
+
+    const nav = this.router.getCurrentNavigation();
+    const item = nav?.extras?.state?.['item'] ?? history.state?.item;
+
+    if (item) {
+      this.isEditMode = true;
+      this.fillFormFromItem(item);
+    }
+  }
+
+   fillFormFromItem(item: any) {
+    this.editingItemId = item.itemId ?? null;
+    this.ItemDescription = item.itemDescription ?? '';
+    this.ItemDetails = item.itemDetails ?? '';
+    this.sku = item.sku ?? '';
+    this.upc = item.upc ?? '';
+    this.InternetId = item.internetId ?? '';
+    this.BasePrice = item.basePrice ?? null;
+    this.CategoryId = item.categoryId ?? item.category?.category_id ?? null;
+    this.SizeId = item.sizeId ?? item.size?.size_id ?? null;
+    this.UnitId = item.unitId ?? item.unit?.unit_id ?? null;
+    this.PlatformId = item.platformId ?? item.platform?.platform_id ?? null;
+    this.ColorId = item.colorId ?? item.color?.color_id ?? null;
+    this.CurrencyId = item.currencyId ?? item.currency?.currencyId ?? null;
+    this.UnitValue = item.unitValue ?? null;
+    this.Model = item.model ?? '';
+    this.Height = item.height ?? null;
+    this.Width = item.width ?? null;
+    this.Length = item.length ?? null;
+
+    this.existingImages = item.images ?? [];
+  }
+
+  removeExistingImage(img: any) {
+    if (img.itemImageId) {
+      this.deletedExistingImageIds.push(img.itemImageId);
+    }
+    this.existingImages = this.existingImages.filter(i => i !== img);
+  }
+
+  UpdateItem() {
+    this.loading = true;
+
+    if (!this.ItemDescription) {
+      this.message = 'Please enter item description';
+      this.loading = false;
+      return;
+    }
+    if (!this.PlatformId) {
+      this.message = 'Please select a platform';
+      this.loading = false;
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('ItemId', this.editingItemId!.toString());
+    formData.append('ItemDescription', this.ItemDescription);
+    formData.append('ItemDetails', this.ItemDetails || '');
+    formData.append('sku', this.sku || '');
+    formData.append('upc', this.upc || '');
+    formData.append('businessId', localStorage.getItem('businessId')!);
+    formData.append('InternetId', this.InternetId || '');
+    if (this.BasePrice != null) formData.append('BasePrice', this.BasePrice.toString());
+    if (this.CategoryId != null) formData.append('CategoryId', this.CategoryId.toString());
+    if (this.SizeId != null) formData.append('SizeId', this.SizeId.toString());
+    if (this.UnitId != null) formData.append('UnitId', this.UnitId.toString());
+    formData.append('PlatformId', this.PlatformId.toString());
+    if (this.ColorId != null) formData.append('ColorId', this.ColorId.toString());
+    if (this.CurrencyId != null) formData.append('CurrencyId', this.CurrencyId.toString());
+    if (this.UnitValue != null) formData.append('UnitValue', this.UnitValue.toString());
+    formData.append('Model', this.Model || '');
+    if (this.Height != null) formData.append('Height', this.Height.toString());
+    if (this.Width != null) formData.append('Width', this.Width.toString());
+    if (this.Length != null) formData.append('Length', this.Length.toString());
+
+    if (this.deletedExistingImageIds.length > 0) {
+      formData.append('DeletedImageIds', JSON.stringify(this.deletedExistingImageIds));
+    }
+
+    this.selectedImages.forEach(img => {
+      formData.append('Images', img.file);
+    });
+
+    this.http.putData(`Item/${this.editingItemId}`, formData).subscribe({
+      next: () => {
+        this.message = 'Item updated successfully';
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error(error);
+        this.message = 'An error occurred while updating the item';
+        this.loading = false;
+      }
+    });
   }
 
   getPlatforms() {
@@ -201,7 +301,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     if (this.Height != null) formData.append('Height', this.Height.toString());
     if (this.Width != null) formData.append('Width', this.Width.toString());
     if (this.Length != null) formData.append('Length', this.Length.toString());
-    
+
 
     // إرفاق ملفات الصور الفعلية — الاسم "Images" يطابق حقل ItemDto.Images
     this.selectedImages.forEach(img => {
