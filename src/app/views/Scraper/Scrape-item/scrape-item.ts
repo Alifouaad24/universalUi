@@ -558,6 +558,7 @@ SaveIngItemInDB: boolean = false
       length: this.length ? Number(this.length) : null,
       unitId: this.unitId ?? null,
       unitValue: this.unitId ?? null,
+      businessId: Number(localStorage.getItem('businessId')) ?? null,
       colorId: this.colorId ?? null,
       sizeId: this.sizeId ?? null,
       categoryId: this.categoryId ?? null,
@@ -568,7 +569,7 @@ SaveIngItemInDB: boolean = false
 
 
     console.log(payLoad)
-    this.http.posteData('Item', payLoad).subscribe(res => {
+    this.http.posteData('Item/AddItemJson', payLoad).subscribe(res => {
       this.SaveIngItemInDB = false; 
       window.location.reload()
       console.log(res)

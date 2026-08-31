@@ -169,7 +169,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
           return acc;
         }, [] as { folderId: number, images: AlbumModel[] }[]);
 
-        this.filterAlbum('Unprocessed')
+        
 
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -190,6 +190,7 @@ export class ShowAlbumComponent implements OnInit, OnDestroy {
             this.cdr.detectChanges();
           }
         });
+        
       },
         (err) => {
           this.isLoading = false;

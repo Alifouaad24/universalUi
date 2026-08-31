@@ -1,0 +1,938 @@
+<!-- <div class="m-2 p-2">
+  <button class="btn btn-primary" (click)="openAddItemModal()">
+    Add new inventory
+  </button>
+</div> -->
+
+<div class="card">
+  <div class="card-header py-3">
+    <div class="row align-items-center">
+      <!-- LEFT -->
+      <div class="col-md-6 d-flex flex-column gap-2">
+        <!-- Inventory -->
+        <div class="fw-semibold">
+          Inventory:
+          <span class="text-primary">
+            ({{inventory.length}})
+          </span>
+          item{{ inventory.length !== 1 ? 's' : '' }}
+        </div>
+        <!-- Filter -->
+        
+      </div>
+      <!-- RIGHT -->
+      
+    </div>
+
+  </div>
+  <div class="card-body">
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
+    <table *ngIf="inventory.length > 0" class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th style="width: 10%;">SKU</th>
+          <th style="width: 10%;">Image</th>
+          <th style="width: 10%;">UPC/Eby sku</th>
+          <th style="width: 5%;">Size</th>
+          <th style="width: 8%;">Base Price</th>
+          <th style="width: 8%;">Price</th>
+          <th style="width: 8%;">Qty In Store</th>
+          <!-- <th style="width: 8%;">Published Qty</th> -->
+          <th style="width: 5%;">Folder</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let type of inventory; index as i" [ngClass]="{
+          'table-warning': type.notFound,
+          'table-success': type.status?.trim()?.includes('Auto Published'),
+          'table-danger': type.status?.trim()?.includes('Offer Made Only')
+        }">
+          <td *ngIf="type.ebayListingId != null">
+            <a [href]="'https://www.ebay.com/itm/' + type.ebayListingId" target="_blank" class="text-decoration-none">
+              {{ type.inventory_id }}
+            </a>
+          </td>
+          <td *ngIf="type.ebayListingId == null">
+            {{ type.inventory_id }}
+          </td>
+          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
+              type.item?.sku }}</a></td>
+          <td><img (click)="ShowAllImages(type.item?.images)"
+              [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
+              alt="Image" style="width: 60px; height: 75px;"></td>
+          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
+              type.item?.upc }}</a>
+
+          </td>
+          <td>{{ type.size?.description }}</td>
+          <td class="text-danger">{{ type?.item.basePrice }}{{ type?.item.basePrice ? '$' : '' }}</td>
+          <td>{{ type?.sitePrice }}</td>
+          <td>{{ type.qty }}</td>
+          <!-- <td>{{ type.publishedQty }}</td> -->
+          <td>{{ type.folderImages }}</td>
+          <td>
+            <ng-container *ngIf="inventory.length">
+              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.inventory_id, type.category_id, type.size_id, 
+                type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id, type.Product_name, type.product_description,
+                type.qty, type.item?.brand, type.isProccessedInInventory)">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-danger me-1" (click)="DeleteInventoryItem(type.inventory_id)">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+              <!-- <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
+                [queryParams]="{ folderSelected: type.folderImages }">
+                Go to album
+              </a> -->
+
+              <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
+                (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
+                [disabled]="type.notFound">
+                Scrape item
+              </button> -->
+              <!-- <button *ngIf="type.isProccessedInInventory" class="btn btn-sm btn-primary me-1"
+                (click)="ShowFactoryImages(type.item?.itemId)">
+                Show images
+              </button> -->
+              <!-- <button *ngIf="type.status?.trim()?.includes('Offer Made Only')" class="btn btn-sm btn-danger me-1"
+                (click)="DeleteOffer(type!.inventory_id!)">
+                Delete Offer
+              </button> -->
+              <!-- <button *ngIf="type.isProccessedInInventory"
+                [ngClass]="type?.isPublishedOnMarketPlace ? 'btn-success' : 'btn-info' "
+                class="btn btn-sm btn-primary mt-1" (click)="showMarketPlaceModal(type.inventory_id)">
+                {{ isChangeStatus ? 'Toggling...' : type?.isPublishedOnMarketPlace ? 'Published on market place' :
+                'Publish on market place' }}
+              </button> -->
+              <!-- <button class="btn btn-sm btn-danger mt-1 ms-1"
+                [disabled]="decrisingQty && selectedInvId === type?.inventory_id"
+                (click)="DecreaseQty(type!.inventory_id!)">
+                <span *ngIf="decrisingQty && selectedInvId === type?.inventory_id"
+                  class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span *ngIf="!(decrisingQty && selectedInvId === type?.inventory_id)">
+                  {{ type?.qty }}
+                </span>
+              </button> -->
+
+            </ng-container>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<c-modal [(visible)]="showScrapeModal" [size]="'lg'">
+  <c-modal-header>Scrape FHD Item: &nbsp; <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd
+      }}</strong></c-modal-header>
+  <c-modal-body>
+    <div class="input-group mb-3 d-flex gap-2">
+      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">{{
+        isLoadingScrape ? 'Scraping...' : 'Scrape from
+        Local DBs'
+        }}</button>
+      <input type="text" class="form-control" placeholder="Enter SKU to scrape from AinAlfhd"
+        [(ngModel)]="skuToScrapeByAinAlfhd">
+      <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
+      <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
+    </div>
+    <hr />
+    Or paste source code here to get data:
+    <br /><br />
+    <textarea [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
+    <br /><br />
+    <div *ngIf="priceFromScrape && priceFromScrape.length > 0" class="">
+      <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
+      <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
+    </div>
+    <div *ngIf="priceFromScrape.length > 0" class="col-md-5">
+      <p>Category:</p>
+      <select class="form-control" [(ngModel)]="CategoryIdForScrape">
+        <option value="null">Select Category</option>
+        <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+      </select>
+    </div>
+    <div class="p-2 text-danger text-center" *ngIf="showMsg">{{ Msg }}</div>
+    <div *ngIf="ImagesUrlsFromScrape.length > 0">
+      <p class="text-success">Extracted Image URLs:</p>
+      <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
+        <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+          (click)="removeImage(i)">
+          <svg cIcon name="cilTrash"></svg>
+        </button>
+        <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showScrapeModal = false">Cancel</button>
+    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrape()"> {{ isLoading ? 'Scraping...' :
+      'Scrape' }}</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveImagesForItem()">Save</button>
+  </c-modal-footer>
+</c-modal>
+
+<c-toaster placement="top-end" class="p-3">
+  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
+    [autohide]="autoHideToast()" [delay]="3000">
+    <c-toast-header>
+      Scrape!
+    </c-toast-header>
+    <c-toast-body>
+      <p>{{ toastMessage() }}</p>
+      <c-progress thin [value]="percentage()" />
+    </c-toast-body>
+  </c-toast>
+</c-toaster>
+
+<c-modal [(visible)]="showFactoryImagesModal" [size]="'lg'">
+  <c-modal-header>({{ factoryImages.length }} {{ factoryImages.length > 1 ? 'images' : 'image' }}) </c-modal-header>
+  <c-modal-body>
+    <div class="position-relative d-inline-block m-2" *ngFor="let url of factoryImages; let i = index">
+      <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+        (click)="removeImageFromDb(url)">
+        <svg cIcon name="cilTrash"></svg>
+      </button>
+      <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showFactoryImagesModal = false">Close</button>
+  </c-modal-footer>
+</c-modal>
+
+<c-modal [(visible)]="showEditModal" [size]="'lg'">
+  <c-modal-header>Edit Inventory</c-modal-header>
+  <c-modal-body>
+    <br /><br />
+    <div class="d-flex col-md-12 gap-1 justify-content-between">
+      <div class="col-md-4">
+        <p>Category:</p>
+        <select class="form-control" [(ngModel)]="CategoryId">
+          <option value="null">Select Category</option>
+          <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <p>Size:</p>
+        <select class="form-control" [(ngModel)]="SizeId">
+          <option value="null">Select size</option>
+          <option *ngFor="let size of Sizes" [value]="size.size_id">{{ size.description }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <p>Condition:</p>
+        <select class="form-control" [(ngModel)]="ItemConditionId">
+          <option value="null">Select Item Condition</option>
+          <option *ngFor="let ic of itemConditions" [value]="ic.itemConditionId">{{ ic.description }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="d-flex col-md-12  mb-3 mt-3 gap-3">
+      <div class="col-md-5">
+        <p>Platform:</p>
+        <select class="form-select" [(ngModel)]="PlatformId">
+          <option value="null">Select Platform</option>
+          <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Price</label>
+        <input type="text" [(ngModel)]="PriceFOREDIT" class="form-control mt-2" />
+      </div>
+    </div>
+
+
+    <div class="row mb-4 mt-3 g-4">
+
+      <!-- Brand -->
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">
+          Brand
+        </label>
+        <div class="input-group">
+          <span class="input-group-text bg-light">
+            <i class="bi bi-tag"></i>
+          </span>
+          <input type="text" [(ngModel)]="BrandToEdit" class="form-control" placeholder="Enter brand name" />
+        </div>
+      </div>
+
+      <!-- Processed -->
+      <div class="col-md-6">
+        <label class="form-label fw-semibold d-block">
+          Is Processed?
+        </label>
+
+        <div class="card border-0 shadow-sm p-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="processedSwitch"
+              [(ngModel)]="proccessedInInv" />
+
+            <label class="form-check-label ms-2" for="processedSwitch">
+              {{ proccessedInInv ? 'Processed' : 'Not Processed' }}
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-4">
+        <label class="form-label">SKU</label>
+        <input type="text" [(ngModel)]="SKUFOREDIT" class="form-control" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">UPC</label>
+        <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Quantity</label>
+        <input type="text" [(ngModel)]="QuantityItem" class="form-control" />
+      </div>
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-12">
+        <label class="form-label">Title</label>
+        <input type="text" [(ngModel)]="title" class="form-control" />
+      </div>
+
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <textarea type="text" [(ngModel)]="descriptionToEdit" class="form-control"></textarea>
+      </div>
+
+    </div>
+    <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
+      <!-- <div class="col-md-5">
+        <label class="form-label">UPC</label>
+        <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
+      </div> -->
+    </div>
+  </c-modal-body>
+
+
+
+
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
+    <button class="btn btn-primary" (click)="EditInventoryItem()"> {{ isLoading ? 'Updating...' :
+      'Update' }}</button>
+  </c-modal-footer>
+</c-modal>
+
+
+<!-- gggggggggggggggggggggggggggggggggggggggggggggggggggggg -->
+
+<!-- image Modal -->
+<c-modal [(visible)]="modalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <div class="d-flex align-items-center justify-content-between gap-2 col-md-12">
+      <button color="secondary" style="cursor: pointer;" (click)="closeModal()">
+        X
+      </button>
+      <strong class="text-danger">{{ fullFkuToScrapeByAinAlfhd }}</strong>
+    </div>
+  </c-modal-header>
+  <c-modal-body class="text-center">
+    <div class="d-flex justify-content-center align-items-center">
+      <div style="height: 80vh;" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)"
+        (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+        <image-cropper [imageBase64]="currentImageBase64" [maintainAspectRatio]="false" [resizeToWidth]="800"
+          [canvasRotation]="rotation" [transform]="transform" format="png" (imageCropped)="onImageCropped($event)">
+        </image-cropper>
+      </div>
+    </div>
+    <button style="font-size: 20px;" class="btn btn-sm rounded bg-success m-1" (click)="zoomIn()">+</button>&nbsp;
+    &nbsp;
+    <button style="font-size: 20px;" class="btn btn-sm rounded bg-success" (click)="zoomOut()">-</button>
+  </c-modal-body>
+  <c-modal-footer class="justify-content-between">
+  </c-modal-footer>
+</c-modal>
+
+<!-- show duty scrape model -->
+
+<c-modal [(visible)]="showScrapeDutyModal" [size]="'lg'">
+  <c-modal-header>
+    <h4>Scrape Duty Item:</h4> &nbsp; &nbsp; <strong class="text-danger">{{ fullUPCToScrapeByAinAlfhd
+      }}</strong>
+  </c-modal-header>
+  <c-modal-body>
+    <!-- <div class="input-group mb-3 d-flex gap-2">
+      <button class="btn btn-secondary" type="button" (click)="scrapeItemFromAinAlfhd()">{{
+        isLoadingScrape ? 'Scraping...' : 'Scrape from
+        Local DBs'
+        }}</button>
+      <input type="text" class="form-control" placeholder="Enter UPC to scrape from local DBs"
+        [(ngModel)]="skuToScrapeByAinAlfhd">
+      <button class="btn btn-danger" type="button" (click)="setInvItemNotFound()">Not found</button>
+      <button class="btn btn-primary" type="button" (click)="showAlbumImages()">Show Album images</button>
+    </div>
+    <hr /> -->
+
+    <div>
+      <label>
+        <input type="radio" name="searchSource" [(ngModel)]="selectedSource" value="homeDepot" />
+        By HomeDepot
+      </label>
+      <label style="margin-left: 20px;">
+        <input type="radio" name="searchSource" [(ngModel)]="selectedSource" value="ebay" />
+        By Ebay
+      </label>
+    </div>
+    <br />
+    <p *ngIf="selectedSource == 'ebay'">Select search type:</p>
+    <div *ngIf="selectedSource == 'ebay'">
+      <label>
+        <input type="radio" name="searchType" [(ngModel)]="selectedEbayType" value="UPC" />
+        By UPC
+      </label>
+      <label style="margin-left: 20px;">
+        <input type="radio" name="searchType" [(ngModel)]="selectedEbayType" value="Image" />
+        By Image
+      </label>
+
+    </div>
+
+
+    <br /><br />
+    <p *ngIf="selectedSource == 'homeDepot'">paste source code here to get data:</p>
+    <p *ngIf="selectedSource == 'ebay' && selectedEbayType == 'UPC'">paste UPC here to get data:</p>
+    <p *ngIf="selectedSource == 'ebay' && selectedEbayType == 'Image'">upload image to get data: {{ results.length }}
+    </p>
+
+
+    <div style="max-height: 500px; overflow-y: auto;" class="container mt-3" *ngIf="results?.length">
+      <div class="card mb-3 shadow-sm" *ngFor="let item of results">
+        <div class="row g-0 align-items-center">
+          <!-- IMAGE -->
+          <div class="col-4 col-md-3">
+            <img [src]="item.imageUrl" class="img-fluid rounded-start w-75 h-75"
+              style="object-fit: cover; max-height: 160px;" />
+          </div>
+          <!-- CONTENT -->
+          <div class="col-8 col-md-9">
+            <div class="card-body py-2">
+              <h6 class="card-title mb-1">
+                {{ item.title }}
+              </h6>
+              <div class="text-success fw-bold mb-1">
+                {{ item.price }} {{ item.currency }}
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="selectItem(item)">
+                Choose
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <br />
+    <input *ngIf="selectedSource == 'ebay' && selectedEbayType == 'Image'" type="file"
+      (change)="onFileSelected($event)" />
+
+    <p class="text-center text-success" *ngIf="loadingResults">جار جلب المنتجات</p>
+    <p class="text-center text-danger" *ngIf="noDataFound">لم يتم العثور على نتائج</p>
+    <textarea *ngIf="selectedSource == 'homeDepot'" [(ngModel)]="sourceCode" class="form-control" rows="5"></textarea>
+    <input *ngIf="selectedSource == 'ebay' && selectedEbayType == 'UPC'" [(ngModel)]="sourceCode" class="form-control"
+      rows="5" />
+    <br />
+    <p *ngIf="errorGetFromEbay" class="text-danger text-center">
+      {{ errorGetFromEbay }}
+    </p>
+    <br />
+    <div *ngIf="priceFromScrape.length > 0" class="">
+      <p class="mb-2"><strong class="text-success">Price:</strong> {{ priceFromScrape }}</p>
+      <p class="mb-2"><strong class="text-success">Product:</strong> {{ productNameFromScrape }}</p>
+    </div>
+    <div *ngIf="priceFromScrape.length > 0" class="col-md-5">
+      <p>Category:</p>
+      <select class="form-control" [(ngModel)]="CategoryIdForScrape">
+        <option value="null">Select Category</option>
+        <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+      </select>
+    </div>
+    <div class="p-2 text-danger text-center" *ngIf="showMsg">{{ Msg }}</div>
+    <div *ngIf="ImagesUrlsFromScrape.length > 0">
+      <p class="text-success">Extracted Image URLs:</p>
+      <div class="position-relative d-inline-block m-2" *ngFor="let url of ImagesUrlsFromScrape; let i = index">
+        <button cButton color="danger" size="sm" class="position-absolute top-0 end-0 rounded-circle p-1"
+          (click)="removeImage(i)">
+          <svg cIcon name="cilTrash"></svg>
+        </button>
+        <img [src]="url" class="img-thumbnail" style="max-width:150px; max-height:150px;" />
+      </div>
+    </div>
+    <div *ngIf="ImagesUrlsFromScrape.length > 0" class="card shadow-sm p-3 mb-4">
+
+      <h5 class="mb-3 text-primary">Product Details</h5>
+      <br />
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <strong>🛍 Name:</strong>
+          <div class="text-muted mt-1" style="line-height: 1.6;">
+            {{ productNameFromScrape }}
+          </div>
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <strong>💲 Price:</strong>
+          <span class="text-success ms-2">{{ priceFromScrape }}$</span>
+        </div>
+        <div class="col-md-4">
+          <strong>� UPC:</strong>
+          <span class="text-success ms-2">{{ UPCFromScrape }}</span>
+        </div>
+        <div class="col-md-4">
+          <strong>🔖 SKU:</strong>
+          <span class="badge bg-dark ms-2">{{ SKU }}</span>
+        </div>
+      </div>
+      <!-- Description -->
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <strong>📝 Description:</strong>
+          <div class="text-muted mt-1" style="line-height: 1.6;">
+            {{ desc }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Extra Info -->
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <strong>📱 Model:</strong> {{ Model }}
+        </div>
+        <div class="col-md-4">
+          <strong>🌐 Internet:</strong> {{ Internet }}
+        </div>
+        <div class="col-md-4">
+          <strong>🏷 Brand:</strong> {{ Brand }}
+        </div>
+      </div>
+      <!-- Dimensions -->
+      <div class="row mb-2">
+        <div class="col-md-4">
+          <strong>📏 Height:</strong> {{ height }}
+        </div>
+        <div class="col-md-4">
+          <strong>📐 Width:</strong> {{ width }}
+        </div>
+        <div class="col-md-4">
+          <strong>📦 Weight:</strong> {{ weight }}
+        </div>
+      </div>
+
+      <!-- More Details
+        <div class="row">
+          <div class="col-md-6">
+            <strong>📊 Dimension:</strong> {{ Dimention }}
+          </div>
+          <div class="col-md-6">
+            <strong>🔖 SKU:</strong> 
+            <span class="badge bg-dark ms-2">{{ SKU }}</span>
+          </div>
+        </div> -->
+
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showScrapeDutyModal = false">Cancel</button>
+    <button class="btn btn-primary" *ngIf="sourceCode" (click)="getImagesFromScrapeForDuty()"> {{ isLoading ?
+      'Scraping...' :
+      'Scrape' }}</button>
+    <button *ngIf="ImagesUrlsFromScrape.length > 0" class="btn btn-success" (click)="SaveItemForDuty()">{{ isLoading ?
+      'Saveing...' : 'Save'}}</button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Details Modal -->
+<c-modal [(visible)]="DetailsModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <button color="secondary" style="cursor: pointer;" (click)="DetailsModalVisible = false">X</button>
+  </c-modal-header>
+  <c-modal-body class="text-center">
+    <div class="container mt-3">
+
+      <div class="row g-3">
+
+        <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.item?.sku">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">SKU</small>
+            <strong>{{ selectedType?.item?.sku }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.item?.upc">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">UPC</small>
+            <strong>{{ selectedType?.item?.upc }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.size?.description">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Size</small>
+            <strong>{{ selectedType?.size?.description }}</strong>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2" [ngClass]="{ 'border-danger': !selectedType?.itemCondition?.description }">
+            <small class="text-muted">Condition</small>
+            <strong>{{ selectedType?.itemCondition?.description }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Platform</small>
+            <strong>{{ selectedType?.platform?.description }}</strong>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Brand</small>
+            <strong>{{ selectedType?.item?.brand }}</strong>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Model</small>
+            <strong>{{ selectedType?.item?.model }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="card shadow-sm p-2" [ngClass]="{ 'border-danger': !selectedType?.category?.name }">
+            <small class="text-muted">Category</small>
+            <strong>{{ selectedType?.category?.name }}</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.item?.basePrice !== null">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Base Price</small>
+            <strong class="text-danger">{{ selectedType?.item?.basePrice ?? 0 }}$</strong>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4" *ngIf="selectedType?.sitePrice !== null">
+          <div class="card shadow-sm p-2">
+            <small class="text-muted">Sale Price</small>
+            <strong class="text-success">{{ selectedType?.sitePrice }}</strong>
+          </div>
+        </div>
+
+        <!--  Title -->
+        <div class="col-12" *ngIf="selectedType?.Product_name">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <p></p>
+              <small class="text-muted">Title</small>
+
+              <button type="button" class="btn btn-sm btn-outline-primary"
+                (click)="copyText(selectedType?.Product_name)">
+                <i class="fas fa-copy me-1"></i>
+                Copy
+              </button>
+            </div>
+            <p class="mb-0 mt-2">{{ selectedType?.Product_name }}</p>
+          </div>
+        </div>
+        <!-- Description -->
+        <div (click)="copyText(selectedType?.product_description)" class="col-12"
+          *ngIf="selectedType?.product_description">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <p></p>
+              <small class="text-muted">Description</small>
+              <button type="button" class="btn btn-sm btn-outline-primary"
+                (click)="copyText(selectedType?.product_description)">
+                <i class="fas fa-copy me-1"></i>
+                Copy
+              </button>
+            </div>
+            <p class="mb-0 mt-2">{{ selectedType?.product_description }}</p>
+
+          </div>
+        </div>
+        <div class="col-12" *ngIf="selectedType?.item.images?.length > 0">
+          <div class="card shadow-sm p-3">
+            <small class="text-muted">Images (select more than 7 images to publish)</small>
+            <div class="row mt-2">
+              <div class="col-2" *ngFor="let image of selectedType?.item.images">
+                <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
+                  <img height="100" width="80" [src]="image.imageUrl" class="img-fluid rounded"
+                    [class.border]="isSelected(image)" [class.border-danger]="isSelected(image)"
+                    [class.border-3]="isSelected(image)">
+                  <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
+                    {{ getImageIndex(image) }}
+                  </span>
+                  <span *ngIf="image.isPublishedOnEbay === true"
+                    class="position-absolute top-0 end-0 badge bg-info text-white">
+                    ✔
+                  </span>
+                </div>
+              </div>
+            </div>
+            <br />
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+              <!-- يسار -->
+              <div class="d-flex align-items-center gap-2">
+                <input #fileInput type="file" multiple accept="image/*" hidden (change)="onFilesSelected($event)">
+                <button class="btn btn-outline-primary" (click)="fileInput.click()">
+                  <i class="bi bi-images me-1"></i>
+                  Choose Images {{ selectedFiles.length > 0 ? '(' + selectedFiles.length + ')' : '' }}
+                </button>
+                <button class="btn btn-success" (click)="uploadImages(selectedType!.folderImages!)"
+                  [disabled]="selectedFiles.length === 0">
+                  <i class="bi bi-cloud-upload me-1"></i>
+                  {{ loadingImages ? 'Uploading...' : 'Upload' }}
+                </button>
+              </div>
+
+              <!-- يمين -->
+
+              <div *ngIf="selectedImagesToEbay.length > 0" class="d-flex align-items-center gap-2">
+                <button class="btn btn-warning" (click)="downloadAllImages()">
+                  <i class="bi bi-download me-1"></i>
+                  Download Images
+                </button>
+                <button class="btn btn-danger ms-1" (click)="deleteSelectedImages()">
+                  <i class="bi bi-download me-1"></i>
+                  {{ isDeleteingImages ? 'Deleting...' : 'Delete Images' }}
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <div>
+          <button *ngIf="selectedImagesToEbay.length > 0 && selectedType?.category?.name && selectedType?.itemCondition?.description
+            " [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
+            (click)="PublishByEbay(selectedType)">
+            {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on
+            eBay' : 'Publish on eBay') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </c-modal-body>
+  <c-modal-footer class="justify-content-between">
+  </c-modal-footer>
+</c-modal>
+
+
+<div *ngIf="showSoldPopup" class="modal fade show d-block">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Sold Items ({{ countOfSoldItems }})
+        </h5>
+        <button class="btn-close" (click)="showSoldPopup = false"></button>
+      </div>
+      <div class="modal-body" style="max-height: 400px; overflow: auto;">
+        <table class="table table-bordered table-sm">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>SKU</th>
+              <th>Qty</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of soldItems" [ngClass]="{'table-warning': isMatchedSku(item)}">
+              <td style="width: 50%;">{{ item.title }}</td>
+              <td>{{ item.sku }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" (click)="showSoldPopup = false">
+          Close
+        </button>
+        <button class="btn btn-secondary" (click)="markAsSold()">
+          Mark as Sold
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showMarketPlacePopup" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow border-0 rounded-4">
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white">
+        <div>
+          <h5 class="modal-title mb-0">
+            <i class="bi bi-shop me-2"></i>
+            Publish To Marketplace
+          </h5>
+          <small class="opacity-75">
+            Add Marketplace URL
+          </small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="showMarketPlacePopup = false">
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4">
+        <label class="form-label fw-semibold">
+          Marketplace URL
+        </label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="bi bi-link-45deg"></i>
+          </span>
+          <input class="form-control" placeholder="https://facebook.com/marketplace/..."
+            [(ngModel)]="MarketPlaceOfferUrl">
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="showMarketPlacePopup = false">
+          Close
+        </button>
+        <button class="btn btn-success px-4" (click)="SetAsPublishedInMarketPlace()">
+          <i class="bi bi-check-circle me-2"></i>
+          {{isChangeStatus ? 'Saving...' : 'Save'}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Images Gallery Modal -->
+<c-modal [(visible)]="imagesModalVisible" size="lg" alignment="center">
+  <c-modal-header>
+    <h5 class="mb-0">Item Images</h5>
+    <button class="btn btn-sm btn-secondary" (click)="closeImagesModal()">✕</button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <!-- الصورة المكبّرة الحالية -->
+    <div class="text-center mb-3">
+      <img *ngIf="selectedImages[selectedImageIndex]"
+        [src]="selectedImages[selectedImageIndex].imageUrl"
+        class="rounded border"
+        style="max-width: 100%; max-height: 400px; object-fit: contain;" />
+    </div>
+
+    <!-- شريط الصور بسكرول أفقي -->
+    <div class="d-flex gap-2 overflow-auto pb-2" style="white-space: nowrap;">
+      <div *ngFor="let img of selectedImages; let i = index"
+        (click)="selectImage(i)"
+        class="flex-shrink-0"
+        style="cursor: pointer;">
+        <img [src]="img.imageUrl"
+          class="rounded border"
+          [style.border]="i === selectedImageIndex ? '3px solid #0d6efd' : '1px solid #dee2e6'"
+          style="width: 70px; height: 70px; object-fit: cover; transition: border 0.2s;" />
+      </div>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer class="justify-content-between">
+    <span class="text-muted small">
+      {{ selectedImageIndex + 1 }} / {{ selectedImages.length }}
+    </span>
+    <button class="btn btn-secondary" (click)="closeImagesModal()">Close</button>
+  </c-modal-footer>
+</c-modal>
+
+
+<!-- Add new inv manual -->
+<c-modal [visible]="showAddItemModal" (visibleChange)="showAddItemModal=$event">
+  <c-modal-header>
+    <h5 cModalTitle>
+      Add New Item
+    </h5>
+    <button cButtonClose (click)="showAddItemModal=false">
+    </button>
+  </c-modal-header>
+  <c-modal-body>
+    <!-- Search Item -->
+    <div class="mb-3">
+      <label class="form-label">
+        Search Item
+      </label>
+      <input type="text" class="form-control" placeholder="Search item..." [(ngModel)]="searchText"
+        (input)="searchItems()" />
+      <!-- Results -->
+      <div class="list-group mt-1" *ngIf="items.length">
+        <button type="button" class="list-group-item list-group-item-action" *ngFor="let item of items"
+          (click)="selectItemFromDb(item)">
+          {{item.itemDescription ?? item.sku }}
+        </button>
+      </div>
+
+      <div class="list-group mt-1 text-center text-danger" *ngIf="messsage.length > 0">
+        {{ messsageEmpty }}
+      </div>
+
+    </div>
+
+    <div class="list-group mt-1 text-center text-success" *ngIf="messsage.length > 0">
+      {{ messsage }}
+    </div>
+    <!-- Selected Item -->
+    <div class="alert alert-info" *ngIf="selectedItem">
+      Selected:
+      {{selectedItem.itemDescription}}
+    </div>
+    <!-- Price -->
+    <div class="mb-3">
+      <label>
+        Price
+      </label>
+      <input type="number" class="form-control" [(ngModel)]="price" />
+    </div>
+    <!-- Quantity -->
+    <div class="mb-3">
+      <label>
+        Quantity
+      </label>
+      <input type="number" class="form-control" [(ngModel)]="quantity" />
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showAddItemModal=false">
+      Cancel
+    </button>
+    <button class="btn btn-success" (click)="saveItem()">
+      Save
+    </button>

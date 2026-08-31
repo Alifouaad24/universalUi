@@ -170,7 +170,6 @@
         <button class="btn btn-success btn-sm px-4 d-flex align-items-center gap-2" style="cursor: pointer;"
           [disabled]="isLoading" (click)="SaveInInvAndItem()">
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <c-icon *ngIf="!isLoading" name="cilSave"></c-icon>
           {{ isLoading ? 'Saving...' : 'Save item' }}
         </button>
       </div>

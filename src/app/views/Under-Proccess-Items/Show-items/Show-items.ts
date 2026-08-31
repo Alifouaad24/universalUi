@@ -93,10 +93,7 @@ export class ShowItemsComponent implements OnInit {
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'))
-
-
     this.getItems()
-
 
     this.getAllCategories()
     this.getAllBrands()
@@ -133,7 +130,7 @@ export class ShowItemsComponent implements OnInit {
   getItems() {
     this.isLoading = true;
     const businessId = localStorage.getItem('businessId')
-    this.http.getAllData(`Item/${businessId}`).subscribe(
+    this.http.getAllData(`Item/GetAllUndeProccessItems/${businessId}`).subscribe(
       (res: any) => {
         console.log(res)
         this.inventory = res;
@@ -148,7 +145,6 @@ export class ShowItemsComponent implements OnInit {
       }
     );
   }
-
 
   confirmDelete(type: any) {
     this.selectedItem = type;

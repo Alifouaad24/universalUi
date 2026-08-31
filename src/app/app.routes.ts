@@ -93,6 +93,14 @@ export const routes: Routes = [
         loadChildren: () => import('./views/InventoryToPublish/routes').then((m) => m.routes)
       },
       {
+        path: 'inventory-list',
+        loadChildren: () => import('./views/ComplatedInventory/routes').then((m) => m.routes)
+      },
+      {
+        path: 'under-procces-products',
+        loadChildren: () => import('./views/Under-Proccess-Items/routes').then((m) => m.routes)
+      },
+      {
         path: 'active-list',
         loadChildren: () => import('./views/ActiveList/routes').then((m) => m.routes)
       },
