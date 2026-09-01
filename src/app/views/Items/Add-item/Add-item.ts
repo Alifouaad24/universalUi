@@ -103,7 +103,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     }
   }
 
-   fillFormFromItem(item: any) {
+  fillFormFromItem(item: any) {
     this.editingItemId = item.itemId ?? null;
     this.ItemDescription = item.itemDescription ?? '';
     this.ItemDetails = item.itemDetails ?? '';
@@ -169,7 +169,9 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     if (this.Length != null) formData.append('Length', this.Length.toString());
 
     if (this.deletedExistingImageIds.length > 0) {
-      formData.append('DeletedImageIds', JSON.stringify(this.deletedExistingImageIds));
+      this.deletedExistingImageIds.forEach(id => {
+        formData.append('DeletedImageIds', id.toString());
+      });
     }
 
     this.selectedImages.forEach(img => {
@@ -180,11 +182,14 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
       next: () => {
         this.message = 'Item updated successfully';
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error(error);
         this.message = 'An error occurred while updating the item';
         this.loading = false;
+        this.cdr.detectChanges();
+        window.scrollTo(0, 0);
       }
     });
   }
