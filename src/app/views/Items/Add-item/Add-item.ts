@@ -147,42 +147,46 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('ItemId', this.editingItemId!.toString());
-    formData.append('ItemDescription', this.ItemDescription);
-    formData.append('ItemDetails', this.ItemDetails || '');
-    formData.append('sku', this.sku || '');
-    formData.append('upc', this.upc || '');
-    formData.append('businessId', localStorage.getItem('businessId')!);
-    formData.append('InternetId', this.InternetId || '');
-    if (this.BasePrice != null) formData.append('BasePrice', this.BasePrice.toString());
-    if (this.CategoryId != null) formData.append('CategoryId', this.CategoryId.toString());
-    if (this.SizeId != null) formData.append('SizeId', this.SizeId.toString());
-    if (this.UnitId != null) formData.append('UnitId', this.UnitId.toString());
-    formData.append('PlatformId', this.PlatformId.toString());
-    if (this.ColorId != null) formData.append('ColorId', this.ColorId.toString());
-    if (this.CurrencyId != null) formData.append('CurrencyId', this.CurrencyId.toString());
-    if (this.UnitValue != null) formData.append('UnitValue', this.UnitValue.toString());
-    formData.append('Model', this.Model || '');
-    if (this.Height != null) formData.append('Height', this.Height.toString());
-    if (this.Width != null) formData.append('Width', this.Width.toString());
-    if (this.Length != null) formData.append('Length', this.Length.toString());
+    const payload = {
+      itemDescription: this.ItemDescription,
+      itemDetails: this.ItemDetails || '',
+      sku: this.sku || '',
+      upc: this.upc || '',
+      internetId: this.InternetId || '',
+      basePrice: this.BasePrice ?? 0,
+      categoryId: this.CategoryId,
+      sizeId: this.SizeId,
+      unitId: this.UnitId,
+      platformId: this.PlatformId,
+      colorId: this.ColorId,
+      currencyId: this.CurrencyId,
+      unitValue: this.UnitValue,
+      model: this.Model || '',
+      height: this.Height,
+      width: this.Width,
+      length: this.Length,
+      businessId: Number(localStorage.getItem('businessId')),
+      deletedImageIds: this.deletedExistingImageIds.length > 0
+        ? this.deletedExistingImageIds
+        : null
+    };
 
-    if (this.deletedExistingImageIds.length > 0) {
-      this.deletedExistingImageIds.forEach(id => {
-        formData.append('DeletedImageIds', id.toString());
-      });
-    }
+    console.log('--- Update Payload (JSON) ---');
+    console.log(payload);
+    console.log('------------------------------');
 
-    this.selectedImages.forEach(img => {
-      formData.append('Images', img.file);
-    });
-
-    this.http.putData(`Item/${this.editingItemId}`, formData).subscribe({
-      next: () => {
+    this.http.putData(`Item/${this.editingItemId}`, payload).subscribe({
+      next: (res) => {
         this.message = 'Item updated successfully';
+        console.log('Item updated successfully');
+        console.log(res);
         this.loading = false;
         this.cdr.detectChanges();
+
+        // بعد نجاح تحديث البيانات، ارفع الصور الجديدة إن وُجدت (منفصل تمامًا)
+        if (this.selectedImages.length > 0) {
+          this.uploadNewImages();
+        }
       },
       error: (error) => {
         console.error(error);
@@ -193,6 +197,38 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  private uploadNewImages() {
+    if (this.selectedImages.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('itemId', this.editingItemId!.toString());
+
+    this.selectedImages.forEach(img => {
+      formData.append('images', img.file);
+    });
+
+    console.log('--- Uploading Images ---');
+    for (const pair of (formData as any).entries()) {
+      console.log(pair[0] + ':', pair[1]);
+    }
+
+    this.http.posteData(`Item/UploadImages`, formData, true).subscribe({
+      next: (res) => {
+        console.log('Images uploaded successfully', res);
+        this.selectedImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
+        this.selectedImages = [];
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error uploading images', error);
+        this.message = 'Item updated, but image upload failed';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  
 
   getPlatforms() {
     this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {

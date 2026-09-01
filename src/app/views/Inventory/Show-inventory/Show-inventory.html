@@ -254,18 +254,20 @@
   </c-modal-footer>
 </c-modal>
 
+
+
 <c-modal [(visible)]="showEditModal" [size]="'lg'">
   <c-modal-header>Edit Inventory</c-modal-header>
   <c-modal-body>
     <br /><br />
     <div class="d-flex col-md-12 gap-1 justify-content-between">
-      <div class="col-md-4">
-        <p>Category:</p>
-        <select class="form-control" [(ngModel)]="CategoryId">
-          <option value="null">Select Category</option>
-          <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
-        </select>
-      </div>
+<div class="col-md-4" >
+  <p>Category:</p>
+  <select class="form-control" [(ngModel)]="CategoryId" [ngClass]="{ 'border border-danger border-2 rounded': CategoryId === null }">
+    <option [ngValue]="null">Select Category</option>
+    <option *ngFor="let cat of Categories" [value]="cat.category_id">{{ cat.name }}</option>
+  </select>
+</div>
       <div class="col-md-4">
         <p>Size:</p>
         <select class="form-control" [(ngModel)]="SizeId">
@@ -275,7 +277,8 @@
       </div>
       <div class="col-md-4">
         <p>Condition:</p>
-        <select class="form-control" [(ngModel)]="ItemConditionId">
+        <select class="form-control" [(ngModel)]="ItemConditionId"
+        [ngClass]="{ 'border border-danger border-2 rounded': ItemConditionId === null }">
           <option value="null">Select Item Condition</option>
           <option *ngFor="let ic of itemConditions" [value]="ic.itemConditionId">{{ ic.description }}</option>
         </select>
@@ -292,7 +295,9 @@
       </div>
       <div class="col-md-5">
         <label class="form-label">Price</label>
-        <input type="text" [(ngModel)]="PriceFOREDIT" class="form-control mt-2" />
+        <input type="text" [(ngModel)]="PriceFOREDIT" class="form-control mt-2"
+        [ngClass]="{ 'border border-danger border-2 rounded': PriceFOREDIT === null }"
+         />
       </div>
     </div>
 
