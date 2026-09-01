@@ -37,13 +37,13 @@
             </div>
           </div>
 
-          <div  class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
+          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
             <button *ngIf="ForDropShipping" class="btn btn-sm btn-outline-info" (click)="ShowDetailsModal(item)">
               <c-icon name="cilShare"></c-icon>
             </button>
-<button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
-  <c-icon name="cil-pencil"></c-icon>
-</button>
+            <button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
             <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(item)">
               <c-icon name="cil-trash"></c-icon>
             </button>
@@ -219,7 +219,8 @@
         <div class="col-12 col-sm-6 col-md-4">
           <div class="card shadow-sm p-2 text-start">
             <small class="text-muted">Price</small>
-            <input type="number" step="0.01" class="form-control mt-1" [(ngModel)]="selectedType.basePrice" name="price">
+            <input type="number" step="0.01" class="form-control mt-1" [(ngModel)]="selectedType.basePrice"
+              name="price">
           </div>
         </div>
 
@@ -243,7 +244,8 @@
                 Copy
               </button>
             </div>
-            <textarea class="form-control mt-2" rows="2" [(ngModel)]="selectedType.itemDescription" name="title">{{selectedType.itemDescription}}</textarea>
+            <textarea class="form-control mt-2" rows="2" [(ngModel)]="selectedType.itemDescription"
+              name="title">{{selectedType.itemDescription}}</textarea>
           </div>
         </div>
 

@@ -157,13 +157,13 @@ export class ShowItemsComponent implements OnInit {
 
   deleteActivity(type?: any) {
     if (!type) return;
-    this.http.deleteData(`Inventory/${type.inventory_id}`,).subscribe(() => {
-      this.inventory = this.inventory.filter(t => t.inventory_id !== type.inventory_id);
+    this.http.deleteData(`Item/${type.itemId}`,).subscribe(() => {
+      this.inventory = this.inventory.filter(t => t.itemId !== type.itemId);
       this.showDeleteModal = false;
-      this.toastMessage.set(`${type.product_name} deleted successfully`);
+      this.toastMessage.set(`${type.upc || type.sku || 'Item'} deleted successfully`);
       this.toastVisible.set(true);
     }, (error) => {
-      this.toastMessage.set(`An error occured during delete (${type.product_name})`);
+      this.toastMessage.set(`An error occured during delete (${type.upc || type.sku || 'Item'})`);
       this.toastVisible.set(true);
     });
   }
