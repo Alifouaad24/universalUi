@@ -4,8 +4,13 @@
   </button>
 </div>
 <div class="card">
-  <div class="card-header">
-    Products
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      Products
+    </div>
+    <div>
+      Count: {{ inventory.length }}
+    </div>
   </div>
   <div class="card-body">
     <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -145,7 +150,7 @@
 <button
   cButton
   color="danger"
-  *ngIf="selectedItem.isScraped == false && selectedItem.canScrape == true"
+  *ngIf="selectedItem?.isScraped == false && selectedItem?.canScrape == true || selectedItem?.canScrape == null"
   (click)="openItemModalScrapeItemModal(selectedItem)">
   Scrape item
 </button>
