@@ -19,7 +19,7 @@
         <div class="card h-100 shadow-sm">
           <img (click)="openItemModal(item)"
             [src]="item.images && item.images.length ? item.images[0].imageUrl : 'assets/no-image.png'"
-            class="card-img-top" style="height: 200px; object-fit: cover;" [alt]="item.itemDescription || item.sku" />
+            class="card-img-top" style="height: 200px; object-fit: cover;" [alt]="item.upc || item.sku" />
           <div class="card-body p-2 text-center">
             <h6 class="card-title mb-1 text-truncate mt-2" [title]="item.itemDescription || item.sku || item.upc">
               {{ item.itemDescription || item.sku || item.upc || ('Item #' + item.itemId) }}
@@ -37,13 +37,13 @@
             </div>
           </div>
 
-          <div  class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
+          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
             <button *ngIf="ForDropShipping" class="btn btn-sm btn-outline-info" (click)="ShowDetailsModal(item)">
               <c-icon name="cilShare"></c-icon>
             </button>
-<button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
-  <c-icon name="cil-pencil"></c-icon>
-</button>
+            <button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
             <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(item)">
               <c-icon name="cil-trash"></c-icon>
             </button>
@@ -79,9 +79,8 @@
 <c-modal [(visible)]="isItemModalVisible" size="lg" alignment="center">
   <c-modal-header>
     <h5 cModalTitle>
-      {{ selectedItem?.itemDescription || selectedItem?.sku || ('Item #' + selectedItem?.itemId) }}
+      #{{ selectedItem?.itemId }} | {{ selectedItem?.upc | titlecase }}
     </h5>
-    <button cButtonClose (click)="isItemModalVisible = false"></button>
   </c-modal-header>
 
   <c-modal-body *ngIf="selectedItem">
@@ -89,7 +88,7 @@
       <div class="col-md-5 text-center">
         <img
           [src]="selectedItem.images && selectedItem.images.length ? selectedItem.images[0].imageUrl : 'assets/no-image.png'"
-          class="img-fluid rounded" [alt]="selectedItem.itemDescription" />
+          class="img-fluid rounded" [alt]="selectedItem.upc" />
 
         <div class="d-flex flex-wrap justify-content-center gap-2 mt-2"
           *ngIf="selectedItem.images && selectedItem.images.length > 1">
@@ -142,158 +141,20 @@
   </c-modal-body>
 
   <c-modal-footer>
+    <!--  -->
+<button
+  cButton
+  color="danger"
+  *ngIf="selectedItem.isScraped == false && selectedItem.canScrape == true"
+  (click)="openItemModalScrapeItemModal(selectedItem)">
+  Scrape item
+</button>
     <button cButton color="secondary" (click)="isItemModalVisible = false">Close</button>
+
   </c-modal-footer>
 </c-modal>
 
-
-<!-- publish on ebay -->
-
-<c-modal [(visible)]="DetailsModalVisible" size="lg" alignment="center">
-  <c-modal-header>
-    <button color="secondary" style="cursor: pointer;" (click)="DetailsModalVisible = false">X</button>
-  </c-modal-header>
-  <c-modal-body class="text-center">
-    <div class="container mt-3">
-
-      <div class="row g-3">
-
-        <!-- SKU -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">SKU</small>
-            <input type="text" class="form-control mt-1" [(ngModel)]="selectedType.sku" name="sku">
-          </div>
-        </div>
-
-        <!-- UPC -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">UPC</small>
-            <input type="text" class="form-control mt-1" [(ngModel)]="selectedType.upc" name="upc">
-          </div>
-        </div>
-
-        <!-- Quantity -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">Quantity</small>
-            <input type="number" class="form-control mt-1" [(ngModel)]="selectedQuantity" name="quantity">
-          </div>
-        </div>
-
-        <!-- Brand -> Select -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">Brand</small>
-            <select class="form-select mt-1" [(ngModel)]="selectedBrand" name="brand">
-              <option [ngValue]="null" disabled>Select Brand</option>
-              <option *ngFor="let b of brands" [value]="b.carBrandName">{{ b.carBrandName }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Condition -> Select -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start" [ngClass]="{ 'border-danger': !selectedType?.condition }">
-            <small class="text-muted">Condition</small>
-            <select class="form-select mt-1" [(ngModel)]="selectedCondition" name="condition">
-              <option [ngValue]="null" disabled>Select Condition</option>
-              <option *ngFor="let c of itemConditions" [value]="c.description">{{ c.description }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- CategoryId -> Select -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start" [ngClass]="{ 'border-danger': !selectedType?.categoryId }">
-            <small class="text-muted">Category</small>
-            <select class="form-select mt-1" [(ngModel)]="selectedCategory" name="categoryId">
-              <option [ngValue]="null" disabled>Select Category</option>
-              <option *ngFor="let cat of categories" [value]="cat.ebayCategoryId">{{ cat.name }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Price -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">Price</small>
-            <input type="number" step="0.01" class="form-control mt-1" [(ngModel)]="selectedType.basePrice" name="price">
-          </div>
-        </div>
-
-        <!-- Currency -> Select -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <div class="card shadow-sm p-2 text-start">
-            <small class="text-muted">Currency</small>
-            <select class="form-select mt-1" [(ngModel)]="selectedCurrency" name="currency">
-              <option *ngFor="let cur of currencies" [value]="cur.currencyId">{{ cur.code }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!--  Title -->
-        <div class="col-12">
-          <div class="card shadow-sm p-3 text-start">
-            <div class="d-flex justify-content-between align-items-center">
-              <small class="text-muted">Title</small>
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="copyText(selectedType?.title)">
-                <i class="fas fa-copy me-1"></i>
-                Copy
-              </button>
-            </div>
-            <textarea class="form-control mt-2" rows="2" [(ngModel)]="selectedType.itemDescription" name="title">{{selectedType.itemDescription}}</textarea>
-          </div>
-        </div>
-
-        <!-- Description -->
-        <div class="col-12">
-          <div class="card shadow-sm p-3 text-start">
-            <div class="d-flex justify-content-between align-items-center">
-              <small class="text-muted">Description</small>
-              <button type="button" class="btn btn-sm btn-outline-primary"
-                (click)="copyText(selectedType?.description)">
-                <i class="fas fa-copy me-1"></i>
-                Copy
-              </button>
-            </div>
-            <textarea class="form-control mt-2" rows="4" [(ngModel)]="selectedType.itemDetails"
-              name="description">{{selectedType.itemDetails}}</textarea>
-          </div>
-        </div>
-
-        <!-- Images -->
-        <div class="col-12" *ngIf="selectedType?.images?.length > 0">
-          <div class="card shadow-sm p-3">
-            <small class="text-muted">Images (select more than 7 images to publish)</small>
-            <div class="row mt-2">
-              <div class="col-2" *ngFor="let image of selectedType?.images; let i = index">
-                <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
-                  <img height="100" width="80" [src]="image.imageUrl" class="img-fluid rounded"
-                    [class.border]="isSelected(image)" [class.border-danger]="isSelected(image)"
-                    [class.border-3]="isSelected(image)">
-                  <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
-                    {{ getImageIndex(image) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <button class="btn btn-primary" (click)="PublishByEbay(selectedType)">
-            {{ PublishingByEbay ? 'Publishing...' : 'Publish on eBay' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </c-modal-body>
-  <c-modal-footer class="justify-content-between">
-  </c-modal-footer>
-</c-modal>
-
+<!-- Delete Modal -->
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
@@ -302,5 +163,241 @@
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
     <button class="btn btn-danger" (click)="deleteActivity(selectedItem)">Delete</button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- ................................... -->
+<!-- Scrape Item Modal -->
+<c-modal [(visible)]="IsScrapeItemModalVisible" size="xl" alignment="center">
+  <c-modal-header>
+    <div class="d-flex justify-content-between align-items-center w-100">
+      <h5 cModalTitle>
+        {{ ('Item # ' + selectedItem?.itemId) }}
+      </h5>
+      <h5 cModalTitle>
+        {{ ('UPC: ' + selectedItem?.upc ) }}
+      </h5>
+    </div>
+  </c-modal-header>
+
+  <c-modal-body *ngIf="selectedItem">
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-start">
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Pull data from</label>
+            <div class="btn-group-vertical w-100" role="group">
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcHomeDepot" value="HomeDepot"
+                autocomplete="off" checked (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcHomeDepot">Home Depot</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcLowes" value="Lowes" autocomplete="off"
+                (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcLowes">Lowe's</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcBuild" value="Build" autocomplete="off"
+                (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcBuild">Ferguson Home</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcMilwaukee" value="Milwaukee"
+                autocomplete="off" (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcMilwaukee">Milwaukee</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcRyobi" value="Ryobi" autocomplete="off"
+                (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcRyobi">Ryobi</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcUPCItems" value="UPCItems"
+                autocomplete="off" (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcUPCItems">UPC Items</label>
+
+              <input type="radio" class="btn-check" name="scrapeSource" id="srcIHerb" value="IHerb" autocomplete="off"
+                (change)="chooseType($event)">
+              <label class="btn btn-outline-secondary text-start" for="srcIHerb">iHerb</label>
+
+            </div>
+          </div>
+
+          <div class="col-md-9">
+            <div *ngIf="useInput">
+              <label class="form-label fw-semibold">UPC</label>
+              <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="upc" placeholder="Enter UPC">
+                <button class="btn btn-primary" (click)="GetPriceAndPhoto(upc)">
+                  <span *ngIf="!isLoading">Get</span>
+                  <c-spinner *ngIf="isLoading" size="sm"></c-spinner>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="!useInput && selectedSource == 'HomeDepot'">
+              <label class="form-label fw-semibold">
+                Source HTML file:
+                <a class="text-danger" [href]="'https://www.homedepot.com/s/' + selectedItem?.upc" target="_blank">
+                  Go to Source
+                </a>
+              </label>
+              <div class="input-group">
+                <textarea class="form-control" rows="3" [(ngModel)]="htmlContent"
+                  placeholder="Paste HTML content here"></textarea>
+                <button class="btn btn-primary" (click)="GetPriceAndPhotoForLowes()">
+                  <span *ngIf="!isLoading">Get</span>
+                  <c-spinner *ngIf="isLoading" size="sm"></c-spinner>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="showHome" class="card">
+      <div class="card-header fw-semibold">
+        Item details
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+
+          <div class="col-md-8">
+
+            <div class="mb-2 text-muted fw-semibold small border-bottom pb-2">Core details</div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-12">
+                <label class="form-label">Item name</label>
+                <input class="form-control" [(ngModel)]="title">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-12">
+                <label class="form-label">Details</label>
+                <textarea class="form-control" rows="3" [(ngModel)]="description2"></textarea>
+              </div>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">SKU</label>
+                <input class="form-control" [(ngModel)]="storeSku">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Brand</label>
+                <input class="form-control" [(ngModel)]="Brand">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Internet Id</label>
+                <input class="form-control" [(ngModel)]="internet">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Price</label>
+                <input class="form-control" [(ngModel)]="price">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Model</label>
+                <input class="form-control" [(ngModel)]="model">
+              </div>
+            </div>
+
+            <div class="mb-2 mt-4 text-muted fw-semibold small border-bottom pb-2">Dimensions</div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Length</label>
+                <input class="form-control" [(ngModel)]="length">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Width</label>
+                <input class="form-control" [(ngModel)]="width">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Height</label>
+                <input class="form-control" [(ngModel)]="height">
+              </div>
+            </div>
+
+            <div class="mb-2 mt-4 text-muted fw-semibold small border-bottom pb-2">Classification</div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <select class="form-select" [(ngModel)]="categoryId">
+                  <option [ngValue]="null" disabled>Select category</option>
+                  <option *ngFor="let one of categories" [value]="one.category_id">{{ one.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Unit</label>
+                <select class="form-select" [(ngModel)]="unitId">
+                  <option [ngValue]="null" disabled>Select unit</option>
+                  <option *ngFor="let one of units" [value]="one.unitId">{{ one.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Color</label>
+                <select class="form-select" [(ngModel)]="colorId">
+                  <option [ngValue]="null" disabled>Select color</option>
+                  <option *ngFor="let one of colors" [value]="one.colorId">{{ one.name }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Currency</label>
+                <select class="form-select" [(ngModel)]="currencyId">
+                  <option [ngValue]="null" disabled>Select currency</option>
+                  <option *ngFor="let one of currencies" [value]="one.currencyId">{{ one.code }}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Platform</label>
+                <select class="form-select" [(ngModel)]="platformId">
+                  <option [ngValue]="null" disabled>Select platform</option>
+                  <option *ngFor="let one of Platforms" [value]="one.platform_id">{{ one.description }}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Size</label>
+                <select class="form-select" [(ngModel)]="sizeId">
+                  <option [ngValue]="null" disabled>Select size</option>
+                  <option *ngFor="let one of sizes" [value]="one.size_id">{{ one.description }}</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-md-4">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
+                <img [src]="imgUrl[currentIndex]" class="img-fluid rounded border mb-3" alt="image">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <button class="btn btn-outline-secondary btn-sm" (click)="prev()">◀</button>
+                  <span class="badge bg-secondary">{{ currentIndex + 1 }} / {{ imgUrl.length }}</span>
+                  <button class="btn btn-outline-secondary btn-sm" (click)="next()">▶</button>
+                </div>
+                <input type="file" class="form-control" (change)="onFileSelected($event)" multiple accept="image/*">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+          <button class="btn btn-success" (click)="SaveItemInDB()">Save item</button>
+        </div>
+      </div>
+    </div>
+
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button *ngIf="!showHome" (click)="SetItemCannotScraped()" cButton color="info">Set Un scrapeble</button>
+    <div></div>
+    <div></div>
+    <div></div>
+    <button cButton color="secondary" (click)="IsScrapeItemModalVisible = false">Close</button>
   </c-modal-footer>
 </c-modal>

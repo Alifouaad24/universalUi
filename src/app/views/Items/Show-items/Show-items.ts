@@ -155,6 +155,7 @@ export class ShowItemsComponent implements OnInit {
     this.showDeleteModal = true;
   }
 
+
   deleteActivity(type?: any) {
     if (!type) return;
     this.http.deleteData(`Item/${type.itemId}`,).subscribe(() => {
@@ -421,6 +422,39 @@ export class ShowItemsComponent implements OnInit {
     this.router.navigate(['./add-edit-item'], {
       relativeTo: this.route,
       state: { item }
+    });
+  }
+
+  AddToInventoryModal: boolean = false
+  ShowAddToInventoryModal(selectedItem: any) {
+    this.AddToInventoryModal = true
+    this.bPrice = selectedItem?.basePrice ?? 0
+    this.selectedItem = selectedItem
+
+  }
+  quantity: number = 1
+  bPrice: number = 0
+  addToInventory(selectedItem: any) {
+    let model = {
+      itemId: selectedItem.itemId,
+      invPrice: this.bPrice,
+      qty: this.quantity,
+      sizeId: null,
+      businessId: this.businessId,
+      conditionId: this.selectedCondition,
+    };
+
+    this.http.posteData(`Inventory`, model).subscribe({
+      next: () => {
+        this.toastMessage.set('Item added to inventory successfully');
+        this.toastVisible.set(true);
+        this.AddToInventoryModal = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastMessage.set('Error adding item to inventory');
+        this.toastVisible.set(true);
+      }
     });
   }
 

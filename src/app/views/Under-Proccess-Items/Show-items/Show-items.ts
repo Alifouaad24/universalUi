@@ -24,7 +24,9 @@ import {
   ToastBodyComponent,
   ToastComponent,
   ToasterComponent,
-  ToastHeaderComponent
+  ToastHeaderComponent,
+  FormCheckComponent,
+  SpinnerComponent
 } from '@coreui/angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { BusinessType } from '../../../Models/Business/BusinessType';
@@ -35,12 +37,19 @@ import { ServiceModel } from '../../../Models/ServiceModel';
 import { InventoryModel } from '../../../Models/InventoryModel';
 import { StorageService } from '../../../core/Services/StorageService';
 import saveAs from 'file-saver';
+import { ColorModel } from '../../../Models/ColorModel';
+import { PlatformModel } from '../../../Models/PlatformModel';
+import { UnitModel } from '../../../Models/UnitModel';
+import { SizeModel } from '../../../Models/SizeModel';
+import { CurrencyModel } from '../../../Models/CurrencyModel';
+import { CategoryModel } from '../../../Models/CategoryModel';
+import { FeatureModel } from '../../../Models/FeatureModel';
 declare const bootstrap: any; // NEW: بدل import { Modal } from 'bootstrap';
 
 @Component({
   selector: 'app-button-groups',
   templateUrl: './Show-items.html',
-  imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule,
+  imports: [RowComponent, ColComponent, CardComponent, IconModule, ModalModule, SpinnerComponent,
     CardHeaderComponent, CardBodyComponent, ButtonGroupComponent,
     ButtonDirective, RouterLink, ReactiveFormsModule,
     FormCheckLabelDirective, ButtonToolbarComponent,
@@ -48,7 +57,7 @@ declare const bootstrap: any; // NEW: بدل import { Modal } from 'bootstrap';
     FormControlDirective, DropdownComponent, FormsModule, CommonModule,
     DropdownToggleDirective, DropdownMenuDirective,
     DropdownItemDirective, DropdownDividerDirective,
-    ButtonDirective,
+    ButtonDirective, FormCheckComponent,
     ProgressComponent,
     ToasterComponent,
     ToastComponent,
@@ -85,6 +94,14 @@ export class ShowItemsComponent implements OnInit {
   selectedBrand?: string
   selectedQuantity?: number
   selectedUpc?: string
+  BrandId?: string
+  // قوائم Lookup
+  Categories: any[] = [];
+  Sizes: any[] = [];
+  Units: any[] = [];
+  Colors: any[] = [];
+  Currencies: any[] = [];
+  loading: boolean = false;
 
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef,
@@ -94,29 +111,76 @@ export class ShowItemsComponent implements OnInit {
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'))
     this.getItems()
+    this.getPlatforms();
+    this.getCategories();
+    this.getSizes();
+    this.getUnits();
+    this.getColors();
+    this.getCurrencies();
 
     this.getAllCategories()
-    this.getAllBrands()
-    this.getAllItemCondition()
     this.getAllCurrencies()
   }
 
+  getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      this.Platforms = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getAllPlatforms() {
+    this.http.getAllData('Platform').subscribe(res => {
+      this.Platforms = (res as PlatformModel[]).map((el) => new PlatformModel({
+        platform_id: el.platform_id,
+        description: el.description,
+      }));
+      this.cdr.detectChanges();
+    }, (error) => {
+      console.error(error);
+      this.loading = false;
+    });
+  }
+
+  getCategories() {
+    this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
+      this.Categories = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getSizes() {
+    this.http.getAllData('Size').subscribe((res: any) => {
+      this.Sizes = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getUnits() {
+    this.http.getAllData('Unit').subscribe((res: any) => {
+      this.Units = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getColors() {
+    this.http.getAllData('Color').subscribe((res: any) => {
+      this.Colors = res;
+      this.cdr.detectChanges();
+    });
+  }
+
+  getCurrencies() {
+    this.http.getAllData('Currency').subscribe((res: any) => {
+      this.Currencies = res;
+      this.cdr.detectChanges();
+    });
+  }
+
   getAllCategories() {
-    this.http.getAllData('Category').subscribe((res: any) => {
+    this.http.getAllData(`Category/${this.businessId}`).subscribe((res: any) => {
       console.log(res)
       this.categories = res
-    })
-  }
-  getAllBrands() {
-    this.http.getAllData('Brand').subscribe((res: any) => {
-      console.log(res)
-      this.brands = res
-    })
-  }
-  getAllItemCondition() {
-    this.http.getAllData('ItemCondition').subscribe((res: any) => {
-      console.log(res)
-      this.itemConditions = res
     })
   }
 
@@ -163,6 +227,7 @@ export class ShowItemsComponent implements OnInit {
       this.toastVisible.set(true);
     });
   }
+
   onVisibleChange(visible: boolean) {
     this.showDeleteModal = false;
     this.toastVisible.set(visible);
@@ -178,6 +243,13 @@ export class ShowItemsComponent implements OnInit {
   openItemModal(item: any) {
     this.selectedItem = item;
     this.isItemModalVisible = true;
+  }
+
+  IsScrapeItemModalVisible = false;
+
+  openItemModalScrapeItemModal(item: any) {
+    this.selectedItem = item;
+    this.IsScrapeItemModalVisible = true;
   }
 
   copyText(text: string | undefined) {
@@ -323,101 +395,487 @@ export class ShowItemsComponent implements OnInit {
   isAuthInEbay = false
   isLoading1 = false
 
-  PublishByEbay(product: any) {
 
-    if (!this.selectedImagesToEbay || this.selectedImagesToEbay.length === 0) {
-      this.toastMessage.set('Please select at least one image to publish the product on eBay.');
-      this.toastVisible.set(true);
-      this.cdr.detectChanges();
-      return;
-    }
-    const token = this.storage.getWithExpiry('ebayToken')
-    if (!token) {
-      this.isAuthInEbay = false;
-      this.toastMessage.set('You must log in to eBay first');
-      this.toastVisible.set(true);
-      this.cdr.detectChanges();
-      return;
-    }
-    this.isLoading1 = true;
 
-    const skuValue = product.sku && product.sku.trim() !== ''
-      ? product.sku
-      : this.generateUniqueSku();
-
-    const titleValue = product.itemDescription
-      ? product.itemDescription.substring(0, 80)
-      : 'Untitled Item';
-
-    const payload = {
-      'sku': skuValue,
-      'title': titleValue,
-      'description': product.itemDetails,
-      'brand': this.selectedBrand,
-      'quantity': Number(this.selectedQuantity),
-      'condition': this.selectedCondition ?? 'NEW',
-      'imageUrls': (() => {
-        const imageUrls = this.selectedImagesToEbay.map(img => img.imageUrl);
-
-        while (imageUrls.length < 8) {
-          imageUrls.push(imageUrls[imageUrls.length - 1]);
-        }
-
-        return imageUrls;
-      })(),
-
-      'price': Number(product?.basePrice),
-      'currency': "USD",
-      'fulfillmentPolicyId': '373826822023',
-      'paymentPolicyId': '373648989023',
-      'returnPolicyId': '373648988023',
-      'categoryId': this.selectedCategory,
-      'upc': product.upc,
-      'ebayOfferID': ''
-    };
-
-    console.log(payload)
-    this.PublishingByEbay = true;
-    this.http.posteData(`Ebay/PublishDropShippingProduct/${token}`, payload).subscribe({
-      next: () => {
-        this.toastMessage.set('Product published successfully (Drop Shipping)');
-        this.toastVisible.set(true);
-      },
-
-      error: (err) => {
-        this.PublishingByEbay = false;
-        console.error(err);
-        let errorMessage = 'Unknown error';
-        if (err.error) {
-          if (typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else {
-            errorMessage = JSON.stringify(err.error, null, 2);
-          }
-        }
-        if (err.status === 400) {
-          alert(errorMessage);
-        }
-        this.toastMessage.set('Error republishing product');
-        this.toastVisible.set(true);
-        this.cdr.detectChanges();
-      }
-    });
-    // } else {
-    //   //this.updateProductOnEbay(product)
-    // }
-
-  }
-
-  generateUniqueSku(): string {
-    return 'SKU-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
 
   goToEditItem(item: any) {
     this.router.navigate(['./add-edit-item'], {
       relativeTo: this.route,
       state: { item }
     });
+  }
+
+  ///////////////////////////////////////////////////
+
+  features: FeatureModel[] = [];
+  upc?: string
+  imgUrl: string[] = []
+  price?: number
+  model?: string
+  Brand?: string
+  storeSku?: string
+  internet?: string
+  Notes?: string
+  CondId?: number
+  SysyemId?: number
+  CategoryId?: number
+  allCondetions: any = []
+  Systems: any = []
+  Platforms: any = []
+  CondetionId?: number
+  showPublic: boolean = false
+  showHome: boolean = false
+  showError: boolean = false
+  showNoImages: boolean = false
+  Qty: number = 1
+  ///////////////////////////////////////
+  UPCPublic: string = ''
+  title?: string
+  description?: string
+  description2?: string
+  brand?: string
+  image: string = ""
+  modelPublic?: string
+  color?: string
+  category?: string
+  lowest_recorded_price?: number
+  highest_recorded_price?: number
+  images?: []
+  source?: string
+  quntiuty?: number
+  isLoadingPublic: boolean = false
+  showErrorForMe: boolean = false
+  Images: string[] = []
+  index: number = 0
+  MerchantId?: number
+  Merchants?: any
+  length?: String
+  height?: String
+  width?: String
+  lowesOrHomeDepotFile?: File
+  isLoadingForImg: boolean = false
+  currentIndex = 0;
+  selectedSource: string = 'HomeDepot';
+  useInput?: boolean;
+  currencis: CurrencyModel[] = []
+  colors: ColorModel[] = []
+  platforms: PlatformModel[] = []
+  sizes: SizeModel[] = []
+  units: UnitModel[] = []
+  categoryId: number | null = null;
+  currencyId: number | null = null;
+  colorId: number | null = null;
+  platformId: number | null = null;
+  sizeId: number | null = null;
+  unitId: number | null = null;
+  visible = false
+  ///// for toastr ////////
+  IHerb: string = ''
+  buinessId?: number
+
+  chooseType(event: any) {
+    const type = event.target.value
+    this.selectedSource = type;
+    if (type == 'Build' || type == 'Milwaukee' || type == 'Ryobi' || type == 'UPCItems' || type == 'IHerb') {
+      this.useInput = true
+    } else {
+      this.useInput = false
+    }
+  }
+
+  GetPriceAndPhoto(upc: string | undefined): void {
+    this.showHome = false;
+    this.showErrorForMe = false;
+
+    if (!upc || upc.trim() === "") {
+      this.showHome = true;
+      this.showError = false;
+      this.image = "";
+      this.imgUrl = [];
+      return;
+    }
+
+    this.showError = false;
+    this.isLoading = true;
+    this.showNoImages = false
+
+    if (this.selectedSource === 'Milwaukee') {
+      this.http.posteData(`Scraper/Bymilwaukeetool/${upc}`, {}).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.quntiuty = response.qty;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.height = response.height
+            this.width = response.wedth
+            this.length = response.length
+            if (response.upc && response.upc.includes("Does not Apply") && upc.length === 12 && /^\d+$/.test(upc)) {
+              this.upc = upc
+            } else {
+              this.upc = response.upc
+            }
+
+
+            // if (this.imgUrl.length == 0) {
+            //   this.showNoImages = true
+            // }
+
+            // const matchedPlatform = this.Platforms.find((el: any) => el.desciption?.includes(this.source));
+            // if (matchedPlatform) {
+            //   this.platformId = matchedPlatform.platform_id;
+            // }
+
+            this.showHome = true;
+            this.showError = false;
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+        }
+      );
+
+    } else if (this.selectedSource === 'Build') {
+      this.http.posteData(`Scraper/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    } else if (this.selectedSource === 'Ryobi') {
+      this.http.posteData(`Scraper/ByRyobiTools/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    }
+    else if (this.selectedSource === 'UPCItems') {
+      this.http.posteData(`Scraper/ByUPCItems/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    }
+    else if (this.selectedSource === 'IHerb') {
+      this.http.posteData(`Scraper/ByIherb/${upc}`, null).subscribe(
+        (response: any) => {
+          this.isLoading = false;
+          console.log(response)
+          if (response != null) {
+            this.imgUrl = response.images || [];
+            this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+            this.price = response.price;
+            this.Brand = response.brand;
+            this.model = response.model;
+            this.storeSku = response.sku;
+            this.quntiuty = response.qty;
+            this.internet = response.internet;
+            this.source = response.source;
+            this.title = response.title;
+            this.description2 = response.desc;
+            this.showHome = true;
+            this.showError = false;
+            this.upc = upc
+            this.cdr.detectChanges()
+          } else {
+            this.showErrorForMe = true;
+          }
+        },
+        (error) => {
+          this.isLoading = false;
+          this.showError = true;
+          this.showHome = false;
+          this.onVisibleChange(true)
+        }
+      );
+    }
+  }
+
+  onFile2Selected(event: any) {
+    const files: FileList = event.target.files;
+    if (files.length > 0) {
+      this.lowesOrHomeDepotFile = files[0];
+    }
+  }
+
+  htmlContent: string = '';
+
+  GetPriceAndPhotoForLowes() {
+    this.showHome = false;
+    if (this.htmlContent && this.htmlContent.trim() !== '') {
+      this.isLoading = true;
+      const formData = new FormData();
+      const htmlFile = new File(
+        [this.htmlContent],
+        'page.html',
+        { type: 'text/html' }
+      );
+
+      formData.append('file', htmlFile);
+      if (this.selectedSource == 'Lowes') {
+        this.http.posteData(`Scraper/ParseLowesHtml`, formData, true).subscribe(
+
+          (response: any) => {
+            console.log(response)
+            this.isLoading = false;
+
+            if (response != null) {
+              this.imgUrl = response.images || [];
+              this.image = this.imgUrl.length > 0 ? this.imgUrl[0] : "";
+              this.price = response.price;
+              this.Brand = response.brand;
+              this.model = response.model;
+              this.storeSku = response.sku;
+              this.internet = response.internet;
+              this.source = response.source;
+              this.title = response.title;
+              this.description2 = response.desc;
+              this.height = response.height
+              this.width = response.wedth
+              this.length = response.length
+
+              if (this.imgUrl.length == 0) {
+                this.showNoImages = true
+              }
+
+              // const matchedPlatform = this.Platforms.find((el: any) => el.desciption?.includes(this.source));
+              // if (matchedPlatform) {
+              //   this.platformId = matchedPlatform.platform_id;
+              // }
+
+              this.showHome = true;
+              this.showError = false;
+              this.cdr.detectChanges()
+            } else {
+              this.showErrorForMe = true;
+            }
+          },
+          (error) => {
+            this.isLoading = false;
+            this.showError = true;
+            this.showHome = false;
+          }
+        );
+      } else if (this.selectedSource == 'HomeDepot') {
+        this.http.posteData(`Scraper/HomeDepotFileHtmlAnalyse`, formData, true).subscribe(
+          (response: any) => {
+            console.log(response)
+            this.isLoading = false;
+            if (response) {
+              this.imgUrl = response.images || [];
+              this.image = this.imgUrl[0] ?? "";
+              this.price = response.price;
+              this.Brand = response.brand;
+              this.model = response.model;
+              this.storeSku = response.sku;
+              this.internet = response.internet;
+              this.title = response.title;
+              this.description2 = response.desc;
+              this.height = response.height
+              this.width = response.width
+              this.length = response.length
+              this.upc = response.upc
+
+              // if (this.imgUrl.length == 0) {
+              //   this.showNoImages = true
+              // }
+
+              // const matchedPlatform = this.Platforms.find((el: any) => el.desciption?.includes(this.source));
+              // if (matchedPlatform) {
+              //   this.platformId = matchedPlatform.platform_id;
+              // }
+              this.showHome = true;
+              this.showError = false;
+              //this.onVisibleChange(true)
+              this.cdr.detectChanges()
+            } else {
+              this.showErrorForMe = true;
+              this.isLoading = false;
+            }
+          },
+          (error) => {
+            this.isLoading = false;
+            this.showError = true;
+            this.showHome = false;
+            this.onVisibleChange(true)
+          }
+        );
+      }
+    } else {
+      window.alert("Please choose html file to get data")
+    }
+  }
+
+
+  next() {
+    this.currentIndex =
+      (this.currentIndex + 1) % this.imgUrl.length;
+  }
+
+  prev() {
+    this.currentIndex =
+      (this.currentIndex - 1 + this.imgUrl.length) % this.imgUrl.length;
+  }
+
+  onFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i]);
+    }
+
+    this.http.posteData('Scraper', formData, true).subscribe({
+      next: (res: string[]) => {
+        this.imgUrl.push(...res);
+        this.image = res[0];
+        console.log(this.imgUrl);
+      },
+      error: () => {
+        // toaster error
+      }
+    });
+  }
+
+  SaveIngItemInDB: boolean = false
+  SaveItemInDB() {
+    this.SaveIngItemInDB = true;
+    const payLoad = {
+      itemDescription: this.title ?? '',
+      itemDetails: this.description2 ?? '',
+      sku: this.storeSku ?? null,
+      internetId: this.internet ?? null,
+      upc: this.upc ?? null,
+      model: this.model ?? null,
+      platformId: this.platformId ? Number(this.platformId) : null,
+      height: this.height ? Number(this.height) : null,
+      width: this.width ? Number(this.width) : null,
+      length: this.length ? Number(this.length) : null,
+      unitId: this.unitId ?? null,
+      unitValue: this.unitId ?? null,
+      businessId: Number(localStorage.getItem('businessId')) ?? null,
+      colorId: this.colorId ?? null,
+      sizeId: this.sizeId ?? null,
+      categoryId: this.categoryId ?? null,
+      basePrice: Number(this.price ?? 0),
+      currencyId: this.currencyId ?? null,
+      images: this.imgUrl ?? []
+    };
+
+
+    console.log(payLoad)
+    this.http.posteData(`Item/AddItemJson/${this.selectedItem?.itemId}`, payLoad).subscribe(res => {
+      this.SaveIngItemInDB = false;
+      window.location.reload()
+      console.log(res)
+    }, (error) => {
+      this.SaveIngItemInDB = false;
+    })
+
+  }
+  SetItemCannotScraped1 = false
+  SetItemCannotScraped() {
+    this.SetItemCannotScraped1 = true
+    this.http.putData(`Item/SetItemCannotScraped/${this.selectedItem?.itemId}`, {}).subscribe(res => {
+      console.log(res)
+      this.SetItemCannotScraped1 = false
+      this.selectedItem.canScrape = false
+      this.toastMessage.set('Item set as cannot scraped successfully');
+      this.toastVisible.set(true);
+      this.IsScrapeItemModalVisible = false;
+      this.cdr.detectChanges()
+    }, (error) => {
+    })
+
   }
 
 }

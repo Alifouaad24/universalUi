@@ -55,6 +55,17 @@
         </select>
       </div>
 
+      <!-- Brand -->
+      <div class="col-md-3">
+        <label class="form-label">Brand</label>
+        <select class="form-select" [(ngModel)]="BrandId">
+          <option disabled [ngValue]="null">-- Select Brand --</option>
+          <option *ngFor="let one of Brands" [ngValue]="one.carBrandId">
+            {{ one.carBrandName }}
+          </option>
+        </select>
+      </div>
+
       <!-- Category -->
       <div class="col-md-3">
         <label class="form-label">Category</label>

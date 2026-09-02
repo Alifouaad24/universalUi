@@ -59,7 +59,6 @@ import { PlatformModel } from '../../../Models/PlatformModel';
     ToasterComponent,
     ToastComponent,
     ToastHeaderComponent,
-
     ToastBodyComponent]
 })
 export class ScrapeItemComponent implements OnInit {

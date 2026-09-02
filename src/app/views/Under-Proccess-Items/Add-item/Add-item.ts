@@ -65,8 +65,9 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
   Units: any[] = [];
   Colors: any[] = [];
   Currencies: any[] = [];
-
+  Brands: any[] = [];
   businessId?: number;
+  BrandId?: number;
 
   constructor(
     private http: HttpConnectService,
@@ -92,6 +93,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     this.getSizes();
     this.getUnits();
     this.getColors();
+    this.getBrands();
     this.getCurrencies();
 
     const nav = this.router.getCurrentNavigation();
@@ -103,7 +105,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     }
   }
 
-   fillFormFromItem(item: any) {
+  fillFormFromItem(item: any) {
     this.editingItemId = item.itemId ?? null;
     this.ItemDescription = item.itemDescription ?? '';
     this.ItemDetails = item.itemDetails ?? '';
@@ -151,6 +153,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     formData.append('ItemId', this.editingItemId!.toString());
     formData.append('ItemDescription', this.ItemDescription);
     formData.append('ItemDetails', this.ItemDetails || '');
+    formData.append('brandId', this.BrandId?.toString() || '');
     formData.append('sku', this.sku || '');
     formData.append('upc', this.upc || '');
     formData.append('businessId', localStorage.getItem('businessId')!);
@@ -223,6 +226,13 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getBrands() {
+    this.http.getAllData(`Brand/${this.businessId}`).subscribe((res: any) => {
+      this.Brands = res;
+      this.cdr.detectChanges();
+    });
+  }
+
   getUnits() {
     this.http.getAllData('Unit').subscribe((res: any) => {
       this.Units = res;
@@ -286,6 +296,7 @@ export class AddEditItemComponent implements OnInit, AfterViewInit {
     formData.append('ItemDescription', this.ItemDescription);
     formData.append('ItemDetails', this.ItemDetails || '');
     formData.append('sku', this.sku || '');
+    formData.append('brandId', this.BrandId?.toString() || '');
     formData.append('upc', this.upc || '');
     formData.append('businessId', localStorage.getItem('businessId')!)
     formData.append('InternetId', this.InternetId || '');

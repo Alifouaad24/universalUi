@@ -1,8 +1,3 @@
-<div class="m-2 p-2">
-  <button class="btn btn-primary" routerLink="./add-edit-item">
-    Add Product
-  </button>
-</div>
 <div class="card">
   <div class="card-header">
     Products
@@ -79,11 +74,9 @@
 <c-modal [(visible)]="isItemModalVisible" size="lg" alignment="center">
   <c-modal-header>
     <h5 cModalTitle>
-      {{ selectedItem?.itemDescription || selectedItem?.sku || ('Item #' + selectedItem?.itemId) }}
+      {{ ('Item #' + selectedItem?.itemId) || selectedItem?.sku }}
     </h5>
-    <button cButtonClose (click)="isItemModalVisible = false"></button>
   </c-modal-header>
-
   <c-modal-body *ngIf="selectedItem">
     <div class="row g-3">
       <div class="col-md-5 text-center">
@@ -116,7 +109,7 @@
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span class="text-muted">Category</span>
-            <span>{{ selectedItem.category || 'N/A' }}</span>
+            <span>{{ selectedItem.category.name || 'N/A' }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span class="text-muted">Brand</span>
@@ -142,6 +135,7 @@
   </c-modal-body>
 
   <c-modal-footer>
+    <button cButton color="success" (click)="ShowAddToInventoryModal(selectedItem)">Add to inventory</button>
     <button cButton color="secondary" (click)="isItemModalVisible = false">Close</button>
   </c-modal-footer>
 </c-modal>
@@ -304,5 +298,42 @@
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
     <button class="btn btn-danger" (click)="deleteActivity(selectedItem)">Delete</button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Add to inventory -->
+<c-modal [(visible)]="AddToInventoryModal" [size]="'lg'">
+  <c-modal-header>Add item to inventory</c-modal-header>
+  <c-modal-body>
+
+    <div class="col-12 col-sm-6 col-md-12">
+      <div class="card shadow-sm p-2 text-start" [ngClass]="{ 'border-danger': !selectedType?.condition }">
+        <small class="text-muted">Condition</small>
+        <select class="form-select mt-1" [(ngModel)]="selectedCondition" name="condition">
+          <option [ngValue]="null" disabled>Select Condition</option>
+          <option *ngFor="let c of itemConditions" [value]="c.description">{{ c.description }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-12">
+      <div class="card shadow-sm p-2 text-start">
+        <small class="text-muted">Price</small>
+        <input type="text" class="form-control mt-1" [(ngModel)]="bPrice" name="bPrice">
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-12">
+      <div class="card shadow-sm p-2 text-start">
+        <small class="text-muted">Quantity</small>
+        <input type="text" class="form-control mt-1" [(ngModel)]="quantity" name="quantity">
+      </div>
+    </div>
+
+
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="AddToInventoryModal = false">Cancel</button>
+    <button class="btn btn-success" (click)="addToInventory(selectedItem)">Add ({{selectedItem.itemId}}) to Inventory</button>
   </c-modal-footer>
 </c-modal>
