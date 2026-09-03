@@ -80,25 +80,43 @@ export class DefaultLayoutComponent {
   ];
 
   private closeInitiallyOpenGroups() {
-  // ننتظر دورتين من الرندر: الأولى لبناء navItems، والثانية
-  // حتى تنتهي مكتبة CoreUI من إضافة كلاس 'show' على المجموعات المفتوحة
-  setTimeout(() => {
-    const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
-    if (!sidebarEl) return;
+  const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
+  if (!sidebarEl) return;
 
-    // كل مجموعة (Service أب) مفتوحة حالياً تحمل كلاس 'show'
-    const openGroups = sidebarEl.querySelectorAll('.nav-group.show');
+  const forceClose = (group: HTMLElement) => {
+    if (!group.classList.contains('show')) return;
+    const toggleLink = group.querySelector('.nav-link') as HTMLElement | null;
+    if (toggleLink) {
+      toggleLink.click();
+    }
+  };
 
-    openGroups.forEach((group: HTMLElement) => {
-      // العنصر القابل للنقر داخل كل مجموعة (الرابط اللي يفتح/يقفل)
-      const toggleLink = group.querySelector('.nav-link') as HTMLElement | null;
-      if (toggleLink) {
-        toggleLink.click();
+  // أغلق فورًا أي مجموعة مفتوحة حالياً وقت استدعاء الدالة
+  sidebarEl.querySelectorAll('.nav-group.show').forEach((group: HTMLElement) => forceClose(group));
+
+  // راقب أي مجموعة تنفتح تلقائيًا لاحقاً (CoreUI بيفتحها بسبب الراوت النشط
+  // بتوقيت غير ثابت)، وأغلقها فوراً لحظة ما تنفتح — بدل تخمين توقيت ثابت
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const target = mutation.target as HTMLElement;
+        if (target.classList.contains('nav-group')) {
+          forceClose(target);
+        }
       }
     });
-  }, 200); // تأخير كافٍ حتى يخلص Angular من رسم كل شيء
-}
+  });
 
+  observer.observe(sidebarEl, {
+    attributes: true,
+    attributeFilter: ['class'],
+    subtree: true
+  });
+
+  // أوقف المراقبة بعد فترة كافية لاستقرار الشجرة، حتى ما تتدخل
+  // بتفاعل المستخدم اليدوي (فتح/إغلاق يدوي) بعدها
+  setTimeout(() => observer.disconnect(), 1500);
+}
 
   ngOnInit() {
     this.GetBusinesses()

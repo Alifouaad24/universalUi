@@ -316,7 +316,7 @@
         <small class="text-muted">Condition</small>
         <select class="form-select mt-1" [(ngModel)]="selectedCondition" name="condition">
           <option [ngValue]="null" disabled>Select Condition</option>
-          <option *ngFor="let c of itemConditions" [value]="c.description">{{ c.description }}</option>
+          <option *ngFor="let c of itemConditions" [value]="c.itemConditionId">{{ c.description }}</option>
         </select>
       </div>
     </div>

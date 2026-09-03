@@ -437,18 +437,20 @@ export class ShowItemsComponent implements OnInit {
   addToInventory(selectedItem: any) {
     let model = {
       itemId: selectedItem.itemId,
-      invPrice: this.bPrice,
+      price: this.bPrice,
       qty: this.quantity,
-      sizeId: null,
       businessId: this.businessId,
-      conditionId: this.selectedCondition,
+      conditionId: Number(this.selectedCondition),
     };
+
+    console.log('Adding to inventory with model:', model);
 
     this.http.posteData(`Inventory`, model).subscribe({
       next: () => {
         this.toastMessage.set('Item added to inventory successfully');
         this.toastVisible.set(true);
         this.AddToInventoryModal = false;
+        this.cdr.detectChanges()
       },
       error: (err) => {
         console.error(err);
