@@ -154,13 +154,12 @@ export class ShowCustomersComponent implements OnInit {
           item =>
             new CustomerModel({
               GlobalCustomerId: item.globalCustomerId,
+              CustomerCode: item.customerCode,
               CustomerName: item.customerName,
               CustomerEmail: item.customerEmail,
               CustomerMobile: item.customerMobile,
               CustomerImage: item.customerImage,
-
               Country_id: item.countryId,
-
               Country: new Country({
                 countryId: item.country?.countryId,
                 name: item.country?.name,

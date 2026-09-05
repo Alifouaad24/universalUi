@@ -426,7 +426,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       }
     }
 
-    const bus = this.selectedBusinessId.length > 0 ? this.selectedBusinessId : [this.BusinessId];
+    const bus = [this.BusinessId];
     console.log(bus);
     const mainPayLoad = {
       customerName: this.customerName,
@@ -502,6 +502,9 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges()
   }
 
+
+  customerCode?: string;
+
   EditCustData(): void {
     if (this.addingLoad) return;
     this.addingLoad = true;
@@ -513,6 +516,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       customerMobile: this.customerMobile,
       businessesIds: bus,
       country_id: this.countryId ? Number(this.countryId) : null,
+      customerCode: this.customerCode
     };
 
     console.log(mainPayLoad);

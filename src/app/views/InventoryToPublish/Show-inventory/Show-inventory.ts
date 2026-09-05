@@ -1037,7 +1037,7 @@ export class ShowInventoryComponent implements OnInit {
       'fulfillmentPolicyId': '373826822023',
       'paymentPolicyId': '373648989023',
       'returnPolicyId': '373648988023',
-      'categoryId': (product.category?.ebayCategoryId).toString(),
+      'categoryId': (product.item.category?.ebayCategoryId).toString(),
       'upc': product.item.upc,
       'ebayOfferID': product.ebayOfferID
 
@@ -1128,7 +1128,7 @@ export class ShowInventoryComponent implements OnInit {
         'fulfillmentPolicyId': '373826822023',
         'paymentPolicyId': '373648989023',
         'returnPolicyId': '373648988023',
-        'categoryId': (product.category?.ebayCategoryId).toString(),
+        'categoryId': (product.item.category?.ebayCategoryId).toString(),
         'upc': product.item.upc,
         'ebayOfferID': product.ebayOfferID
       };
@@ -1206,7 +1206,7 @@ export class ShowInventoryComponent implements OnInit {
       'fulfillmentPolicyId': '373826822023',
       'paymentPolicyId': '373648989023',
       'returnPolicyId': '373648988023',
-      'categoryId': (product.category?.ebayCategoryId).toString(),
+      'categoryId': (product.item.category?.ebayCategoryId).toString(),
       'upc': product.item.upc,
       'ebayOfferID': product.ebayOfferID
       /////////////////////////////////////////////

@@ -59,6 +59,7 @@ declare const bootstrap: any; // NEW: بدل import { Modal } from 'bootstrap';
 export class ShowItemsComponent implements OnInit {
 
   inventory: any[] = [];
+  allItems: any[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
@@ -179,10 +180,15 @@ export class ShowItemsComponent implements OnInit {
   }
 
   isItemModalVisible = false;
+  selectedImageUrl: string | null = null;
 
   openItemModal(item: any) {
     this.selectedItem = item;
     this.isItemModalVisible = true;
+    this.selectedImageUrl =
+      this.selectedItem.images?.length
+        ? this.selectedItem.images[0].imageUrl
+        : 'assets/no-image.png';
   }
 
   copyText(text: string | undefined) {
@@ -457,6 +463,21 @@ export class ShowItemsComponent implements OnInit {
         this.toastMessage.set('Error adding item to inventory');
         this.toastVisible.set(true);
       }
+    });
+  }
+
+  searchTerm: string = '';
+
+  searchAboutItem(search: string) {
+    this.inventory = this.allItems
+    this.inventory = this.inventory.filter((item: any) => {
+      const searchLower = search.toLowerCase();
+      return (
+        (item.upc && item.upc.toLowerCase().includes(searchLower)) ||
+        (item.sku && item.sku.toLowerCase().includes(searchLower)) ||
+        (item.internet && item.internet.toLowerCase().includes(searchLower)) ||
+        (item.model && item.model.toLowerCase().includes(searchLower))
+      );
     });
   }
 

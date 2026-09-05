@@ -4,6 +4,7 @@ import { CustomerBusenessModel } from "./customerBusiness"
 
 export class CustomerModel {
     GlobalCustomerId: number = 0
+    CustomerCode: string = ''
     CustomerName: string = ''
     CustomerMobile: string = ''
     CustomerEmail: string = ''

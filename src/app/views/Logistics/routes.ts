@@ -26,6 +26,13 @@ export const routes: Routes = [
           title: 'shipping Costs'
         }
       },
+      {
+        path: 'add',
+        loadComponent: () => import('./AddShippingCosts/AddShippingCost').then(m => m.AddShippingCostComponent),
+        data: {
+          title: 'Add-Edit'
+        }
+      },
     ]
   }
 ];

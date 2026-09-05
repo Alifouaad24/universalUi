@@ -68,6 +68,7 @@ declare const bootstrap: any; // NEW: بدل import { Modal } from 'bootstrap';
 export class ShowItemsComponent implements OnInit {
 
   inventory: any[] = [];
+  allItems: any[] = [];
   message?: string
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
@@ -198,6 +199,7 @@ export class ShowItemsComponent implements OnInit {
       (res: any) => {
         console.log(res)
         this.inventory = res;
+        this.allItems = res;
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -243,6 +245,10 @@ export class ShowItemsComponent implements OnInit {
   openItemModal(item: any) {
     this.selectedItem = item;
     this.isItemModalVisible = true;
+    this.selectedImageUrl =
+      this.selectedItem.images?.length
+        ? this.selectedItem.images[0].imageUrl
+        : 'assets/no-image.png';
   }
 
   IsScrapeItemModalVisible = false;
@@ -877,5 +883,23 @@ export class ShowItemsComponent implements OnInit {
     })
 
   }
+
+  searchTerm: string = '';
+
+  searchAboutItem(search: string) {
+    this.inventory = this.allItems
+    this.inventory = this.inventory.filter((item: any) => {
+      const searchLower = search.toLowerCase();
+      return (
+        (item.upc && item.upc.toLowerCase().includes(searchLower)) ||
+        (item.sku && item.sku.toLowerCase().includes(searchLower)) ||
+        (item.internet && item.internet.toLowerCase().includes(searchLower)) ||
+        (item.model && item.model.toLowerCase().includes(searchLower))
+      );
+    });
+  }
+
+  selectedImageUrl: string | null = null;
+
 
 }

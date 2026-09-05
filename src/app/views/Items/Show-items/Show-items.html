@@ -1,9 +1,13 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <div>
+    <div class="fw-bold col-2">
       Products
     </div>
-    <div>
+    <div class="col-8 d-flex justify-content-center">
+      <input type="text" class="form-control col-6" placeholder="Search..." [(ngModel)]="searchTerm"
+        (input)="searchAboutItem(searchTerm)">
+    </div>
+    <div class="fw-bold col-2 text-end">
       Count: {{ inventory.length }}
     </div>
   </div>
@@ -15,8 +19,8 @@
     </div>
     <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
     <div *ngIf="inventory.length > 0" class="row g-4">
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" *ngFor="let item of inventory; index as i">
-        <div class="card h-100 shadow-sm">
+      <div class="col-6 col-md-4 col-lg-3 col-xl-2 " *ngFor="let item of inventory; index as i">
+        <div class="card h-100 shadow-sm"  [ngClass]="{'border border-1 border-success': item.isInStock}">
           <img (click)="openItemModal(item)"
             [src]="item.images && item.images.length ? item.images[0].imageUrl : 'assets/no-image.png'"
             class="card-img-top" style="height: 200px; object-fit: cover;" [alt]="item.itemDescription || item.sku" />
@@ -37,8 +41,10 @@
             </div>
           </div>
 
-          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1">
-            <button *ngIf="ForDropShipping" class="btn btn-sm btn-outline-info" (click)="ShowDetailsModal(item)">
+          <div class="card-footer bg-white border-top-0 p-2 d-flex justify-content-center gap-1"
+            [ngClass]="{'bg-success': item.isInStock}">
+            <button *ngIf="ForDropShipping" class="btn btn-sm btn-outline-info" 
+             (click)="ShowDetailsModal(item)">
               <c-icon name="cilShare"></c-icon>
             </button>
             <button class="btn btn-sm btn-outline-primary" (click)="goToEditItem(item)">
@@ -77,74 +83,184 @@
 
 
 <c-modal [(visible)]="isItemModalVisible" size="lg" alignment="center">
+
   <c-modal-header>
     <h5 cModalTitle>
-      {{ ('Item #' + selectedItem?.itemId) || selectedItem?.sku }}
+      #{{ selectedItem?.itemId }} |
+      {{ selectedItem?.upc | titlecase }}
     </h5>
   </c-modal-header>
+
   <c-modal-body *ngIf="selectedItem">
+
     <div class="row g-3">
+
+      <!-- ==================== Images ==================== -->
       <div class="col-md-5 text-center">
-        <img
-          [src]="selectedItem.images && selectedItem.images.length ? selectedItem.images[0].imageUrl : 'assets/no-image.png'"
-          class="img-fluid rounded" [alt]="selectedItem.itemDescription" />
 
-        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2"
+        <!-- Main Image -->
+        <img [src]="selectedImageUrl || 'assets/no-image.png'" class="img-fluid rounded"
+          [alt]="selectedItem.upc || 'Item image'" style="
+            max-height: 350px;
+            width: 100%;
+            object-fit: contain;
+          " />
+
+        <!-- Thumbnails -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3"
           *ngIf="selectedItem.images && selectedItem.images.length > 1">
-          <img *ngFor="let img of selectedItem.images" [src]="img.imageUrl" class="rounded border"
-            style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" />
+
+          <img *ngFor="let img of selectedItem.images" [src]="img.imageUrl" [alt]="selectedItem.upc || 'Item image'"
+            class="rounded" [ngClass]="{
+              'border': true,
+              'border-primary': selectedImageUrl === img.imageUrl,
+              'border-secondary': selectedImageUrl !== img.imageUrl
+            }" style="
+              width: 60px;
+              height: 60px;
+              object-fit: cover;
+              cursor: pointer;
+            " (click)="selectedImageUrl = img.imageUrl" />
+
         </div>
+
       </div>
 
+
+      <!-- ==================== Item Information ==================== -->
       <div class="col-md-7">
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">SKU</span>
-            <span>{{ selectedItem.sku || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">UPC</span>
-            <span>{{ selectedItem.upc || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Price</span>
-            <span class="fw-bold text-primary">
-              {{ selectedItem.basePrice != null ? (selectedItem.basePrice | currency) : 'N/A' }}
-            </span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Category</span>
-            <span>{{ selectedItem.category.name || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Brand</span>
-            <span>{{ selectedItem.brand || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Color</span>
-            <span>{{ selectedItem.color || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Size</span>
-            <span>{{ selectedItem.size || 'N/A' }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span class="text-muted">Status</span>
-            <span class="badge" [ngClass]="selectedItem.isActive ? 'bg-success' : 'bg-secondary'">
-              {{ selectedItem.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </c-modal-body>
 
+        <ul class="list-group list-group-flush">
+
+          <!-- SKU -->
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+            [class.border]="!selectedItem.sku" [class.border-danger]="!selectedItem.sku"
+            [class.rounded]="!selectedItem.sku">
+            <span class="text-muted">
+              SKU
+            </span>
+
+            <span>
+              {{ selectedItem.sku || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- UPC -->
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+            [class.border]="!selectedItem.upc" [class.border-danger]="!selectedItem.upc"
+            [class.rounded]="!selectedItem.upc">
+            <span class="text-muted">
+              UPC
+            </span>
+
+            <span>
+              {{ selectedItem.upc || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- Price -->
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+            [class.border]="selectedItem.basePrice == null" [class.border-danger]="selectedItem.basePrice == null"
+            [class.rounded]="selectedItem.basePrice == null">
+            <span class="text-muted">
+              Price
+            </span>
+
+            <span class="fw-bold text-primary">
+              {{
+              selectedItem.basePrice != null
+              ? (selectedItem.basePrice | currency)
+              : 'N/A'
+              }}
+            </span>
+          </li>
+
+
+          <!-- Category -->
+          <li class="list-group-item d-flex justify-content-between align-items-center"
+            [class.border]="!selectedItem.category" [class.border-danger]="!selectedItem.category"
+            [class.rounded]="!selectedItem.category">
+            <span class="text-muted">
+              Category
+            </span>
+
+            <span>
+              {{ selectedItem.category || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- Brand -->
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+              Brand
+            </span>
+
+            <span>
+              {{ selectedItem.brand || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- Color -->
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+              Color
+            </span>
+
+            <span>
+              {{ selectedItem.color || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- Size -->
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+              Size
+            </span>
+
+            <span>
+              {{ selectedItem.size || 'N/A' }}
+            </span>
+          </li>
+
+
+          <!-- Status -->
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="text-muted">
+              Status
+            </span>
+
+            <span class="badge" [ngClass]="
+                selectedItem.isActive
+                  ? 'bg-success'
+                  : 'bg-secondary'
+              ">
+              {{
+              selectedItem.isActive
+              ? 'Active'
+              : 'Inactive'
+              }}
+            </span>
+          </li>
+
+        </ul>
+
+      </div>
+
+    </div>
+
+  </c-modal-body>
   <c-modal-footer>
-    <button cButton color="success" (click)="ShowAddToInventoryModal(selectedItem)">Add to inventory</button>
+    <!--  -->
+
     <button cButton color="secondary" (click)="isItemModalVisible = false">Close</button>
+
   </c-modal-footer>
 </c-modal>
-
 
 <!-- publish on ebay -->
 

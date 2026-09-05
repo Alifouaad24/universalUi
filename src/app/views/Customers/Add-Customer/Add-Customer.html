@@ -22,6 +22,10 @@
           </option>
         </select>
       </c-col> -->
+      <c-col *ngIf="isUpdate" md="4">
+        <label cLabel>Customer Code</label>
+        <input class="form-control" [(ngModel)]="customerCode" />
+      </c-col>
 
       <c-col *ngIf="!isUpdate" md="4">
         <label cLabel>Country</label>
@@ -32,14 +36,14 @@
         </select>
       </c-col>
       <!--  -->
-      <c-col *ngIf="userRole?.includes('Super Ad')" md="4">
+      <!-- <c-col *ngIf="userRole?.includes('Super Ad')" md="4">
         <label cLabel>Businesses</label>
         <select cSelect multiple [(ngModel)]="selectedBusinessId">
           <option *ngFor="let one of Businesses" [ngValue]="one.business_id">
             {{ one.business_name }}
           </option>
         </select>
-      </c-col>
+      </c-col> -->
       <br />
       <hr />
 

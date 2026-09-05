@@ -164,7 +164,7 @@ export class AddEditBusniessComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(param => {
       const busFromQuery = param.get('bus')
-      
+
       if (busFromQuery) {
         this.getAllBusinesses()
         this.getAllCountries()
@@ -197,12 +197,9 @@ export class AddEditBusniessComponent implements OnInit {
           console.log(this.usersBusinesses)
           this.logoPreview = this.business!.business_LogoUrl || ''
           this.servicesBusiness = this.business!.business_Services || [];
-          this.Activites = this.business!.business_Activitiy;
-          this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
+          this.Activites = this.business!.business_Activitiy ?? []; this.consumerBusinessRelations = this.business!.consumerBusinessRelations;
           this.providerBusinessRelations = this.business!.providerBusinessRelations;
-          this.business_Assets = this.business!.business_Assets
-          this.bus_Platforms = this.business!.platforms
-           console.log(`99999999999999999${this.bus_Platforms}`)
+          this.business_Assets = this.business!.business_Assets ?? []; this.bus_Platforms = this.business!.platforms ?? []; console.log(`99999999999999999${this.bus_Platforms}`)
           this.businessCustomers = this.business!.buseness_Customers || [];
           this.business?.businessTypes?.forEach(el => {
             this.BusinessTypesArray.push(
@@ -1155,7 +1152,7 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
 
-  addPlatforms(){
+  addPlatforms() {
     var payLoad = {
       business_id: this.business?.business_id,
       platformsIds: this.SelectedPlatformsIds
@@ -1165,7 +1162,7 @@ export class AddEditBusniessComponent implements OnInit {
     })
   }
 
-  deletePlatformFromThisBusiness(id: number){
+  deletePlatformFromThisBusiness(id: number) {
     this.http.deleteData(`Business/UnBindBusinessWithPlatforms${id}`).subscribe(res => {
       console.log(res)
     })
