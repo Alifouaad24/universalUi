@@ -80,43 +80,43 @@ export class DefaultLayoutComponent {
   ];
 
   private closeInitiallyOpenGroups() {
-  const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
-  if (!sidebarEl) return;
+    const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
+    if (!sidebarEl) return;
 
-  const forceClose = (group: HTMLElement) => {
-    if (!group.classList.contains('show')) return;
-    const toggleLink = group.querySelector('.nav-link') as HTMLElement | null;
-    if (toggleLink) {
-      toggleLink.click();
-    }
-  };
-
-  // أغلق فورًا أي مجموعة مفتوحة حالياً وقت استدعاء الدالة
-  sidebarEl.querySelectorAll('.nav-group.show').forEach((group: HTMLElement) => forceClose(group));
-
-  // راقب أي مجموعة تنفتح تلقائيًا لاحقاً (CoreUI بيفتحها بسبب الراوت النشط
-  // بتوقيت غير ثابت)، وأغلقها فوراً لحظة ما تنفتح — بدل تخمين توقيت ثابت
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach(mutation => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        const target = mutation.target as HTMLElement;
-        if (target.classList.contains('nav-group')) {
-          forceClose(target);
-        }
+    const forceClose = (group: HTMLElement) => {
+      if (!group.classList.contains('show')) return;
+      const toggleLink = group.querySelector('.nav-link') as HTMLElement | null;
+      if (toggleLink) {
+        toggleLink.click();
       }
+    };
+
+    // أغلق فورًا أي مجموعة مفتوحة حالياً وقت استدعاء الدالة
+    sidebarEl.querySelectorAll('.nav-group.show').forEach((group: HTMLElement) => forceClose(group));
+
+    // راقب أي مجموعة تنفتح تلقائيًا لاحقاً (CoreUI بيفتحها بسبب الراوت النشط
+    // بتوقيت غير ثابت)، وأغلقها فوراً لحظة ما تنفتح — بدل تخمين توقيت ثابت
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const target = mutation.target as HTMLElement;
+          if (target.classList.contains('nav-group')) {
+            forceClose(target);
+          }
+        }
+      });
     });
-  });
 
-  observer.observe(sidebarEl, {
-    attributes: true,
-    attributeFilter: ['class'],
-    subtree: true
-  });
+    observer.observe(sidebarEl, {
+      attributes: true,
+      attributeFilter: ['class'],
+      subtree: true
+    });
 
-  // أوقف المراقبة بعد فترة كافية لاستقرار الشجرة، حتى ما تتدخل
-  // بتفاعل المستخدم اليدوي (فتح/إغلاق يدوي) بعدها
-  setTimeout(() => observer.disconnect(), 1500);
-}
+    // أوقف المراقبة بعد فترة كافية لاستقرار الشجرة، حتى ما تتدخل
+    // بتفاعل المستخدم اليدوي (فتح/إغلاق يدوي) بعدها
+    setTimeout(() => observer.disconnect(), 1500);
+  }
 
   ngOnInit() {
     this.GetBusinesses()
@@ -171,7 +171,7 @@ export class DefaultLayoutComponent {
           this.navItems = this.buildNavTree(this.services);
 
           this.cdr.detectChanges();
-          this.closeInitiallyOpenGroups(); 
+          this.closeInitiallyOpenGroups();
         }, 100);
         this.cdr.detectChanges();
       },
@@ -183,13 +183,23 @@ export class DefaultLayoutComponent {
   // بناء شجرة Parent/Children من القائمة المسطحة اعتماداً على parentId
   // ---------------------------------------------------------------------
   private buildNavTree(services: ServiceModel[]): INavData[] {
-    // مرحلة 1: أنشئ كل عنصر بشكله الأساسي بدون children بعد
     const navMap = new Map<number, INavData & { children?: INavData[] }>();
 
+    const shippingTypeMap: Record<string, number> = {
+      'Air': 1,
+      'Sea': 2,
+      'Land': 3,
+    };
+
     services.forEach(s => {
+      const shippingTypeId = shippingTypeMap[(s.description ?? '').toString()];
+      const resolvedUrl = shippingTypeId
+        ? `/Home/logistic/shipping-costs/${shippingTypeId}`
+        : s.service_Route;
+
       navMap.set(s.service_id!, {
         name: s.description! ?? '',
-        url: s.service_Route,
+        url: resolvedUrl,
         iconComponent: { name: s.service_icon },
         attributes: {
           'data-service-id': s.service_id
@@ -205,7 +215,6 @@ export class DefaultLayoutComponent {
 
     const roots: INavData[] = [];
 
-    // مرحلة 2: اربط كل عنصر بأبيه (لو موجود)، وإلا اعتبره Root
     services.forEach(s => {
       const navItem = navMap.get(s.service_id!)!;
 
@@ -215,14 +224,10 @@ export class DefaultLayoutComponent {
         if (parentNav) {
           if (!parentNav.children) {
             parentNav.children = [];
-            // عنصر عنده أبناء → أزل الـ url منه، بحيث الضغط عليه
-            // يوسّع/يطوي فقط بدل ما ينتقل لشاشة
             delete (parentNav as any).url;
           }
           parentNav.children.push(navItem);
         } else {
-          // الأب غير موجود بقائمة الخدمات الحالية (مثلاً غير مفعّل بهالبزنس)
-          // نعتبره Root حتى ما يضيع
           roots.push(navItem);
         }
       } else {

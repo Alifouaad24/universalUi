@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/route
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { HttpConnectService } from '../../../Services/http-connect.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-buttons',
@@ -19,7 +20,7 @@ import { HttpConnectService } from '../../../Services/http-connect.service';
 export class ShippingCostComponent implements OnInit {
   message: string = '';
   loading: boolean = false;
-  ShippingTypeId?: number;
+  ShippingTypeId: number = 0;
 
   shippingCosts: any[] = [];
 
@@ -32,16 +33,21 @@ export class ShippingCostComponent implements OnInit {
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) { }
+  private paramSub?: Subscription;
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe(param => {
-      const id = param.get('shippingTypeId');
-      console.log('shippingTypeId:', id);
+    this.paramSub = this.route.paramMap.subscribe(params => {
+      var id = Number(params.get('id'));
+      console.log('ShippingTypeId from route:', id);
       if (id) {
-        this.ShippingTypeId = parseInt(id);
+        this.ShippingTypeId = parseInt(id as unknown as string, 10);
         this.getShippingCost(this.ShippingTypeId);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.paramSub?.unsubscribe();
   }
 
   getShippingCost(shippTypeId: number) {

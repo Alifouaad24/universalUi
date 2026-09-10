@@ -123,6 +123,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
             console.log(currentCustomer)
             this.customerId = currentCustomer.GlobalCustomerId
             this.customerName = currentCustomer.CustomerName
+            this.customerCode = currentCustomer.CustomerCode
             this.customerMobile = currentCustomer.CustomerMobile
             this.customerAddresses = currentCustomer.Address as []
             this.selectedBusinessId = currentCustomer.Buseness_Customer.map((el: any) => el.business_id)
@@ -236,8 +237,6 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.userRole = localStorage.getItem("UserRole") ?? ''
     this.getAllBusinesses()
 
-
-
     this.BusinessId = Number(localStorage.getItem('businessId'));
     this.api.getAllData("Country").subscribe((response: any) => {
       console.log("Countries", response)
@@ -248,8 +247,9 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       this.Businesses = (res as any[]).map((b: any) => ({ business_id: b.business_id, business_name: b.business_name }));
       this.loadingBusiness = false;
       // pre-select businesses from localStorage if present
-
-      this.cdr.detectChanges();
+      const currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || '{}');
+      this.countryId = Number(currentBusiness.countryId); this.cdr.detectChanges();
+      this.countryChanged(this.countryId);
     }, (err) => {
       this.loadingBusiness = false;
       this.cdr.detectChanges();
@@ -268,7 +268,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.showToast = visible;
   }
 
-  countryChanged(event: Event): void {
+  countryChanged(countryId: number): void {
     this.Line1 = ''
     this.Line2 = ''
     this.stateId = null
@@ -278,7 +278,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.PostCode = ''
     this.LandMark = ''
 
-    var countryIdValue = Number((event.target as HTMLSelectElement).value);
+    var countryIdValue = Number(countryId);
     this.selectedCountry = this.countries.find(el => el.countryId == countryIdValue)?.name;
     if (this.selectedCountry == 'USA') {
       this.api.getAllData(`State/GetAllStatesByCountry/${countryIdValue}`).subscribe((response: any) => {
@@ -324,7 +324,8 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges()
   }
 
-  cityChanged(event: Event): void {
+  cityChanged(): void {
+
     if (this.cityId === undefined) return;
     this.api.getAllData(`Area/GetAlAreasByCity/${this.cityId}`).subscribe((response: any) => {
       this.areas = response;
@@ -508,7 +509,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   EditCustData(): void {
     if (this.addingLoad) return;
     this.addingLoad = true;
-    
+
     const bus = this.selectedBusinessId.length > 0 ? this.selectedBusinessId : [this.BusinessId];
     console.log(bus);
     const mainPayLoad = {
@@ -563,8 +564,8 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       latTute: '',
       stateId: this.stateIdForBind,
       areaId: this.areaIdForBind,
-      cityId: this.cityIdForBind,
-      countryId: this.countryIdForBind
+      cityId: this.cityId,
+      countryId: Number(this.countryIdForBind)
     }
 
     console.log(payLoad)

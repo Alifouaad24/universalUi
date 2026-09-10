@@ -29,7 +29,7 @@
 
       <c-col *ngIf="!isUpdate" md="4">
         <label cLabel>Country</label>
-        <select cSelect [(ngModel)]="countryId" (change)="countryChanged($event)">
+        <select cSelect [(ngModel)]="countryId" (change)="countryChanged(countryId!)">
           <option *ngFor="let one of countries" [value]="one.countryId">
             {{ one.name }}
           </option>
@@ -52,7 +52,7 @@
 
       <c-col md="4" *ngIf="selectedCountry != 'USA' && selectedCountry != null">
         <label cLabel>City</label>
-        <select cSelect [(ngModel)]="cityId" (change)="cityChanged($event)">
+        <select cSelect [(ngModel)]="cityId" (change)="cityChanged()">
           <option *ngFor="let city of cities" [ngValue]="city.cityId">
             {{ city.description }}
           </option>
@@ -119,7 +119,7 @@
         <div class="d-flex justify-content-between mt-2" *ngFor="let address of customerAddresses">
           <button (click)="DeleteAddress(address.address_id)" class="btn btn-danger btn-small">X</button>
           <div>
-            {{address.line_1}} {{address.post_code}}
+            {{address.line_1}} {{address.post_code}} {{address.city}} {{address.area}}
           </div>
         </div>
       </c-col>
@@ -141,7 +141,7 @@
         <c-row>
           <c-col md="4" *ngIf="selectedCountryForBind != 'USA' && selectedCountryForBind != null">
             <label cLabel>City</label>
-            <select cSelect [(ngModel)]="cityIdForBind" (change)="cityChanged($event)">
+            <select cSelect [(ngModel)]="cityId" (change)="cityChanged()">
               <option *ngFor="let city of cities" [ngValue]="city.cityId">
                 {{ city.description }}
               </option>

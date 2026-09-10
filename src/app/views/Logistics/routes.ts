@@ -20,7 +20,7 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'shipping-costs',
+        path: 'shipping-costs/:id',
         loadComponent: () => import('./ShippingCosts/ShippingCost').then(m => m.ShippingCostComponent),
         data: {
           title: 'shipping Costs'
