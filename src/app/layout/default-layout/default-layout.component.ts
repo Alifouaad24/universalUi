@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, inject, Renderer2 } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { IconComponent, IconDirective } from '@coreui/icons-angular';
 import { AppConstants } from '../../shared/constant';
@@ -27,6 +27,7 @@ import { ServiceModel } from '../../Models/ServiceModel';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { LoadingService } from '../../core/Services/LoadingService';
 import { StorageService } from '../../core/Services/StorageService';
+import { filter, Subscription } from 'rxjs';
 function isOverflown(element: HTMLElement) {
   return (
     element.scrollHeight > element.clientHeight ||
@@ -78,7 +79,7 @@ export class DefaultLayoutComponent {
     { name: 'dark', text: 'Dark', icon: 'cilMoon' },
     { name: 'auto', text: 'Auto', icon: 'cilContrast' }
   ];
-
+  private routerSub?: Subscription;
   private closeInitiallyOpenGroups() {
     const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
     if (!sidebarEl) return;
@@ -133,6 +134,16 @@ export class DefaultLayoutComponent {
       //this.getAllServices()
       this.cdr.detectChanges();
     });
+
+    this.routerSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        // انتظر لحظة بسيطة عشان CoreUI يخلص يفتح المجموعة الجديدة أولاً
+        setTimeout(() => this.closeInactiveGroups(), 50);
+      });
+
+
+
 
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('tokenId');
@@ -292,5 +303,26 @@ export class DefaultLayoutComponent {
       }
     }
   }
+
+  private closeInactiveGroups() {
+    const sidebarEl = this.elementRef.nativeElement.querySelector('#sidebar1');
+    if (!sidebarEl) return;
+
+    const currentUrl = this.router.url;
+
+    const openGroups = sidebarEl.querySelectorAll('.nav-group.show');
+    openGroups.forEach((group: HTMLElement) => {
+      // هل فيه رابط داخل هذه المجموعة (على أي عمق) يطابق الـ URL الحالي؟
+      const activeLinkInside = group.querySelector('.nav-link.active, a.active');
+
+      if (!activeLinkInside) {
+        const toggleLink = group.querySelector(':scope > .nav-link') as HTMLElement | null;
+        if (toggleLink) {
+          toggleLink.click();
+        }
+      }
+    });
+  }
+
 
 }

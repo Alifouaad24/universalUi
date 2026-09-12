@@ -10,7 +10,15 @@
 
       <c-col md="4">
         <label cLabel>Mobile</label>
-        <input class="form-control" [(ngModel)]="customerMobile" />
+        <div class="col-12 d-flex justify-content-between gap-1">
+          <div class="col-9">
+            <input class="form-control " [(ngModel)]="customerMobile" />
+          </div>
+          <div *ngIf="selectedCountry != 'USA' && selectedCountry != null" class="col-3">
+            <input class="form-control" [(ngModel)]="customerMobileCode" />
+          </div>
+
+        </div>
       </c-col>
 
 

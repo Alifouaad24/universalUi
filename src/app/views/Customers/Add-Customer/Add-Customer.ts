@@ -70,6 +70,7 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
   fromOldDbCity?: string
   fromOldDbArea?: string
   fromOldDbLandMark?: string
+  customerMobileCode: string = '+964'
 
   UsCity?: String | null
   Line2?: String | null
@@ -427,11 +428,18 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       }
     }
 
+    if (this.customerMobile?.startsWith('0')) {
+      this.customerMobile = this.customerMobile.substring(1)
+    }
+    if (this.customerMobile?.includes('+964')) {
+      this.customerMobile = this.customerMobile.replace('+964', '')
+    }
+
     const bus = [this.BusinessId];
     console.log(bus);
     const mainPayLoad = {
       customerName: this.customerName,
-      customerMobile: this.customerMobile,
+      customerMobile: this.customerMobileCode + this.customerMobile,
       businessesIds: bus,
       country_id: this.countryId ? Number(this.countryId) : null,
       address: addressPayload
