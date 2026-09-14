@@ -1,10 +1,10 @@
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div class="col-md-7">
-    <h2 class="mb-0 fw-bold">Orders Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks }}
-        Order</small></h2>
+    <h2 class="mb-0 fw-bold">Tasks Dashboard: <small class="font-weight-normal text-info">{{ allCountOfTasks }}
+        Task</small></h2>
     <small class="text-muted">
-      Manage and track all system orders
+      Manage and track all system tasks
     </small>
   </div>
 
@@ -21,7 +21,7 @@
     </div>
     <button class="btn btn-primary shadow-sm" routerLink="./add-edit-feature">
       <i class="fas fa-plus me-2"></i>
-      Add order
+      Add task
     </button>
   </div>
 </div>
@@ -34,7 +34,7 @@
         <div class="d-flex justify-content-between">
           <div>
             <h3>{{ orders.length }}</h3>
-            <div>Total Orders</div>
+            <div>Total tasks</div>
           </div>
           <i class="fas fa-layer-group fa-2x"></i>
         </div>
@@ -200,9 +200,9 @@
 <div *ngIf="!isLoading && !orders.length" class="card border-0 shadow-sm">
   <div class="card-body text-center py-5">
     <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
-    <h5>No Orders Found</h5>
+    <h5>No tasks Found</h5>
     <p class="text-muted">
-      There are no orders available yet.
+      There are no tasks available yet.
     </p>
   </div>
 </div>
@@ -211,7 +211,7 @@
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
   <c-modal-header>Confirm Delete</c-modal-header>
   <c-modal-body>
-    Are you sure you want to delete order #{{ selectedOrder?.globalOrderId }}?
+    Are you sure you want to delete task #{{ selectedOrder?.globalOrderId }}?
   </c-modal-body>
   <c-modal-footer>
     <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
@@ -238,7 +238,7 @@
   <c-modal-header class="bg-primary text-white">
     <h5 cModalTitle class="mb-0">
       <i class="fas fa-edit me-2"></i>
-      Edit Order #{{ selectedOrderId }}
+      Edit task #{{ selectedOrderId }}
     </h5>
   </c-modal-header>
 
@@ -249,7 +249,7 @@
       <div class="card-header bg-light">
         <h6 class="mb-0 text-dark">
           <i class="fas fa-info-circle me-2"></i>
-          Order Info
+          task Info
         </h6>
       </div>
 
@@ -334,7 +334,7 @@
       <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0 text-dark">
           <i class="fas fa-list me-2"></i>
-          Order Details
+          task Details
         </h6>
         <span class="badge bg-info">
           {{ selectedOrder?.globalOrderDetail?.length || 0 }}

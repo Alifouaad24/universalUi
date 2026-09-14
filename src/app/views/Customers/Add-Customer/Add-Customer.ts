@@ -435,11 +435,13 @@ export class AddEditCustomerComponent implements OnInit, AfterViewInit {
       this.customerMobile = this.customerMobile.replace('+964', '')
     }
 
+    var currectedPhone = this.selectedCountry == 'Iraq' ? this.customerMobileCode + this.customerMobile : this.customerMobile
+
     const bus = [this.BusinessId];
     console.log(bus);
     const mainPayLoad = {
       customerName: this.customerName,
-      customerMobile: this.customerMobileCode + this.customerMobile,
+      customerMobile: currectedPhone,
       businessesIds: bus,
       country_id: this.countryId ? Number(this.countryId) : null,
       address: addressPayload

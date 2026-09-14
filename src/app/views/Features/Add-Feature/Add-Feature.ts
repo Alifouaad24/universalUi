@@ -21,7 +21,7 @@ interface CustomerOption {
 
 // شكل موحّد نضع فيه أي قائمة (بزنس/كستمر/سستم) بعد التحويل
 interface AssignOption {
-  id: number;
+  id: number | string;
   name: string;
 }
 
@@ -55,8 +55,8 @@ export class AddEditFeatureComponent implements OnInit {
 
   selectedAssigneeTypeId?: number;
   selectedAssignerTypeId?: number;
-  selectedAssignerId?: number;
-  selectedAssigneeId?: number;
+  selectedAssignerId?: number | string;
+  selectedAssigneeId?: number | string;
 
   // القوائم اللي راح تظهر بالـ select الثاني (تتغير حسب النوع المختار)
   assignerOptions: AssignOption[] = [];
@@ -78,6 +78,10 @@ export class AddEditFeatureComponent implements OnInit {
   getAllAssignTypes() {
     this.http.getAllData('Orders/GetAllAssignTypes').subscribe((res: any) => {
       this.assignTypes = res;
+      console.log(this.assignTypes)
+
+      this.onAssignerTypeChange(4)
+      this.cdr.detectChanges()
     });
   }
 
@@ -129,13 +133,15 @@ export class AddEditFeatureComponent implements OnInit {
     const serviceId = Number(localStorage.getItem('selectedServiceId'));
     this.http.getAllData(`UniversalOrder/GetAllOrderStatusByService/${serviceId}`).subscribe((res: any) => {
       this.OrderStatuses = res as OrderStatusOption[];
+      this.selectedOrderStatusId = this.OrderStatuses.filter((el) => el.statusEn.includes('New'))[0].orderStatusId
     }, (error) => {
       console.error(error);
     });
   }
 
   getAllCustomers() {
-    this.http.getAllData('GlobalCustomers').subscribe((res: any) => {
+    const businessIdForTask = localStorage.getItem('businessId');
+    this.http.getAllData(`Customers/${businessIdForTask}`).subscribe((res: any) => {
       this.Customers = res as CustomerOption[];
     }, (error) => {
       console.error(error);
@@ -159,7 +165,7 @@ export class AddEditFeatureComponent implements OnInit {
           next: (res: any) => {
             // ✅ Business_id و Business_name → نحولها لـ { id, name }
             const options: AssignOption[] = (res as any[]).map(b => ({
-              id: b.business_id ?? b.Business_id,
+              id: String(b.business_id ?? b.Business_id),
               name: b.business_name ?? b.Business_name,
             }));
             onResult(options);
@@ -180,7 +186,7 @@ export class AddEditFeatureComponent implements OnInit {
           next: (res: any) => {
             // ✅ GlobalCustomerId و CustomerName → نحولها لـ { id, name }
             const options: AssignOption[] = (res as any[]).map(c => ({
-              id: c.globalCustomerId ?? c.GlobalCustomerId,
+              id: String(c.globalCustomerId ?? c.GlobalCustomerId),
               name: c.customerName ?? c.CustomerName,
             }));
             onResult(options);
@@ -200,11 +206,42 @@ export class AddEditFeatureComponent implements OnInit {
           next: (res: any) => {
             // ✅ GlobalSystemId و GlobalSystemName → نحولها لـ { id, name }
             const options: AssignOption[] = (res as any[]).map(s => ({
-              id: s.globalSystemId ?? s.GlobalSystemId,
+              id: String(s.globalSystemId ?? s.GlobalSystemId),
               name: s.globalSystemName ?? s.GlobalSystemName,
             }));
             onResult(options);
             onLoading(false);
+          },
+          error: (err) => {
+            console.error(err);
+            onResult([]);
+            onLoading(false);
+          },
+        });
+        break;
+      }
+
+      case 'User': {
+        const businessId = localStorage.getItem('businessId');
+        this.http.getAllData(`Account/getAllUsers/${businessId}`).subscribe({
+          next: (res: any) => {
+            console.log(res)
+            const options: AssignOption[] = (res as any[]).map(s => ({
+              id: s.id ?? s.Id,           // ← يضل string، ما بنحوله لـ number
+              name: s.userName ?? s.UserName,
+            }));
+            onResult(options);
+            onLoading(false);
+            if (this.selectedAssignerId == null) {
+              const currentUserId = localStorage.getItem('userId');
+              console.log(JSON.stringify(localStorage.getItem('userId'))); 
+              console.log(options)
+              const currentUserOption = options.find(opt => opt.id === currentUserId); // === مقارنة string-to-string سليمة
+              console.log(currentUserOption)
+              if (currentUserOption) {
+                this.selectedAssignerId = currentUserOption.id;
+              }
+            }
           },
           error: (err) => {
             console.error(err);
@@ -226,23 +263,26 @@ export class AddEditFeatureComponent implements OnInit {
   onAssignerTypeChange(id: number | undefined) {
     this.selectedAssignerId = undefined;
     this.assignerOptions = [];
-
+    this.cdr.detectChanges()
     const assignerType = this.assignTypes.find(x => x.assign_typeId === id);
     if (!assignerType) {
       console.warn('Assigner type not found for id:', id);
       return;
     }
+    this.selectedAssignerTypeId = id
 
     this.loadOptionsForType(
       assignerType.type,
       (state) => { this.loadingAssignerOptions = state; this.cdr.detectChanges(); },
       (options) => { this.assignerOptions = options; this.cdr.detectChanges(); }
     );
+    this.cdr.detectChanges()
   }
 
   onAssigneeTypeChange(id: number | undefined) {
     this.selectedAssigneeId = undefined;
     this.assigneeOptions = [];
+
 
     const assigneeType = this.assignTypes.find(x => x.assign_typeId === id);
     if (!assigneeType) {
@@ -280,12 +320,13 @@ export class AddEditFeatureComponent implements OnInit {
       OrderStatusId: this.selectedOrderStatusId,
       Notes: this.notes,
       Service_id: this.selectedServiceId,
-
       AssignerTypeId: this.selectedAssignerTypeId,
       AssignerId: this.selectedAssignerId,
       AssigneeTypeId: this.selectedAssigneeTypeId,
       AssigneeId: this.selectedAssigneeId,
     };
+
+    console.log(payLoad)
 
     this.http.posteData('Orders/AddGlobalOrder', payLoad).subscribe(res => {
       this.router.navigate(['Home/features']);

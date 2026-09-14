@@ -110,10 +110,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   logout() {
     console.log('Logging out...');
-    localStorage.removeItem('token');
-    localStorage.removeItem('businesses');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('currentBusiness');
+    localStorage.clear()
     this.router.navigate(['/login'], {
       replaceUrl: true
     });

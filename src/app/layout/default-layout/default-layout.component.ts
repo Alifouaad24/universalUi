@@ -293,6 +293,7 @@ export class DefaultLayoutComponent {
   }
 
   onSidebarNavClick(event: MouseEvent): void {
+    if (!event.isTrusted) return
     const target = event.target as HTMLElement;
     const link = target.closest('[data-service-id]') as HTMLElement | null;
 

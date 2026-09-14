@@ -67,6 +67,7 @@ export class LoginComponent {
         localStorage.setItem('token', res.token);
         this.decodeToken(res.token)
         localStorage.setItem('currentUser', JSON.stringify(res.user));
+        localStorage.setItem('userId', res.user.id);
         if (res.businesses && res.businesses.length > 0) {
           localStorage.setItem('token', res.token);
           localStorage.setItem('currentUser', JSON.stringify(res.user));
