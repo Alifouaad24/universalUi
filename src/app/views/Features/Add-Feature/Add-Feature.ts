@@ -81,6 +81,8 @@ export class AddEditFeatureComponent implements OnInit {
       console.log(this.assignTypes)
 
       this.onAssignerTypeChange(4)
+      setTimeout(() => {}, 500)
+      this.onAssigneeTypeChange(4)
       this.cdr.detectChanges()
     });
   }
@@ -290,6 +292,8 @@ export class AddEditFeatureComponent implements OnInit {
       return;
     }
 
+    this.selectedAssigneeTypeId = id;
+
     this.loadOptionsForType(
       assigneeType.type,
       (state) => { this.loadingAssigneeOptions = state; this.cdr.detectChanges(); },
@@ -337,4 +341,5 @@ export class AddEditFeatureComponent implements OnInit {
       this.message = 'An error occurred while adding the order';
     });
   }
+
 }

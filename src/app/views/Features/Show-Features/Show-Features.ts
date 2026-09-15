@@ -32,7 +32,11 @@ import { IconModule } from '@coreui/icons-angular';
 import { ServiceModel } from '../../../Models/ServiceModel';
 import { GlobalOrder, GlobalOrderDetail } from '../../../Models/GlobalOrder';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
-
+interface OrderStatusOption {
+  orderStatusId: number;
+  statusEn: string;
+  statusAr?: string;
+}
 @Component({
   selector: 'app-button-groups',
   templateUrl: './Show-Features.html',
@@ -59,6 +63,7 @@ export class ShowFeaturesComponent implements OnInit {
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
   selectedOrder?: GlobalOrder;
+  myTasksOnly: boolean | null = null;
 
   position = 'top-end';
   toastVisible = signal(false);
@@ -89,10 +94,21 @@ export class ShowFeaturesComponent implements OnInit {
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.getAllOrders();
+    // this.getAllOrders();  <-- اتشال، مفيش تحميل تلقائي أول ما الصفحة تفتح
     this.getAllBusiness();
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     this.myName = currentUser.userName ?? '';
+  }
+
+  // -------- دالة جديدة: بتتنادى من زرار الـ toggle --------
+  selectTaskView(mine: boolean) {
+    this.myTasksOnly = mine;
+    // TODO: لما تتحدد الـ API المخصصة لـ "My Tasks" (فلترة server-side
+    // حسب الـ assignee)، نستبدل النداء ده بيها. حاليًا placeholder بيستخدم
+    // نفس getAllOrders الموجودة.
+    this.getOrderStatuses()
+    this.getAllOrders();
+
   }
 
   getAllBusiness() {
@@ -106,6 +122,20 @@ export class ShowFeaturesComponent implements OnInit {
     }, (error) => {
       console.error(error);
       this.loading = false;
+    });
+  }
+
+
+  OrderStatuses?: OrderStatusOption[];
+  selectedOrderStatusId?: number;
+
+  getOrderStatuses() {
+    const serviceId = Number(localStorage.getItem('selectedServiceId'));
+    this.http.getAllData(`UniversalOrder/GetAllOrderStatusByService/${serviceId}`).subscribe((res: any) => {
+      this.OrderStatuses = res as OrderStatusOption[];
+      
+    }, (error) => {
+      console.error(error);
     });
   }
 
@@ -201,6 +231,7 @@ export class ShowFeaturesComponent implements OnInit {
     this.selectedOrder = order;
     this.BusinessId = order.business_id;
     this.ServiceId = order.service_id || undefined;
+    this.selectedOrderStatusId = order.orderStatus?.orderStatusId || undefined;
     this.makeAllCommentsRead(this.selectedOrderId!);
   }
 
@@ -234,12 +265,10 @@ export class ShowFeaturesComponent implements OnInit {
   updateOrder(orderId: number) {
     const updatedOrder = {
       notes: this.notes,
-      statusEn: this.statusEn,
-      businessId: this.BusinessId,
-      serviceId: this.ServiceId
+      statusId: this.selectedOrderStatusId,
     };
 
-    this.http.putData(`Orders/${orderId}`, updatedOrder).subscribe(
+    this.http.putData(`Orders/UpdateETaskOrder/${orderId}`, updatedOrder).subscribe(
       () => {
         this.toastMessage.set('Order updated successfully');
         this.toastVisible.set(true);

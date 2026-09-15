@@ -21,191 +21,223 @@
     </div>
     <button class="btn btn-primary shadow-sm" routerLink="./add-edit-feature">
       <i class="fas fa-plus me-2"></i>
-      Add task
+      New
     </button>
   </div>
 </div>
 
-<!-- Statistics -->
-<div class="row mb-4">
-  <div (click)="filterTasks('All')" class="col-lg-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-sm bg-primary text-white">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h3>{{ orders.length }}</h3>
-            <div>Total tasks</div>
-          </div>
-          <i class="fas fa-layer-group fa-2x"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div (click)="filterTasks('Completed')" class="col-lg-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-sm bg-success text-white">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h3>{{ completedCount }}</h3>
-            <div>Completed</div>
-          </div>
-          <i class="fas fa-check-circle fa-2x"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div (click)="filterTasks('On progress')" class="col-lg-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-sm bg-warning">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h3>{{ progressCount }}</h3>
-            <div>On Progress</div>
-          </div>
-          <i class="fas fa-spinner fa-2x"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div (click)="filterTasks('New')" class="col-lg-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-sm bg-danger text-white">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h3>{{ newCount }}</h3>
-            <div>New Orders</div>
-          </div>
-          <i class="fas fa-star fa-2x"></i>
-        </div>
-      </div>
-    </div>
+<!-- ================= اختيار نوع المهام — بديل التحميل التلقائي ================= -->
+<div class="d-flex justify-content-center mb-4">
+  <div class="btn-group shadow-sm" role="group">
+    <button type="button" class="btn px-4" [ngClass]="myTasksOnly === true ? 'btn-primary' : 'btn-outline-primary'"
+      (click)="selectTaskView(true)">
+      <i class="fas fa-user me-2"></i>
+      My Tasks
+    </button>
+    <button type="button" class="btn px-4" [ngClass]="myTasksOnly === false ? 'btn-primary' : 'btn-outline-primary'"
+      (click)="selectTaskView(false)">
+      <i class="fas fa-layer-group me-2"></i>
+      All Tasks
+    </button>
   </div>
 </div>
 
-<!-- Loading -->
-<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 300px">
-  <div class="spinner-border text-primary" role="status"></div>
-</div>
-
-<!-- Error -->
-<div *ngIf="!isLoading && message" class="alert alert-danger">
-  {{ message }}
-</div>
-
-<!-- Order Cards -->
-<div *ngIf="!isLoading && orders.length">
-  <div class="mb-3" *ngFor="let order of orders">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-body">
-        <div class="row align-items-center">
-          <!-- Left Side -->
-          <div class="col-lg-9">
-            <div class="d-flex align-items-center mb-2">
-              <span class="badge me-3" [ngClass]="{
-                'bg-success': order.orderStatus?.statusEn === 'Completed',
-                'bg-warning text-dark': order.orderStatus?.statusEn === 'On progress',
-                'bg-danger': order.orderStatus?.statusEn === 'New',
-                'bg-secondary': order.orderStatus?.statusEn === 'Closed'
-              }">
-                {{ order.orderStatus?.statusEn || 'Unknown' }}
-              </span>
-              <strong class="text-dark">
-                Order #{{ order.globalOrderId }}
-              </strong>
-            </div>
-
-            <small class="text-muted d-block mb-1">
-              Notes
-            </small>
-            <p class="mb-2">
-              {{
-              (order.notes?.length ?? 0) > 150
-              ? (order.notes | slice:0:150) + '...'
-              : (order.notes || '—')
-              }}
-            </p>
-
-            <div class="d-flex gap-3 flex-wrap">
-              <div>
-                <small class="text-muted">Details</small>
-                <div>
-                  <span class="badge bg-info">
-                    {{ order.globalOrderDetail?.length || 0 }}
-                  </span>
-                </div>
-              </div>
-              <div *ngIf="order.assignerName">
-                <small class="text-muted">Assigner</small>
-                <div>
-                  <span class="badge bg-dark">
-                    <i class="fas fa-user-tag me-1"></i>{{ order.assignerName }}
-                  </span>
-                </div>
-              </div>
-
-              <div *ngIf="order.assigneeName">
-                <small class="text-muted">Assignee</small>
-                <div>
-                  <span class="badge bg-secondary">
-                    <i class="fas fa-user-check me-1"></i>{{ order.assigneeName }}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <small class="text-muted">Comments</small>
-                <div>
-                  <span class="badge bg-primary">
-                    {{ order.comments?.length || 0 }}
-                  </span>
-                </div>
-              </div>
-              <div *ngIf="getUnReadComments(order.comments) > 0">
-                <small class="text-muted">Un Read Comments</small>
-                <div>
-                  <span class="badge bg-danger">
-                    {{ getUnReadComments(order.comments) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Side (Buttons) -->
-          <div class="col-lg-3 text-end">
-            <button class="btn btn-primary me-2" (click)="openEditModal(order)">
-              <c-icon name="cil-pencil"></c-icon>
-            </button>
-            <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
-              <c-icon name="cil-trash"></c-icon>
-            </button>
-            <button *ngIf="order.orderStatus?.statusEn === 'Completed'" class="btn btn-info"
-              (click)="SetStatusClosed(order.globalOrderId)">
-              <c-icon name="cilCheck"></c-icon>
-            </button>
-            <button *ngIf="order.orderStatus?.statusEn === 'On progress'" class="btn btn-warning"
-              (click)="SetStatusCompleted(order.globalOrderId)">
-              <c-icon name="cilCheck"></c-icon>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Empty State -->
-<div *ngIf="!isLoading && !orders.length" class="card border-0 shadow-sm">
+<!-- ================= حالة "لسه ما تم الاختيار" — تظهر بدل أي تحميل تلقائي ================= -->
+<div *ngIf="myTasksOnly === null" class="card border-0 shadow-sm">
   <div class="card-body text-center py-5">
-    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
-    <h5>No tasks Found</h5>
-    <p class="text-muted">
-      There are no tasks available yet.
+    <i class="fas fa-hand-pointer fa-3x text-muted mb-3"></i>
+    <h5>Choose which tasks to view</h5>
+    <p class="text-muted mb-0">
+      Click "My Tasks" or "All Tasks" above to load the list
     </p>
   </div>
 </div>
+
+<!-- ================= باقي الشاشة: تظهر فقط بعد الاختيار ================= -->
+<ng-container *ngIf="myTasksOnly !== null">
+
+  <!-- Statistics (4 ألوان ثابتة زي ما هي) -->
+  <div class="row mb-4">
+    <div (click)="filterTasks('All')" class="col-lg-3 col-md-6 mb-3">
+      <div class="card border-0 shadow-sm bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3>{{ orders.length }}</h3>
+              <div>Total tasks</div>
+            </div>
+            <i class="fas fa-layer-group fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div (click)="filterTasks('Completed')" class="col-lg-3 col-md-6 mb-3">
+      <div class="card border-0 shadow-sm bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3>{{ completedCount }}</h3>
+              <div>Completed</div>
+            </div>
+            <i class="fas fa-check-circle fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div (click)="filterTasks('On progress')" class="col-lg-3 col-md-6 mb-3">
+      <div class="card border-0 shadow-sm bg-warning">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3>{{ progressCount }}</h3>
+              <div>On Progress</div>
+            </div>
+            <i class="fas fa-spinner fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div (click)="filterTasks('New')" class="col-lg-3 col-md-6 mb-3">
+      <div class="card border-0 shadow-sm bg-danger text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3>{{ newCount }}</h3>
+              <div>New Orders</div>
+            </div>
+            <i class="fas fa-star fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 300px">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!isLoading && message" class="alert alert-danger">
+    {{ message }}
+  </div>
+
+  <!-- Order Cards -->
+  <div *ngIf="!isLoading && orders.length">
+    <div class="mb-3" *ngFor="let order of orders">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <!-- Left Side -->
+            <div class="col-lg-9">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge me-3" [ngClass]="{
+                  'bg-success': order.orderStatus?.statusEn === 'Completed',
+                  'bg-warning text-dark': order.orderStatus?.statusEn === 'On progress',
+                  'bg-danger': order.orderStatus?.statusEn === 'New',
+                  'bg-secondary': order.orderStatus?.statusEn === 'Closed'
+                }">
+                  {{ order.orderStatus?.statusEn || 'Unknown' }}
+                </span>
+                <strong class="text-dark">
+                  Order #{{ order.globalOrderId }}
+                </strong>
+              </div>
+
+              <small class="text-muted d-block mb-1">
+                Notes
+              </small>
+              <p class="mb-2">
+                {{
+                (order.notes?.length ?? 0) > 150
+                ? (order.notes | slice:0:150) + '...'
+                : (order.notes || '—')
+                }}
+              </p>
+
+              <div class="d-flex gap-3 flex-wrap">
+                <div>
+                  <small class="text-muted">Details</small>
+                  <div>
+                    <span class="badge bg-info">
+                      {{ order.globalOrderDetail?.length || 0 }}
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="order.assignerName">
+                  <small class="text-muted">Assigner</small>
+                  <div>
+                    <span class="badge bg-dark">
+                      <i class="fas fa-user-tag me-1"></i>{{ order.assignerName }}
+                    </span>
+                  </div>
+                </div>
+
+                <div *ngIf="order.assigneeName">
+                  <small class="text-muted">Assignee</small>
+                  <div>
+                    <span class="badge bg-secondary">
+                      <i class="fas fa-user-check me-1"></i>{{ order.assigneeName }}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <small class="text-muted">Comments</small>
+                  <div>
+                    <span class="badge bg-primary">
+                      {{ order.comments?.length || 0 }}
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="getUnReadComments(order.comments) > 0">
+                  <small class="text-muted">Un Read Comments</small>
+                  <div>
+                    <span class="badge bg-danger">
+                      {{ getUnReadComments(order.comments) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side (Buttons) -->
+            <div class="col-lg-3 text-end">
+              <button class="btn btn-primary me-2" (click)="openEditModal(order)">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+              <button *ngIf="order.orderStatus?.statusEn === 'Completed'" class="btn btn-info"
+                (click)="SetStatusClosed(order.globalOrderId)">
+                <c-icon name="cilCheck"></c-icon>
+              </button>
+              <button *ngIf="order.orderStatus?.statusEn === 'On progress'" class="btn btn-warning"
+                (click)="SetStatusCompleted(order.globalOrderId)">
+                <c-icon name="cilCheck"></c-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !orders.length" class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+      <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+      <h5>No tasks Found</h5>
+      <p class="text-muted">
+        There are no tasks available yet.
+      </p>
+    </div>
+  </div>
+
+</ng-container>
 
 <!-- Delete Confirmation -->
 <c-modal [(visible)]="showDeleteModal" [size]="'sm'">
@@ -241,9 +273,7 @@
       Edit task #{{ selectedOrderId }}
     </h5>
   </c-modal-header>
-
   <c-modal-body>
-
     <!-- Order Details (header info) -->
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-light">
@@ -269,112 +299,15 @@
             <label class="form-label fw-semibold">
               Status
             </label>
-            <select class="form-select" [(ngModel)]="statusEn" name="statusEn">
-              <option>New</option>
-              <option>On progress</option>
-              <option>Completed</option>
-              <option>Closed</option>
+            <select class="form-select" [(ngModel)]="selectedOrderStatusId">
+              <option disabled [ngValue]="null">-- Select Status --</option>
+              <option *ngFor="let s of OrderStatuses" [ngValue]="s.orderStatusId">
+                {{ s.statusEn }}
+              </option>
             </select>
-          </div>
-
-          <!-- Business -->
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">
-              Business
-            </label>
-            <select class="form-select" [(ngModel)]="BusinessId" name="Business">
-              <option *ngFor="let bus of Businesses" [value]="bus.business_id">{{ bus.business_name }}</option>
-            </select>
-          </div>
-
-          <!-- Service -->
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">
-              Service
-            </label>
-            <select class="form-select" [(ngModel)]="ServiceId" name="Service">
-              <option *ngFor="let ser of Services" [value]="ser.service_id">{{ ser.description }}</option>
-            </select>
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">Assigner</label>
-            <div class="form-control" style="cursor: default;">
-              <span *ngIf="selectedOrder?.assignerName; else noAssigner">
-                <i class="fas fa-user-tag me-1 text-muted"></i>
-                {{ selectedOrder?.assignerName }}
-                <small class="text-muted">({{ selectedOrder?.assignerType?.type }})</small>
-              </span>
-              <ng-template #noAssigner>
-                <span class="text-muted">Not assigned</span>
-              </ng-template>
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-semibold">Assignee</label>
-            <div class="form-control" style="cursor: default;">
-              <span *ngIf="selectedOrder?.assigneeName; else noAssignee">
-                <i class="fas fa-user-check me-1 text-muted"></i>
-                {{ selectedOrder?.assigneeName }}
-                <small class="text-muted">({{ selectedOrder?.assigneeType?.type }})</small>
-              </span>
-              <ng-template #noAssignee>
-                <span class="text-muted">Not assigned</span>
-              </ng-template>
-            </div>
           </div>
 
         </div>
-      </div>
-    </div>
-
-    <!-- Order Item Details (GlobalOrderDetail[]) -->
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 text-dark">
-          <i class="fas fa-list me-2"></i>
-          task Details
-        </h6>
-        <span class="badge bg-info">
-          {{ selectedOrder?.globalOrderDetail?.length || 0 }}
-        </span>
-      </div>
-
-      <div class="card-body">
-        <div *ngIf="selectedOrder?.globalOrderDetail?.length; else noDetails" class="d-flex flex-column gap-2">
-          <div class="border rounded p-2" *ngFor="let detail of selectedOrder?.globalOrderDetail">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="fw-semibold">{{ detail.service?.description || 'Service #' + detail.service_id }}</div>
-                <div class="small text-muted">
-                  Cost: {{ detail.priceIQ ?? detail.priceDollar ?? detail.cost ?? '—' }}
-                  <span *ngIf="detail.discount" class="ms-2 text-danger">Discount: {{ detail.discount }}</span>
-                </div>
-                <div class="small text-muted" *ngIf="detail.notes">
-                  {{ detail.notes }}
-                </div>
-              </div>
-              <span class="badge" [ngClass]="'bg-' + getDetailStatusColor(detail)">
-                {{ detail.orderStatus?.statusEn || 'Unknown' }}
-              </span>
-            </div>
-
-            <div class="alert alert-warning py-2 px-2 mt-2 mb-0 small" *ngIf="detail.complaint">
-              <div class="fw-semibold">Complaint reported</div>
-              <div *ngIf="detail.cause">
-                <strong>Cause:</strong> {{ detail.cause?.causeName }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noDetails>
-          <div class="text-center text-muted py-4">
-            <i class="fas fa-box-open fa-2x mb-2"></i>
-            <div>No details added to this order yet</div>
-          </div>
-        </ng-template>
       </div>
     </div>
 
