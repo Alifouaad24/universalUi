@@ -19,10 +19,17 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () => import('./views/dashboard/routes').then((m) => m.routes)
       },
-
       {
         path: 'business',
         loadChildren: () => import('./views/Bussenesses/routes').then((m) => m.routes)
+      },
+      {
+        path: 'suppliers-services',
+        loadChildren: () => import('./views/SuppliersService/routes').then((m) => m.routes)
+      },
+            {
+        path: 'consumer-businesses',
+        loadChildren: () => import('./views/consumerBusiness/routes').then((m) => m.routes)
       },
       {
         path: 'roles',

@@ -1,0 +1,45 @@
+<div class="m-2 p-2">
+  <button class="btn btn-primary" routerLink="./add-new-supplier">
+    Add New Supplier
+  </button>
+</div>
+<div class="card">
+  <div class="card-header">
+    Suppliers
+  </div>
+  <div class="card-body">
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
+    <div *ngIf="!isLoading && suppliers.length === 0" class="alert alert-info">
+      No Suppliers found.
+    </div>
+    <table *ngIf="suppliers.length > 0" class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Provider</th>
+          <th>Service</th>
+          <!-- <th>Actions</th> -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let type of suppliers; index as i">
+          <td>{{ i + 1 }}</td>
+          <td>{{ type.providerBusiness.business_name }}</td>
+          <td>{{ type.service.description }}</td>
+          <!-- <td>
+              <div>
+                <img *ngIf="type.platform.logoUrl" [src]="type.platform.logoUrl" alt="Platform Logo"
+                  (click)="openOrdersModal(type.platform.platform_id)"
+                  style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+              </div>
+            </td> -->
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+
+<div class="container-fluid">
+
+  <div class="row justify-content-center">
+
+    <div class="col-md-8 col-lg-6">
+
+      <div class="card shadow-sm">
+
+        <div class="card-header">
+          <h5 class="mb-0">Add Supplier</h5>
+        </div>
+
+        <div class="card-body">
+
+          <!-- Business -->
+          <div class="mb-3">
+
+            <label class="form-label">
+              Business
+            </label>
+
+            <select
+              class="form-select"
+              [(ngModel)]="businessId"
+              (ngModelChange)="onBusinessChanged()">
+
+              <option [ngValue]="undefined">
+                Select Business
+              </option>
+
+              <option
+                *ngFor="let business of Businesses"
+                [ngValue]="business.business_id">
+
+                {{ business.business_name }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- Loading -->
+          <div
+            *ngIf="loading"
+            class="text-center my-3">
+
+            <div
+              class="spinner-border"
+              role="status">
+            </div>
+
+          </div>
+
+
+          <!-- Service -->
+          <div
+            *ngIf="businessId && !loading"
+            class="mb-3">
+
+            <label class="form-label">
+              Service
+            </label>
+
+            <select
+              class="form-select"
+              [(ngModel)]="ServiceId">
+
+              <option [ngValue]="undefined">
+                Select Service
+              </option>
+
+              <option
+                *ngFor="let service of services"
+                [ngValue]="service.service_id">
+
+                {{ service.description }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- No Services -->
+          <div
+            *ngIf="businessId && !loading && services.length === 0"
+            class="alert alert-warning">
+
+            No services found for this business.
+
+          </div>
+
+
+          <!-- Message -->
+          <div
+            *ngIf="message"
+            class="alert alert-info">
+
+            {{ message }}
+
+          </div>
+
+
+          <!-- Add -->
+          <div class="d-flex justify-content-end">
+
+            <button
+              cButton
+              color="primary"
+              type="button"
+              [disabled]="loading || !ServiceId"
+              (click)="addSupplier()">
+
+              Add Supplier
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
