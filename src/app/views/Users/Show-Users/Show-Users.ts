@@ -79,16 +79,17 @@ export class ShowUsersComponent implements OnInit {
   toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
-
+busId?: number
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.busId = Number(localStorage.getItem('businessId'))
     this.getAllUsers()
   }
 
   getAllUsers() {
     this.isLoading = true;
-    this.http.getAllData('Account/getAllUsers').subscribe(
+    this.http.getAllData(`Account/getAllUsers/${this.busId}`).subscribe(
       (res: any) => {
         console.log(res);
         this.Users = (res as any[]).map(item => new UserModel({
