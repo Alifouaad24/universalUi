@@ -76,7 +76,8 @@ export class AddEditServiceComponent implements OnInit {
           service_icon: item.service_icon,
           isPublic: item.isPublic,
           business_Services: item.business_Services,
-          service_Activities: item.activity_Services
+          service_Activities: item.activity_Services,
+          parentId: item.parentId
         }));
         this.isLoading = false;
 
