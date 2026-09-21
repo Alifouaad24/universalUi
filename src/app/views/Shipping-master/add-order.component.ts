@@ -67,8 +67,8 @@ export class ShippingMasterAddOrderComponent implements OnInit {
   constructor(
     private shipping: ShippingService,
     private router: Router,
-     private cdr: ChangeDetectorRef,
-  ) {}
+    private cdr: ChangeDetectorRef,
+  ) { }
 
   ngOnInit(): void {
     this.fetchFirstCharacter();
@@ -254,12 +254,15 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     for (const draft of this.packageDrafts) {
       if (draft.imageUrl) continue;
       try {
+        console.log('بدء رفع صورة...', draft.imageFile);
         const url = await firstValueFrom(this.shipping.uploadImage(draft.imageFile as File));
+        console.log('نجح الرفع:', url);
         draft.imageUrl = url;
-      } catch {
+      } catch (err) {
+        console.error('فشل الرفع - تفاصيل الخطأ:', err); // ← هاد المهم
         this.isSubmitting = false;
         this.showToast('error', 'فشل رفع صورة أحد الطرود');
-        return; 
+        return;
       }
     }
 
@@ -274,10 +277,12 @@ export class ShippingMasterAddOrderComponent implements OnInit {
         this.isSubmitting = false;
         this.showToast('success', 'تم حفظ الطلب بنجاح');
         this.resetForm();
+        this.cdr.detectChanges()
       },
       error: () => {
         this.isSubmitting = false;
         this.showToast('error', 'حدث خطأ أثناء حفظ الطلب');
+        this.cdr.detectChanges()
       },
     });
   }

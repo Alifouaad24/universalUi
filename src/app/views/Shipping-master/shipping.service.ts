@@ -18,7 +18,7 @@ export interface PackageSubmission {
 
 @Injectable({ providedIn: 'root' })
 export class ShippingService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   searchCustomer(code: string): Observable<CustomerModel> {
     return this.http
@@ -46,10 +46,12 @@ export class ShippingService {
 
   uploadImage(file: File): Observable<string> {
     const form = new FormData();
-    form.append('file', file, file.name);
+    form.append('Image', file, file.name);
     return this.http
-      .post<any>(`${API_BASE_URL}/ImageUploader/UploadImageToCloudinary`, form)
-      .pipe(map((res) => (typeof res === 'string' ? res : (res?.url ?? res?.imageUrl ?? res?.data ?? ''))));
+      .post(`${API_BASE_URL}/ImageUploader/UploadImageToCloudinary`, form, {
+        responseType: 'text',
+      })
+      .pipe(map((res) => res ?? ''));
   }
 
   addOrder(globalCustomerId: number, packages: PackageSubmission[]): Observable<any> {

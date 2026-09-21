@@ -50,7 +50,7 @@
             <ng-container *ngIf="!order.customer.customerImage">{{ customerInitial(order) }}</ng-container>
           </span>
           <div class="customer-text">
-            <span class="name">{{ order.customer.customerName }}</span>
+            <span class="name text-dark">{{ order.customer.customerName }}</span>
             <span class="code" *ngIf="order.customer.customerCode">{{ order.customer.customerCode }}</span>
           </div>
         </div>
