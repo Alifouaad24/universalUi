@@ -34,37 +34,44 @@
       <article *ngFor="let order of orders" class="order-card">
         <div class="order-top">
           <span class="order-id">طلب #{{ order.globalOrderId }}</span>
-          <span
-            *ngIf="order.orderStatus"
-            class="status-badge"
-            [style.color]="statusColorFor(order)"
-            [style.backgroundColor]="statusColorFor(order) + '1f'"
-          >
+          <span *ngIf="order.orderStatus" class="status-badge" [style.color]="statusColorFor(order)"
+            [style.backgroundColor]="statusColorFor(order) + '1f'">
             {{ order.orderStatus.statusAr }}
           </span>
         </div>
 
         <div class="order-customer" *ngIf="order.customer">
-          <span class="avatar" [style.backgroundColor]="statusColorFor(order) + '1f'" [style.color]="statusColorFor(order)">
-            <img *ngIf="order.customer.customerImage" [src]="order.customer.customerImage" alt="" />
-            <ng-container *ngIf="!order.customer.customerImage">{{ customerInitial(order) }}</ng-container>
-          </span>
-          <div class="customer-text">
-            <span class="name text-dark">{{ order.customer.customerName }}</span>
-            <span class="code" *ngIf="order.customer.customerCode">{{ order.customer.customerCode }}</span>
+          <div class="customer-info">
+            <span class="avatar" [style.backgroundColor]="statusColorFor(order) + '1f'"
+              [style.color]="statusColorFor(order)">
+              <img *ngIf="order.customer.customerImage" [src]="order.customer.customerImage" alt="" />
+              <ng-container *ngIf="!order.customer.customerImage">{{ customerInitial(order) }}</ng-container>
+            </span>
+            <div class="customer-text">
+              <span class="name text-dark">{{ order.customer.customerName }}</span>
+              <span class="name text-dark">{{ order.customer.customerMobile }}</span>
+              <span class="name text-dark">
+                {{ order.customer?.address?.[0]?.city?.description }} -
+                {{ order.customer?.address?.[0]?.area?.description }} -
+                {{ order.customer?.address?.[0]?.landMark }}
+              </span>
+              <span class="code" *ngIf="order.customer.customerCode">{{ order.customer.customerCode }}</span>
+            </div>
           </div>
+          <button *ngIf="order?.orderStatus?.orderStatusId != 17" type="button" class="btn btn-warning"
+  [disabled]="isDelivering(order.globalOrderId)"
+  (click)="confirmDeliver(order)">
+  <span *ngIf="isDelivering(order.globalOrderId)" class="btn-spinner"></span>
+  <ng-container *ngIf="!isDelivering(order.globalOrderId)"> سُلمت للمندوب </ng-container>
+</button>
         </div>
 
         <hr />
 
         <div class="packages" *ngIf="order.orderDetails?.length; else noDetails">
           <div class="package-row" *ngFor="let detail of order.orderDetails">
-            <button
-              type="button"
-              class="package-thumb"
-              [class.clickable]="detail.imageUrl"
-              (click)="openImage(detail.imageUrl)"
-            >
+            <button type="button" class="package-thumb" [class.clickable]="detail.imageUrl"
+              (click)="openImage(detail.imageUrl)">
               <img *ngIf="detail.imageUrl" [src]="detail.imageUrl" alt="صورة الطرد" />
               <svg *ngIf="!detail.imageUrl" viewBox="0 0 24 24" width="20" height="20" fill="none">
                 <rect x="3" y="7" width="18" height="13" rx="1.5" stroke="#9ca3af" stroke-width="1.6" />
@@ -77,7 +84,7 @@
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
                   <path d="M6 3h12l-3 8 3 10H6l3-10z" stroke="#6b7280" stroke-width="1.4" stroke-linejoin="round" />
                 </svg>
-                {{ detail.unitValue }}
+                {{ unitNameFor(detail) == 'كيس' ? detail.unitValue + ' ' + 'KG' : detail.unitValue}}
               </span>
               <span class="price" *ngIf="detail.priceIQ != null">{{ detail.priceIQ }} د.ع</span>
             </div>
@@ -123,5 +130,23 @@
       </svg>
     </button>
     <img [src]="fullImageUrl" alt="" (click)="$event.stopPropagation()" />
+  </div>
+</div>
+
+<!-- pobub change status -->
+
+<div class="confirm-overlay" *ngIf="orderPendingConfirm" (click)="cancelConfirm()">
+  <div class="confirm-box" (click)="$event.stopPropagation()">
+    <p class="confirm-text">
+      هل أنت متأكد من تسليم الطلب رقم #{{ orderPendingConfirm.globalOrderId }} للمندوب؟
+    </p>
+    <div class="confirm-actions">
+      <button type="button" class="btn btn-cancel" (click)="cancelConfirm()">إلغاء</button>
+      <button type="button" class="btn btn-warning" [disabled]="isDelivering(orderPendingConfirm.globalOrderId)"
+        (click)="proceedDeliver()">
+        <span *ngIf="isDelivering(orderPendingConfirm.globalOrderId)" class="btn-spinner"></span>
+        <ng-container *ngIf="!isDelivering(orderPendingConfirm.globalOrderId)">موافق</ng-container>
+      </button>
+    </div>
   </div>
 </div>

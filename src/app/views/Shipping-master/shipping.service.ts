@@ -63,4 +63,8 @@ export class ShippingService {
     };
     return this.http.post<any>(`${API_BASE_URL}/Orders/AddGlobalOrder`, payload);
   }
+
+  deliverToRep(id: number): Observable<any> {
+    return this.http.put<any>(`${API_BASE_URL}/Orders/UpdateOrderStatus/${id}/17`, {});
+  }
 }

@@ -17,13 +17,13 @@ export class ShippingMasterOrdersHistoryComponent implements OnInit {
   errorMessage = '';
   orders: GlobalOrderModel[] = [];
   units: UnitModel[] = [];
-
+  requesting: boolean = false
   fullImageUrl: string | null = null;
 
   constructor(
     private shipping: ShippingService, private cdr: ChangeDetectorRef,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.shipping.getUnits().subscribe({
@@ -39,6 +39,7 @@ export class ShippingMasterOrdersHistoryComponent implements OnInit {
     this.shipping.getOrders().subscribe({
       next: (orders) => {
         this.orders = orders;
+        console.log(orders)
         this.isLoading = false;
         this.cdr.detectChanges()
       },
@@ -74,4 +75,53 @@ export class ShippingMasterOrdersHistoryComponent implements OnInit {
   goBack(): void {
     this.router.navigateByUrl('/shipping-master');
   }
+
+  private deliveringIds = new Set<number>();
+
+  isDelivering(orderId: number): boolean {
+    return this.deliveringIds.has(orderId);
+  }
+
+
+
+  orderPendingConfirm: GlobalOrderModel | null = null;
+
+
+
+  confirmDeliver(order: GlobalOrderModel) {
+    this.orderPendingConfirm = order;
+  }
+
+  cancelConfirm() {
+    this.orderPendingConfirm = null;
+  }
+
+  proceedDeliver() {
+    if (this.orderPendingConfirm) {
+      this.deliverToRep(this.orderPendingConfirm);
+    }
+  }
+
+  private deliverToRep(order: GlobalOrderModel) {
+    if (this.deliveringIds.has(order.globalOrderId)) return;
+
+    this.deliveringIds.add(order.globalOrderId);
+    this.shipping.deliverToRep(order.globalOrderId).subscribe({
+      next: (res) => {
+        if (res.orderStatus) {
+          order.orderStatus = res.orderStatus;
+        }
+        this.deliveringIds.delete(order.globalOrderId);
+        this.orderPendingConfirm = null;
+        this.fetchOrders();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.deliveringIds.delete(order.globalOrderId);
+        this.orderPendingConfirm = null;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 }
