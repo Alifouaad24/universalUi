@@ -20,8 +20,8 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'add-new-supplier',
-        loadComponent: () => import('./Add-Suppliers/Add-Supplier').then(m => m.AddEditSuppliersServicesComponent),
+        path: 'add-new-consumer',
+        loadComponent: () => import('./Add-Consumer/Add-Consumers').then(m => m.AddEditConsumersComponent),
         data: {
           title: 'Add'
         }

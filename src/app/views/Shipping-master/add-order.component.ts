@@ -79,10 +79,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     return this.customer ? customerAddress(this.customer) : '—';
   }
 
-  // ------------------------------------------------------------------
-  // تحميل البيانات الأولية
-  // ------------------------------------------------------------------
-
   private fetchFirstCharacter(): void {
     this.shipping.getFirstCharacter().subscribe({
       next: (firstChar) => {
@@ -116,9 +112,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     });
   }
 
-  // ------------------------------------------------------------------
-  // كود العميل — يطابق PrefixLockedFormatter في shipping_master_screen.dart
-  // ------------------------------------------------------------------
 
   onCustomerCodeInput(rawValue: string): void {
     let digitsOnly: string;
@@ -130,10 +123,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     digitsOnly = digitsOnly.replace(/[^0-9]/g, '');
     this.customerCode = this.firstChar + digitsOnly;
   }
-
-  // ------------------------------------------------------------------
-  // البحث عن عميل
-  // ------------------------------------------------------------------
 
   searchCustomer(): void {
     const code = this.customerCode.trim();
@@ -151,6 +140,7 @@ export class ShippingMasterAddOrderComponent implements OnInit {
         this.isSearching = false;
         this.searchStatus = 'found';
         this.customer = customer;
+        this.cdr.detectChanges()
         this.resetPackageDrafts();
         this.cdr.detectChanges()
       },
@@ -174,10 +164,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     this.resetPackageDrafts();
   }
 
-  // ------------------------------------------------------------------
-  // إدارة قائمة الطرود قيد الإدخال
-  // ------------------------------------------------------------------
-
   addPackageDraft(): void {
     const defaultUnit = this.units.length > 0 ? this.units[0] : null;
     this.packageDrafts.push(emptyDraft(defaultUnit));
@@ -200,9 +186,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     return draft.selectedUnit?.name !== 'BOX';
   }
 
-  // ------------------------------------------------------------------
-  // التقاط صورة الطرد — عبر input[type=file][capture] (كاميرا الجهاز)
-  // ------------------------------------------------------------------
 
   triggerCapture(index: number): void {
     this.pendingCaptureIndex = index;
@@ -232,9 +215,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
     draft.imageUrl = null;
   }
 
-  // ------------------------------------------------------------------
-  // حفظ الطلب — يتحقق من كل طرد، يرفع صوره بالتتابع، وبعدين يرسل الطلب
-  // ------------------------------------------------------------------
 
   async addNewOrder(): Promise<void> {
     if (this.isSubmitting) return;
@@ -271,7 +251,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // ارفع صورة كل طرد بالتتابع (لو اترفعت قبل كده بسبب إعادة محاولة، تخطاها)
     for (const draft of this.packageDrafts) {
       if (draft.imageUrl) continue;
       try {
@@ -280,7 +259,7 @@ export class ShippingMasterAddOrderComponent implements OnInit {
       } catch {
         this.isSubmitting = false;
         this.showToast('error', 'فشل رفع صورة أحد الطرود');
-        return; // الصور اللي اترفعت فضلت محفوظة (imageUrl) لإعادة المحاولة
+        return; 
       }
     }
 
@@ -299,7 +278,6 @@ export class ShippingMasterAddOrderComponent implements OnInit {
       error: () => {
         this.isSubmitting = false;
         this.showToast('error', 'حدث خطأ أثناء حفظ الطلب');
-        // البكجات وصورها المرفوعة تفضل زي ما هي عشان لو ضغط "حفظ" تاني، الصور متعادش ترفع
       },
     });
   }

@@ -1,8 +1,6 @@
 <div class="landing-page" dir="rtl">
-  <!-- الهيدر العلوي (نفس _Header في Flutter) -->
   <header class="landing-header">
     <div class="header-icon">
-      <!-- dashboard_rounded -->
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
         <rect x="3" y="3" width="7" height="9" rx="2" fill="currentColor"/>
         <rect x="14" y="3" width="7" height="5" rx="2" fill="currentColor"/>
@@ -15,8 +13,6 @@
       <span class="title">إدارة الطرود</span>
     </div>
   </header>
-
-  <!-- قائمة بطاقات الإجراءات (نفس ListView.separated في Flutter) -->
   <main class="actions-list">
     <button
       *ngFor="let item of actions"
@@ -43,8 +39,6 @@
         <span class="item-title">{{ item.title }}</span>
         <span class="item-subtitle">{{ item.subtitle }}</span>
       </span>
-
-      <!-- arrow_forward_ios_rounded (مرآة لاتجاه RTL) -->
       <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="none">
         <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>

@@ -10,12 +10,10 @@
   </header>
 
   <main class="content">
-    <!-- تحميل -->
     <div *ngIf="isLoading" class="state-center">
       <span class="spinner"></span>
     </div>
 
-    <!-- خطأ -->
     <div *ngIf="!isLoading && errorMessage" class="state-center">
       <svg viewBox="0 0 24 24" width="48" height="48" fill="none">
         <circle cx="12" cy="12" r="9" stroke="#fca5a5" stroke-width="1.8" />
@@ -25,7 +23,6 @@
       <button type="button" class="retry-btn" (click)="fetchOrders()">إعادة المحاولة</button>
     </div>
 
-    <!-- فارغ -->
     <div *ngIf="!isLoading && !errorMessage && orders.length === 0" class="state-center">
       <svg viewBox="0 0 24 24" width="56" height="56" fill="none">
         <path d="M4 8l8-5 8 5v9l-8 5-8-5z" stroke="#9ca3af" stroke-width="1.6" stroke-linejoin="round" />
@@ -33,7 +30,6 @@
       <p class="empty-text">لا يوجد طلبات حالياً</p>
     </div>
 
-    <!-- القائمة -->
     <div *ngIf="!isLoading && !errorMessage && orders.length > 0" class="orders-list">
       <article *ngFor="let order of orders" class="order-card">
         <div class="order-top">
@@ -120,7 +116,6 @@
     </div>
   </main>
 
-  <!-- عرض الصورة بالحجم الكامل -->
   <div class="image-overlay" *ngIf="fullImageUrl" (click)="closeImage()">
     <button type="button" class="overlay-close" (click)="closeImage()" aria-label="إغلاق">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none">

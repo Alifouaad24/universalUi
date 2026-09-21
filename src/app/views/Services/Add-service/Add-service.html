@@ -14,9 +14,10 @@
     </div>
 
     <!-- Parent -->
-    <div class="mb-4">
+    <div *ngIf="!isCurrentServiceParent" class="mb-4">
       <label for="parentId" class="form-label fw-semibold text-uppercase small text-muted">Parent Service</label>
       <select class="form-control form-control-lg" id="parentId" [(ngModel)]="parentId">
+        <option [ngValue]="null"></option>
         <option *ngFor="let one of services; let i = index" [ngValue]="one.service_id">
           {{ one.description}}
         </option>

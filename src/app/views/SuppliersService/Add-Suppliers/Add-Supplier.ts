@@ -50,7 +50,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
     private http: HttpConnectService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.consumerBusinessId = Number(localStorage.getItem('businessId'))
@@ -140,12 +140,6 @@ export class AddEditSuppliersServicesComponent implements OnInit {
   }
 
   addSupplier(): void {
-
-    if (!this.ServiceId) {
-      this.message = 'Please select a service';
-      return;
-    }
-
     this.loading = true;
     this.message = '';
 

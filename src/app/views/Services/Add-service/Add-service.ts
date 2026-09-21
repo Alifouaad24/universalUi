@@ -21,7 +21,7 @@ import { iconSubset } from '../../../icons/icon-subset';
 export class AddEditServiceComponent implements OnInit {
   description?: String;
   message: string = '';
-  parentId?: number 
+  parentId?: number
   loading: boolean = false
   activities?: ActiviityModel[]
   businesses?: BusinessModel[]
@@ -33,6 +33,7 @@ export class AddEditServiceComponent implements OnInit {
   services: ServiceModel[] = [];
   icons: string[] = Object.keys(iconSubset);
   isLoading: boolean = false;
+  isCurrentServiceParent: boolean = false
   selectIcon(icon: string) {
     this.selectedIcon = icon;
     console.log('Selected icon:', icon);
@@ -53,7 +54,7 @@ export class AddEditServiceComponent implements OnInit {
         this.description = this.serviceToEdit!.description!
         this.id = this.serviceToEdit!.service_id,
           this.visibility = this.serviceToEdit!.isPublic ? 'public' : 'local'
-        this.selectedIcon = this.serviceToEdit!.service_icon ?? null 
+        this.selectedIcon = this.serviceToEdit!.service_icon ?? null
         this.selectedBusinessIds = this.serviceToEdit!.business_Services!.map((b: any) => b.business_id!) || []
         this.selectedActivityIds = this.serviceToEdit!.service_Activities!.map((a: any) => a.activity_id!) || []
         this.businessServices = this.serviceToEdit!.business_Services || []
@@ -82,6 +83,13 @@ export class AddEditServiceComponent implements OnInit {
         this.isLoading = false;
 
         this.parentId = this.serviceToEdit!.parentId
+        this.isCurrentServiceParent = this.services.some(
+          e => e.parentId == this.serviceToEdit?.service_id
+        ); 
+        this.services = this.services.filter(e => e.parentId != this.serviceToEdit?.service_id)
+        
+
+        console.log(this.isCurrentServiceParent)
 
         this.cdr.detectChanges();
       },
@@ -123,7 +131,7 @@ export class AddEditServiceComponent implements OnInit {
   }
 
   addService() {
-    this.loading = true
+    // this.loading = true
     if (!this.description) {
       this.message = 'Please enter Service description';
       this.loading = false
@@ -141,23 +149,23 @@ export class AddEditServiceComponent implements OnInit {
 
     console.log('Payload:', payLoad);
 
-    if (!this.serviceToEdit) {
-      this.http.posteData('Service', payLoad).subscribe(res => {
-        this.router.navigate(['Home/services'])
-        this.loading = false
-      }, (error) => {
-        console.error(error)
-        this.loading = false
-      })
-    } else {
-      this.http.putData(`Service/${this.id}`, payLoad).subscribe(res => {
-        this.router.navigate(['Home/services'])
-        this.loading = false
-      }, (error) => {
-        console.error(error)
-        this.loading = false
-      })
-    }
+    // if (!this.serviceToEdit) {
+    //   this.http.posteData('Service', payLoad).subscribe(res => {
+    //     this.router.navigate(['Home/services'])
+    //     this.loading = false
+    //   }, (error) => {
+    //     console.error(error)
+    //     this.loading = false
+    //   })
+    // } else {
+    //   this.http.putData(`Service/${this.id}`, payLoad).subscribe(res => {
+    //     this.router.navigate(['Home/services'])
+    //     this.loading = false
+    //   }, (error) => {
+    //     console.error(error)
+    //     this.loading = false
+    //   })
+    // }
   }
 
   selectedActivityIds: number[] = [];

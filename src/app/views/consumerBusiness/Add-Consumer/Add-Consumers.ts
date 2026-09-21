@@ -18,7 +18,7 @@ import { ServiceModel } from '../../../Models/ServiceModel';
 
 @Component({
   selector: 'app-buttons',
-  templateUrl: './Add-Supplier.html',
+  templateUrl: './Add-Consumers.html',
   imports: [
     RowComponent,
     ColComponent,
@@ -33,7 +33,7 @@ import { ServiceModel } from '../../../Models/ServiceModel';
     RouterLink,
   ]
 })
-export class AddEditSuppliersServicesComponent implements OnInit {
+export class AddEditConsumersComponent implements OnInit {
 
   message: string = '';
   loading: boolean = false;
@@ -42,7 +42,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
 
   businessId?: number;
   ServiceId?: number;
-  consumerBusinessId?: number
+  providerBusinessId?: number
 
   services: ServiceModel[] = [];
 
@@ -53,7 +53,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.consumerBusinessId = Number(localStorage.getItem('businessId'))
+    this.providerBusinessId = Number(localStorage.getItem('businessId'))
     this.getAllBusinesses();
   }
 
@@ -139,19 +139,15 @@ export class AddEditSuppliersServicesComponent implements OnInit {
       );
   }
 
-  addSupplier(): void {
+  addConsumer(): void {
 
-    if (!this.ServiceId) {
-      this.message = 'Please select a service';
-      return;
-    }
 
     this.loading = true;
     this.message = '';
 
     const data = {
-      providerId: this.businessId,
-      consumerId: this.consumerBusinessId,
+      providerId: this.providerBusinessId,
+      consumerId: this.businessId,
       serviceId: this.ServiceId
 
     };
@@ -160,7 +156,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
 
     this.http
       .posteData(
-        'Platform/bindSupplierBusinessWithPlatform',
+        'Supplier',
         data
       )
       .subscribe(
@@ -169,7 +165,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
           console.log(res);
 
           this.loading = false;
-          this.message = 'Supplier added successfully';
+          this.message = 'Consumer added successfully';
 
           this.cdr.detectChanges();
         },
@@ -178,7 +174,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
           console.error(error);
 
           this.loading = false;
-          this.message = 'Error adding supplier';
+          this.message = 'Error adding Consumer';
 
           this.cdr.detectChanges();
         }
