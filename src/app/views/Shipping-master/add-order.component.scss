@@ -1,0 +1,532 @@
+$navy: #0f2a47;
+$navy-dark: #0a1e33;
+$amber: #f5a623;
+$paper: #f3f5f9;
+$ink: #101828;
+$muted: #667085;
+$border: #e4e7ec;
+$success: #0e9f6e;
+$success-bg: #e7f7f1;
+$danger: #e5484d;
+$danger-bg: #fcebec;
+
+:host {
+  display: block;
+  font-family: 'Cairo', 'Tajawal', 'Segoe UI', sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  background-color: $paper;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+// ===== الهيدر =====
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 20px 32px 20px;
+  background-color: $navy;
+  border-radius: 0 0 28px 28px;
+
+  .header-icon {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    color: $amber;
+  }
+
+  .header-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .eyebrow {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .title {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+    }
+  }
+
+  .back-btn {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    padding: 4px;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 18px 18px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+// ===== بطاقة البحث =====
+.search-card {
+  padding: 16px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+
+  .field-label {
+    display: block;
+    font-size: 12px;
+    color: #7d7d7e;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .code-input {
+    flex: 1;
+    background: $paper;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    color: $ink;
+    outline: none;
+
+    &::placeholder {
+      font-family: 'Courier New', monospace;
+      color: #7d7d7e;
+    }
+  }
+
+  .search-btn {
+    flex: 0 0 auto;
+    width: 50px;
+    background: $navy;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+  }
+
+  .hint-text {
+    margin: 12px 0 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: $muted;
+  }
+}
+
+// ===== غير موجود =====
+.not-found-card {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: $danger-bg;
+  border: 1px solid rgba($danger, 0.25);
+  border-radius: 20px;
+
+  .not-found-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 14px;
+    color: $danger;
+  }
+
+  .not-found-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .title {
+      font-weight: 700;
+      font-size: 15px;
+      color: $danger;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: $danger;
+    }
+  }
+}
+
+.found-section {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ===== بطاقة بيانات العميل =====
+.customer-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 20px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .customer-row {
+    display: flex;
+    gap: 12px;
+
+    > .detail-row {
+      flex: 1;
+    }
+  }
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 0;
+
+  .detail-icon {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $paper;
+    border-radius: 10px;
+    color: $navy;
+  }
+
+  .detail-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .detail-label {
+      font-size: 13px;
+      color: $muted;
+      font-weight: 500;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: $ink;
+      font-weight: 600;
+      word-break: break-word;
+    }
+  }
+}
+
+// ===== بطاقة طرد واحد =====
+.draft-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  padding: 16px;
+
+  .draft-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    .draft-index {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $navy;
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .draft-delete {
+      background: none;
+      border: none;
+      color: $danger;
+      cursor: pointer;
+      display: flex;
+      padding: 4px;
+      border-radius: 999px;
+    }
+  }
+
+  .units-loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+  }
+
+  .units-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .unit-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    background: $paper;
+    border: 1px solid $border;
+    border-radius: 16px;
+    color: $muted;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    span {
+      font-weight: 600;
+      font-size: 13px;
+      color: $ink;
+    }
+
+    &.selected {
+      background: $navy;
+      border-color: $navy;
+      color: $amber;
+
+      span {
+        color: #fff;
+      }
+    }
+  }
+
+  .draft-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .weight-field {
+    flex: 1;
+    background: $paper;
+    border-radius: 14px;
+    padding: 6px 12px;
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: $muted;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-weight: 600;
+      color: $ink;
+      font-size: 14px;
+      padding: 4px 0;
+    }
+  }
+
+  .kg-badge {
+    flex: 0 0 auto;
+    height: 56px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $paper;
+    border: 1px solid $border;
+    border-radius: 14px;
+    color: $muted;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .camera-btn {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid $border;
+    border-radius: 14px;
+    color: $muted;
+    cursor: pointer;
+
+    &.done {
+      border-color: $success;
+      color: $success;
+      background: $success-bg;
+    }
+  }
+
+  .preview-wrap {
+    margin-top: 12px;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    height: 160px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+  }
+}
+
+// ===== أزرار الإضافة والحفظ =====
+.add-draft-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: none;
+  border: 1px solid $border;
+  border-radius: 16px;
+  color: $navy;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  padding: 16px;
+  background: $amber;
+  color: $navy-dark;
+  border: none;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.8;
+    cursor: default;
+  }
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+// ===== منبثقات صغيرة (Get.snackbar) =====
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  z-index: 50;
+  max-width: 90%;
+  text-align: center;
+
+  &.toast-info {
+    background: $navy;
+  }
+
+  &.toast-success {
+    background: $success;
+  }
+
+  &.toast-error {
+    background: $danger;
+  }
+}
+
+// ===== سبينرات بسيطة =====
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba($navy, 0.2);
+  border-top-color: $navy;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner-light {
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+}
+
+.spinner-dark {
+  width: 20px;
+  height: 20px;
+  border-color: rgba($navy-dark, 0.25);
+  border-top-color: $navy-dark;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

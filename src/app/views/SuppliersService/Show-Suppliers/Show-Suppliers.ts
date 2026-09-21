@@ -66,6 +66,7 @@ export class ShowSuppliersServicessComponent implements OnInit {
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'))
+    this.getAllProviders()
   }
 
   getAllProviders() {

@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './views/dashboard/dashboard.component';
 import { AuthGuard } from './auth.guard';
+import { ShippingMasterLandingComponent } from './views/Shipping-master/landing.component';
+import { ShippingMasterAddOrderComponent } from './views/Shipping-master/add-order.component';
+import { ShippingMasterOrdersHistoryComponent } from './views/Shipping-master/orders-history.component';
 
 export const routes: Routes = [
   {
@@ -211,6 +214,12 @@ export const routes: Routes = [
       title: 'Register Page'
     }
   },
+  {
+    path: 'shipping-master',
+    component: ShippingMasterLandingComponent,
+  },
+  { path: 'shipping-master/add', component: ShippingMasterAddOrderComponent },
+  { path: 'shipping-master/orders', component: ShippingMasterOrdersHistoryComponent },
 
   { path: '**', redirectTo: 'dashboard' }
 ];

@@ -1,0 +1,243 @@
+<div class="page" dir="rtl">
+  <!-- الهيدر -->
+  <header class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+        <path
+          d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
+        <circle cx="7" cy="18" r="1.6" fill="currentColor" />
+        <circle cx="17" cy="18" r="1.6" fill="currentColor" />
+      </svg>
+    </div>
+    <div class="header-text">
+      <span class="eyebrow">Shipping Master</span>
+      <span class="title">فرز الطرود</span>
+    </div>
+    <button type="button" class="back-btn" (click)="goBack()" aria-label="رجوع">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+        <path d="M13 8l-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </header>
+
+  <main class="content">
+    <!-- بطاقة البحث -->
+    <section class="search-card">
+      <label class="field-label">كود العميل</label>
+      <div class="search-row">
+        <input
+          class="code-input"
+          type="text"
+          inputmode="numeric"
+          [ngModel]="customerCode"
+          (ngModelChange)="onCustomerCodeInput($event)"
+          (keyup.enter)="searchCustomer()"
+          placeholder="أدخل كود العميل"
+        />
+        <button
+          type="button"
+          class="search-btn"
+          [disabled]="isSearching"
+          (click)="searchCustomer()"
+        >
+          <span *ngIf="isSearching" class="spinner spinner-light"></span>
+          <svg *ngIf="!isSearching" viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <p *ngIf="searchStatus === 'idle'" class="hint-text">
+        أدخل كود العميل ثم اضغط بحث لبدء الفرز
+      </p>
+    </section>
+
+    <!-- غير موجود -->
+    <section *ngIf="searchStatus === 'notFound'" class="not-found-card">
+      <div class="not-found-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+          <circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" />
+          <path d="M20 20l-4.3-4.3M8 8l4 4M12 8l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="not-found-text">
+        <span class="title">غير موجود</span>
+        <span class="subtitle">لم يتم العثور على العميل</span>
+      </div>
+    </section>
+
+    <!-- تم العثور على العميل -->
+    <section *ngIf="searchStatus === 'found' && customer" class="found-section">
+      <div class="customer-card">
+        <div class="customer-row">
+          <div class="detail-row">
+            <span class="detail-icon">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
+                <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.8" />
+              </svg>
+            </span>
+            <span class="detail-texts">
+              <span class="detail-label">الاسم</span>
+              <span class="detail-value">{{ customer.name }}</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-icon">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+                <path
+                  d="M6 3l3 5-2 2c1 3 3 5 6 6l2-2 5 3v3c0 1-1 2-2 2-8 0-15-7-15-15 0-1 1-2 2-2z"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span class="detail-texts">
+              <span class="detail-label">الهاتف</span>
+              <span class="detail-value">{{ customer.phone }}</span>
+            </span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-icon">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+              <path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" stroke="currentColor" stroke-width="1.6" />
+              <circle cx="12" cy="9" r="2.4" stroke="currentColor" stroke-width="1.6" />
+            </svg>
+          </span>
+          <span class="detail-texts">
+            <span class="detail-label">العنوان</span>
+            <span class="detail-value">{{ customerAddress() }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- بطاقات الطرود -->
+      <div
+        *ngFor="let draft of packageDrafts; let i = index"
+        class="draft-card"
+      >
+        <div class="draft-header">
+          <span class="draft-index">{{ i + 1 }}</span>
+          <button
+            *ngIf="packageDrafts.length > 1"
+            type="button"
+            class="draft-delete"
+            (click)="removePackageDraft(i)"
+            aria-label="حذف الطرد"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+              <path
+                d="M5 7h14M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 12a2 2 0 002 2h4a2 2 0 002-2l1-12"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="isLoadingUnits" class="units-loading">
+          <span class="spinner"></span>
+        </div>
+        <div *ngIf="!isLoadingUnits" class="units-grid">
+          <button
+            *ngFor="let unit of units"
+            type="button"
+            class="unit-choice"
+            [class.selected]="draft.selectedUnit?.unitId === unit.unitId"
+            (click)="selectUnitForDraft(i, unit)"
+          >
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+              <rect x="3" y="8" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.8" />
+              <path d="M3 8l9-5 9 5M12 3v5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            </svg>
+            <span>{{ unit.nameAr }}</span>
+          </button>
+        </div>
+
+        <div class="draft-row">
+          <div class="weight-field" *ngIf="needsWeightField(draft)">
+            <label>{{ draft.selectedUnit?.name === 'BOX' ? 'العدد' : 'الوزن' }}</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              [(ngModel)]="draft.weightValue"
+              [ngModelOptions]="{ standalone: true }"
+            />
+          </div>
+
+          <div class="kg-badge" *ngIf="needsWeightField(draft)">KG</div>
+
+          <button
+            type="button"
+            class="camera-btn"
+            [class.done]="draft.imagePreviewUrl"
+            (click)="triggerCapture(i)"
+          >
+            <svg *ngIf="!draft.imagePreviewUrl" viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <path
+                d="M4 8h3l2-2h6l2 2h3v11H4z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+            <svg *ngIf="draft.imagePreviewUrl" viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="draft.imagePreviewUrl" class="preview-wrap">
+          <img [src]="draft.imagePreviewUrl" alt="صورة الطرد" />
+          <button type="button" class="preview-remove" (click)="removeCapturedImage(i)" aria-label="حذف الصورة">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+              <path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="add-draft-btn" (click)="addPackageDraft()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        إضافة طرد آخر
+      </button>
+
+      <button
+        type="button"
+        class="submit-btn"
+        [disabled]="isSubmitting"
+        (click)="addNewOrder()"
+      >
+        <span *ngIf="isSubmitting" class="spinner spinner-dark"></span>
+        <span *ngIf="!isSubmitting">حفظ</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- إدخال ملف مخفي لالتقاط/اختيار صورة الطرد -->
+  <input
+    #fileInput
+    type="file"
+    accept="image/*"
+    capture="environment"
+    class="hidden-file-input"
+    (change)="onFileSelected($event)"
+  />
+
+  <!-- تنبيهات بسيطة تقابل Get.snackbar -->
+  <div class="toast" *ngIf="toast" [class]="'toast-' + toast.kind">
+    {{ toast.message }}
+  </div>
+</div>

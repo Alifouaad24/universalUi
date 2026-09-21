@@ -14,7 +14,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        loadComponent: () => import('./Show-Suppliers/Show-Suppliers').then(m => m.ShowConsumersComponent),
+        loadComponent: () => import('./Show-consumerBusiness/Show-consumerBusiness').then(m => m.ShowConsumersComponent),
         data: {
           title: 'Show'
         }

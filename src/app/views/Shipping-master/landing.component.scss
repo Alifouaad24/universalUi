@@ -1,0 +1,140 @@
+// نفس _Palette الموجودة في landing_scree..dart تمامًا
+$navy: #0f2a47;
+$navy-dark: #0a1e33;
+$amber: #f5a623;
+$paper: #f3f5f9;
+$ink: #101828;
+$muted: #667085;
+$border: #e4e7ec;
+
+:host {
+  display: block;
+  font-family: 'Cairo', 'Tajawal', 'Segoe UI', sans-serif;
+}
+
+.landing-page {
+  min-height: 100vh;
+  background-color: $paper;
+  display: flex;
+  flex-direction: column;
+}
+
+// ===== الهيدر (يطابق _Header) =====
+.landing-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 20px 32px 20px;
+  background-color: $navy;
+  border-radius: 0 0 28px 28px;
+
+  .header-icon {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    color: $amber;
+  }
+
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .eyebrow {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .title {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+    }
+  }
+}
+
+// ===== قائمة البطاقات (تطابق ListView.separated) =====
+.actions-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 18px;
+}
+
+// ===== بطاقة إجراء واحدة (تطابق _ActionCard) =====
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid $border;
+  border-radius: 20px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  font: inherit;
+  text-align: right;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .icon-box {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+
+    &.navy {
+      background-color: rgba($navy, 0.1);
+      color: $navy;
+    }
+
+    &.amber {
+      background-color: rgba($amber, 0.1);
+      color: $amber;
+    }
+  }
+
+  .texts {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .item-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: $ink;
+    }
+
+    .item-subtitle {
+      font-size: 12.5px;
+      color: $muted;
+    }
+  }
+
+  .chevron {
+    flex: 0 0 auto;
+    color: $muted;
+  }
+}

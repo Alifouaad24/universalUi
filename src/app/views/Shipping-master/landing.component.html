@@ -1,0 +1,53 @@
+<div class="landing-page" dir="rtl">
+  <!-- الهيدر العلوي (نفس _Header في Flutter) -->
+  <header class="landing-header">
+    <div class="header-icon">
+      <!-- dashboard_rounded -->
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+        <rect x="3" y="3" width="7" height="9" rx="2" fill="currentColor"/>
+        <rect x="14" y="3" width="7" height="5" rx="2" fill="currentColor"/>
+        <rect x="14" y="12" width="7" height="9" rx="2" fill="currentColor"/>
+        <rect x="3" y="16" width="7" height="5" rx="2" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <span class="eyebrow">Packages Hub</span>
+      <span class="title">إدارة الطرود</span>
+    </div>
+  </header>
+
+  <!-- قائمة بطاقات الإجراءات (نفس ListView.separated في Flutter) -->
+  <main class="actions-list">
+    <button
+      *ngFor="let item of actions"
+      type="button"
+      class="action-card"
+      (click)="onActionTap(item)"
+    >
+      <span class="icon-box" [ngClass]="item.accent">
+        <svg *ngIf="item.icon === 'list'" viewBox="0 0 24 24" width="26" height="26" fill="none">
+          <circle cx="4.5" cy="6" r="1.5" fill="currentColor"/>
+          <circle cx="4.5" cy="12" r="1.5" fill="currentColor"/>
+          <circle cx="4.5" cy="18" r="1.5" fill="currentColor"/>
+          <rect x="8.5" y="5" width="12" height="2" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="11" width="12" height="2" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="17" width="12" height="2" rx="1" fill="currentColor"/>
+        </svg>
+        <svg *ngIf="item.icon === 'add'" viewBox="0 0 24 24" width="26" height="26" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+
+      <span class="texts">
+        <span class="item-title">{{ item.title }}</span>
+        <span class="item-subtitle">{{ item.subtitle }}</span>
+      </span>
+
+      <!-- arrow_forward_ios_rounded (مرآة لاتجاه RTL) -->
+      <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="none">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </main>
+</div>

@@ -66,9 +66,10 @@ export class ShowConsumersComponent implements OnInit {
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'))
+    this.GetConsumers()
   }
 
-  getAllProviders() {
+  GetConsumers() {
     this.isLoading = true
     this.http.getAllData(`Supplier/GetConsumers/${this.businessId}`).subscribe(res => {
       this.isLoading = false

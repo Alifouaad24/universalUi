@@ -160,7 +160,7 @@ export class AddEditSuppliersServicesComponent implements OnInit {
 
     this.http
       .posteData(
-        'Platform/bindSupplierBusinessWithPlatform',
+        'Supplier',
         data
       )
       .subscribe(
