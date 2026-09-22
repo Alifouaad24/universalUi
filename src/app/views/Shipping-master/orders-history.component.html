@@ -49,7 +49,7 @@
             </span>
             <div class="customer-text">
               <span class="name text-dark">{{ order.customer.customerName }}</span>
-              <span class="name text-dark">{{ order.customer.customerMobile }}</span>
+              <span dir="ltr" class="name text-dark">{{ order.customer.customerMobile }}</span>
               <span class="name text-dark">
                 {{ order.customer?.address?.[0]?.city?.description }} -
                 {{ order.customer?.address?.[0]?.area?.description }} -
