@@ -82,13 +82,15 @@ export class ShowSuppliersComponent implements OnInit {
   OrderStatus: any[] = [];
   res1: any
   selectedOrderStatusId?: number
-
+  providers: any[] = [];
+  selectedproviderId: number | null = null
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.getAllBusinesses()
     this.getAllShippingTypes()
+    this.getAllProviders()
     this.getAllOrderStatus()
     this.getAllSizes()
   }
@@ -99,6 +101,16 @@ export class ShowSuppliersComponent implements OnInit {
       this.cdr.detectChanges()
     }, (error) => {
       console.error(error)
+    })
+  }
+
+  getAllProviders() {
+    this.isLoading = true
+    var businessId = Number(localStorage.getItem('businessId'))
+    this.http.getAllData(`Supplier/${businessId}`).subscribe((res: any) => {
+      this.isLoading = false
+      this.providers = res
+      this.cdr.detectChanges()
     })
   }
 
@@ -234,7 +246,7 @@ export class ShowSuppliersComponent implements OnInit {
       console.log(res)
       this.isLoading = false
       this.cdr.detectChanges()
-    },(error) => {
+    }, (error) => {
       this.isLoading = false
     })
   }
@@ -352,7 +364,8 @@ export class ShowSuppliersComponent implements OnInit {
       globalCustomerId: this.res1.globalCustomerId,
       shippingTypeId: this.selectedShippingTypeId,
       orderStatusId: this.selectedOrderStatusId,
-      itemInfos: this.productsToAdd
+      itemInfos: this.productsToAdd,
+      providerId: this.selectedproviderId
     };
 
     this.http.posteData('Orders/AddUniversalOrder', payload).subscribe(res => {

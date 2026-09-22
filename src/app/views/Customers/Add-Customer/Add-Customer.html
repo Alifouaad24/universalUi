@@ -127,7 +127,7 @@
         <div class="d-flex justify-content-between mt-2" *ngFor="let address of customerAddresses">
           <button (click)="DeleteAddress(address.address_id)" class="btn btn-danger btn-small">X</button>
           <div>
-            {{address.line_1}} {{address.post_code}} {{address.city}} {{address.area}}
+            {{address?.line_1}} {{address?.post_code}} {{address?.city?.description}} {{address?.area?.description}} {{address?.land_Mark}}
           </div>
         </div>
       </c-col>

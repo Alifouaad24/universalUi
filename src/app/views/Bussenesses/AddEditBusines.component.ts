@@ -1,5 +1,5 @@
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AccordionButtonDirective, AccordionComponent, AccordionItemComponent, AccordionModule, BadgeComponent, ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, CollapseModule, FormControlDirective, ModalBodyComponent, ModalComponent, ModalContentComponent, ModalFooterComponent, ModalHeaderComponent, RowComponent, SharedModule, SpinnerModule, TableDirective } from '@coreui/angular';
 import { IconComponent } from '@coreui/icons-angular';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ import { logo } from '../../icons/logo';
 import { set } from 'lodash-es';
 import { AssetModel } from '../../Models/Asset';
 import Swal from 'sweetalert2';
-
+declare const google: any;
 @Component({
   templateUrl: 'AddEditBusines.component.html',
   imports: [
@@ -1166,6 +1166,90 @@ export class AddEditBusniessComponent implements OnInit {
     this.http.deleteData(`Business/UnBindBusinessWithPlatforms${id}`).subscribe(res => {
       console.log(res)
     })
+  }
+
+  /////////////////
+
+  ngAfterViewChecked(): void {
+    if (this.selectedCountry === 'USA' && this.addressInput?.nativeElement && !this.autocompleteInitialized) {
+      this.initAutocomplete();
+      this.autocompleteInitialized = true;
+    }
+  }
+
+
+  autocompleteInitialized = false;
+  ngOnChanges() {
+    if (this.selectedCountry === 'USA') {
+      setTimeout(() => {
+        this.initAutocomplete();
+      });
+    }
+  }
+  @ViewChild('addressInput') addressInput?: ElementRef;
+
+  initAutocomplete() {
+
+    if (!(window as any).google?.maps?.places) {
+      console.error('Google Places API not loaded');
+      return;
+    }
+
+    if (!this.addressInput?.nativeElement) return;
+
+    const autocomplete = new google.maps.places.Autocomplete(
+      this.addressInput.nativeElement,
+      {
+        componentRestrictions: { country: 'us' }
+      }
+    );
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      this.fillAddress(place);
+    });
+  }
+
+   fillAddress(place: any) {
+
+    if (!place.address_components) return;
+
+    let streetNumber = '';
+    let route = '';
+
+    place.address_components.forEach((c: any) => {
+
+      if (c.types.includes('street_number')) {
+        streetNumber = c.long_name;
+      }
+
+      if (c.types.includes('route')) {
+        route = c.long_name;
+      }
+
+      if (c.types.includes('locality')) {
+        this.UsCity = c.long_name;
+      }
+
+      if (c.types.includes('administrative_area_level_1')) {
+
+        const state = this.states.find(
+          s => s.name === c.short_name
+            || s.name === c.long_name
+        );
+
+        this.stateId = state?.stateId ?? null;
+      }
+
+      if (c.types.includes('postal_code')) {
+        this.PostCode = c.long_name;
+      }
+
+    });
+
+    this.Line1 = `${streetNumber} ${route}`;
+    this.Line2 = '';
+    this.cdr.detectChanges();
   }
 
 }

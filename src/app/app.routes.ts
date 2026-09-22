@@ -114,6 +114,10 @@ export const routes: Routes = [
         path: 'active-list',
         loadChildren: () => import('./views/ActiveList/routes').then((m) => m.routes)
       },
+            {
+        path: 'pre-order',
+        loadChildren: () => import('./views/Suppliers/routes').then((m) => m.routes)
+      },
       {
         path: 'platforms',
         loadChildren: () => import('./views/Platforms/routes').then((m) => m.routes)

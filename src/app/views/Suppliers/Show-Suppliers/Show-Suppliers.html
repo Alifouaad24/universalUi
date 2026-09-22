@@ -104,50 +104,53 @@
 
         <div class="row g-3">
           <div class="col-md-4" *ngFor="let order of preOrders">
-  <div class="card h-100 shadow-sm order-card"
-       [class.border-primary]="selectedPreOrderId === order.universalOrderId"
-       style="cursor: pointer;"
-       (click)="selectPreOrder(order)">
-    <div class="card-header d-flex align-items-center justify-content-between bg-white border-0 pt-3 pb-0">
-      <div class="d-flex align-items-center gap-2">
-        <img [src]="order.platform.logoUrl" style="width:32px;height:32px;object-fit:cover;border-radius:6px;">
-        <span class="fw-semibold small">{{ order.platform.description }}</span>
-      </div>
-      <span class="badge bg-light text-secondary">#{{ order.universalOrderId }}</span>
-    </div>
-    <div class="card-body pt-2">
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <div class="avatar-circle bg-primary-subtle text-primary">
-          {{ order.globalCustomer.customerName?.charAt(0) }}
-        </div>
-        <div>
-          <div class="fw-semibold">{{ order.globalCustomer.customerName }}</div>
-          <div class="text-muted small">{{ order.globalCustomer.customerMobile }}</div>
-        </div>
-      </div>
-      <hr class="my-2">
-      <div class="d-flex justify-content-between mb-2">
-        <span class="text-muted small">تاريخ الطلب</span>
-        <span class="small fw-medium">{{ order.createdDate }}</span>
-      </div>
-      <div class="d-flex justify-content-between mb-2">
-        <span class="text-muted small">نوع الشحن</span>
-        <span class="small fw-medium">{{ order.shippingType.name }}</span>
-      </div>
-      <div class="d-flex justify-content-between">
-        <span class="text-muted small">الحالة</span>
-        <span class="badge"
-              [ngClass]="{
+            <div class="card h-100 shadow-sm order-card"
+              [class.border-primary]="selectedPreOrderId === order.universalOrderId" style="cursor: pointer;"
+              (click)="selectPreOrder(order)">
+              <div class="card-header d-flex align-items-center justify-content-between bg-white border-0 pt-3 pb-0">
+                <div class="d-flex align-items-center gap-2">
+                  <img [src]="order.platform.logoUrl"
+                    style="width:32px;height:32px;object-fit:cover;border-radius:6px;">
+                  <span class="fw-semibold small">{{ order.platform.description }}</span>
+                </div>
+                <span class="badge bg-light text-secondary">#{{ order.universalOrderId }}</span>
+              </div>
+              <div class="card-body pt-2">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <div class="avatar-circle bg-primary-subtle text-primary">
+                    {{ order.globalCustomer.customerName?.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ order.globalCustomer.customerName }}</div>
+                    <div class="text-muted small">{{ order.globalCustomer.customerMobile }}</div>
+                  </div>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">تاريخ الطلب</span>
+                  <span class="small fw-medium">{{ order.createdDate }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">المزود</span>
+                  <span class="small fw-medium">{{ order?.supplier?.providerBusiness?.business_name  ?? '--'}}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted small">نوع الشحن</span>
+                  <span class="small fw-medium">{{ order.shippingType.name }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted small">الحالة</span>
+                  <span class="badge" [ngClass]="{
                 'bg-warning-subtle text-warning-emphasis': order.orderStatusId === 1,
                 'bg-success-subtle text-success-emphasis': order.orderStatusId === 2,
                 'bg-danger-subtle text-danger-emphasis': order.orderStatusId === 3
               }">
-          {{ order.orderStatus.statusAr }}
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+                    {{ order.orderStatus.statusAr }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="col-12 text-center text-body-secondary py-4" *ngIf="!isLoading && preOrders.length === 0">
             No orders yet
           </div>
@@ -212,6 +215,16 @@
         </div> -->
 
         <hr />
+        <!-- ----------  مزود الخدمة ---------- -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">مزود الخدمة</label>
+          <select class="form-select" [(ngModel)]="selectedproviderId">
+            <option [ngValue]="null" disabled>اختر المزود</option>
+            <option *ngFor="let s of providers" [ngValue]="s.providerBusiness.business_id">
+              {{ s.providerBusiness.business_name }}
+            </option>
+          </select>
+        </div>
 
         <!-- ---------- نوع الشحن ---------- -->
         <div class="mb-4">

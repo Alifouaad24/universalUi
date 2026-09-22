@@ -149,23 +149,23 @@ export class AddEditServiceComponent implements OnInit {
 
     console.log('Payload:', payLoad);
 
-    // if (!this.serviceToEdit) {
-    //   this.http.posteData('Service', payLoad).subscribe(res => {
-    //     this.router.navigate(['Home/services'])
-    //     this.loading = false
-    //   }, (error) => {
-    //     console.error(error)
-    //     this.loading = false
-    //   })
-    // } else {
-    //   this.http.putData(`Service/${this.id}`, payLoad).subscribe(res => {
-    //     this.router.navigate(['Home/services'])
-    //     this.loading = false
-    //   }, (error) => {
-    //     console.error(error)
-    //     this.loading = false
-    //   })
-    // }
+    if (!this.serviceToEdit) {
+      this.http.posteData('Service', payLoad).subscribe(res => {
+        this.router.navigate(['Home/services'])
+        this.loading = false
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    } else {
+      this.http.putData(`Service/${this.id}`, payLoad).subscribe(res => {
+        this.router.navigate(['Home/services'])
+        this.loading = false
+      }, (error) => {
+        console.error(error)
+        this.loading = false
+      })
+    }
   }
 
   selectedActivityIds: number[] = [];
