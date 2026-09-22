@@ -142,7 +142,7 @@ function parseAddress(json: any): AddressModel {
     stateId: json.stateId ?? undefined,
     postCode: json.post_code ?? json.postCode ?? undefined,
     usCity: json.us_city ?? json.usCity ?? undefined,
-    landMark: json.land_mark ?? json.landMark ?? undefined,
+    landMark: json.land_Mark ?? json.land_Mark ?? undefined,
     cityId: json.cityId ?? undefined,
     city: parseCity(json.city),
     areaId: json.areaId ?? undefined,

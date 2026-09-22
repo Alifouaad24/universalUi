@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ShippingService } from './shipping.service';
 import { GlobalOrderModel, GlobalOrderDetailModel, statusColor, unitNameFor } from './order.model';
 import { UnitModel } from './unit.model';
@@ -19,13 +19,20 @@ export class ShippingMasterOrdersHistoryComponent implements OnInit {
   units: UnitModel[] = [];
   requesting: boolean = false
   fullImageUrl: string | null = null;
+  statusId?: number
 
   constructor(
     private shipping: ShippingService, private cdr: ChangeDetectorRef,
-    private router: Router,
+    private router: Router, private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(p => {
+      const id = Number(p['statusId']);
+      if (id) {
+        this.statusId = id
+      }
+    })
     this.shipping.getUnits().subscribe({
       next: (units) => (this.units = units),
     });
@@ -35,12 +42,14 @@ export class ShippingMasterOrdersHistoryComponent implements OnInit {
   fetchOrders(): void {
     this.isLoading = true;
     this.errorMessage = '';
-
     this.shipping.getOrders().subscribe({
       next: (orders) => {
         this.orders = orders;
         console.log(orders)
         this.isLoading = false;
+        if (this.statusId) {
+          this.orders = this.orders.filter(e => e.orderStatus?.orderStatusId == this.statusId)
+        }
         this.cdr.detectChanges()
       },
       error: () => {

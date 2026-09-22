@@ -8,6 +8,7 @@ interface ActionItem {
   subtitle: string;
   accent: 'navy' | 'amber';
   route: string;
+  query: Record<string, any>;
 }
 
 @Component({
@@ -26,6 +27,15 @@ export class ShippingMasterLandingComponent {
       subtitle: 'استعرض جميع الطرود وتابع حالتها',
       accent: 'navy',
       route: '/shipping-master/orders',
+      query: {}
+    },
+    {
+      icon: 'recice',
+      title: 'الطرود المسلمة',
+      subtitle: 'استعرض الطرود التي تم تسليمها للمندوب',
+      accent: 'amber',
+      route: '/shipping-master/orders',
+      query: { statusId: 17 }
     },
     {
       icon: 'add',
@@ -33,12 +43,13 @@ export class ShippingMasterLandingComponent {
       subtitle: 'أنشئ طردا جديدًا خطوة بخطوة',
       accent: 'amber',
       route: '/shipping-master/add',
+      query: {}
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   onActionTap(item: ActionItem): void {
-    this.router.navigateByUrl(item.route);
+    this.router.navigate([item.route], { queryParams: item.query });
   }
 }
