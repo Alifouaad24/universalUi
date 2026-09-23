@@ -39,7 +39,8 @@ export class AddEditConsumersComponent implements OnInit {
   loading: boolean = false;
 
   Businesses?: BusinessModel[];
-
+  Platforms?: any[]
+  selectedPlatformId?: number
   businessId?: number;
   ServiceId?: number;
   providerBusinessId?: number
@@ -50,7 +51,7 @@ export class AddEditConsumersComponent implements OnInit {
     private http: HttpConnectService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.providerBusinessId = Number(localStorage.getItem('businessId'))
@@ -95,6 +96,7 @@ export class AddEditConsumersComponent implements OnInit {
     }
 
     this.getAllServices();
+    this.getPlatforms();
   }
 
   getAllServices(): void {
@@ -139,6 +141,14 @@ export class AddEditConsumersComponent implements OnInit {
       );
   }
 
+  getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+      this.cdr.detectChanges()
+    })
+  }
+
   addConsumer(): void {
 
 
@@ -148,7 +158,8 @@ export class AddEditConsumersComponent implements OnInit {
     const data = {
       providerId: this.providerBusinessId,
       consumerId: this.businessId,
-      serviceId: this.ServiceId
+      serviceId: this.ServiceId,
+      platform_id: this.selectedPlatformId
 
     };
 

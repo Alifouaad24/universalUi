@@ -104,6 +104,29 @@
 
           </div>
 
+           <!-- platform -->
+          <div *ngIf="businessId && !loading" class="mb-3">
+
+            <label class="form-label">
+              Platform
+            </label>
+
+            <select class="form-select" [(ngModel)]="selectedPlatformId">
+
+              <option [ngValue]="undefined">
+                Select Platform
+              </option>
+
+              <option *ngFor="let one of Platforms" [ngValue]="one.platform_id">
+
+                {{ one.description }}
+
+              </option>
+
+            </select>
+
+          </div>
+
 
           <!-- Add -->
           <div class="d-flex justify-content-end">

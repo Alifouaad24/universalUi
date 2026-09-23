@@ -43,7 +43,8 @@ export class AddEditSuppliersServicesComponent implements OnInit {
   businessId?: number;
   ServiceId?: number;
   consumerBusinessId?: number
-
+  Platforms?: any[]
+  selectedPlatformId?: number
   services: ServiceModel[] = [];
 
   constructor(
@@ -95,6 +96,15 @@ export class AddEditSuppliersServicesComponent implements OnInit {
     }
 
     this.getAllServices();
+    this.getPlatforms();
+  }
+
+    getPlatforms() {
+    this.http.getAllData(`Platform/${this.businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Platforms = res;
+      this.cdr.detectChanges()
+    })
   }
 
   getAllServices(): void {
@@ -146,8 +156,8 @@ export class AddEditSuppliersServicesComponent implements OnInit {
     const data = {
       providerId: this.businessId,
       consumerId: this.consumerBusinessId,
-      serviceId: this.ServiceId
-
+      serviceId: this.ServiceId,
+      platform_id: this.selectedPlatformId
     };
 
     console.log('Sending:', data);

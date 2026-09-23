@@ -30,7 +30,7 @@ export const routes: Routes = [
         path: 'suppliers-services',
         loadChildren: () => import('./views/SuppliersService/routes').then((m) => m.routes)
       },
-            {
+      {
         path: 'consumer-businesses',
         loadChildren: () => import('./views/consumerBusiness/routes').then((m) => m.routes)
       },
@@ -114,7 +114,7 @@ export const routes: Routes = [
         path: 'active-list',
         loadChildren: () => import('./views/ActiveList/routes').then((m) => m.routes)
       },
-            {
+      {
         path: 'pre-order',
         loadChildren: () => import('./views/Suppliers/routes').then((m) => m.routes)
       },

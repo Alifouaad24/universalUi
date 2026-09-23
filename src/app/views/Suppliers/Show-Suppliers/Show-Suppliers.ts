@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { CityModel } from '../../../Models/CityModel';
+import { AreaModel } from '../../../Models/AreaModel';
+import { StateModel } from '../../../Models/StateModel';
 import {
   ButtonDirective,
   ButtonGroupComponent,
@@ -33,6 +36,7 @@ import { IconModule } from '@coreui/icons-angular';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { GlobalShippingTypesModel } from '../../../Models/GlobalShippingType';
+import { Country } from '../../../Models/CountryModel';
 
 type OrdersModalView = 'list' | 'new';
 
@@ -96,7 +100,9 @@ export class ShowSuppliersComponent implements OnInit {
   }
 
   getAllOrderStatus() {
-    this.http.getAllData('UniversalOrder').subscribe((res: any) => {
+        var businessId = Number(localStorage.getItem('businessId'))
+
+    this.http.getAllData(`UniversalOrder/${businessId}`).subscribe((res: any) => {
       this.OrderStatus = res
       this.cdr.detectChanges()
     }, (error) => {
@@ -108,6 +114,7 @@ export class ShowSuppliersComponent implements OnInit {
     this.isLoading = true
     var businessId = Number(localStorage.getItem('businessId'))
     this.http.getAllData(`Supplier/${businessId}`).subscribe((res: any) => {
+      console.log(res)
       this.isLoading = false
       this.providers = res
       this.cdr.detectChanges()
@@ -230,8 +237,9 @@ export class ShowSuppliersComponent implements OnInit {
   showOrdersModal = false;
   selectedPlatformId?: number;
 
-  openOrdersModal(platformId: number) {
+  openOrdersModal(platformId: number, supplierId: number) {
     this.selectedPlatformId = platformId;
+    this.selectedproviderId = supplierId
     this.showOrdersModal = true;
     this.getUniversalOrders(platformId)
     localStorage.setItem('selectedPlatformId', platformId.toString());
@@ -407,12 +415,16 @@ export class ShowSuppliersComponent implements OnInit {
         this.http.getAllData(`Customers/SearchAboutCustomers/${value}`).subscribe((result: any) => {
           console.log(result)
           this.filteredSuggestions = result.customers.map((el: any) => el.customerName);
+          if(this.filteredSuggestions.length == 0){
+            this.customerNotFound = true
+          }
           this.cdr.detectChanges()
         });
       }
       this.cdr.detectChanges()
     } else {
       this.filteredSuggestions = [];
+      
     }
   }
   customerName = ''
@@ -461,5 +473,134 @@ export class ShowSuppliersComponent implements OnInit {
       }
     );
   }
+
+  // ------- Add Customer Modal (نفس منطق AddEditCustomerComponent.AddCustomer) -------
+showAddCustomerModal = false;
+addingNewCustomer = false;
+
+newCustomerName: string | null = null;
+newCustomerMobile: string | null = null;
+newCustomerMobileCode: string = '+964';
+newCountryId: number | null = null;
+newSelectedCountry: string | null = null;
+newCities: CityModel[] = [];
+newAreas: AreaModel[] = [];
+newStates: StateModel[] = [];
+newCityId: number | null = null;
+newAreaId: number | null = null;
+newStateId: number | null = null;
+newLine1: string | null = null;
+newLine2: string | null = null;
+newUsCity: string | null = null;
+newPostCode: string | null = null;
+newLandMark: string | null = null;
+countries: Country[] = []
+openAddCustomerModal(): void {
+  this.http.getAllData("Country").subscribe((response: any) => {
+      console.log("Countries", response)
+      this.countries = response;
+    });
+  // نعبّي رقم الهاتف بالرقم اللي كان اليوزر بحث بيه (لو موجود)
+  this.newCustomerMobile = this.phoneQuery ?? null;
+  this.newCustomerName = null;
+  this.newCountryId = null;
+  this.newSelectedCountry = null;
+  this.showAddCustomerModal = true;
+}
+
+newCountryChanged(countryId: number): void {
+  this.newLine1 = '';
+  this.newLine2 = '';
+  this.newStateId = null;
+  this.newCityId = null;
+  this.newAreaId = null;
+  this.newUsCity = '';
+  this.newPostCode = '';
+  this.newLandMark = '';
+
+  const countryIdValue = Number(countryId);
+  this.newSelectedCountry = this.countries.find(c => c.countryId == countryIdValue)?.name ?? null;
+
+  if (this.newSelectedCountry == 'USA') {
+    this.http.getAllData(`State/GetAllStatesByCountry/${countryIdValue}`).subscribe((response: any) => {
+      this.newStates = response;
+      this.cdr.detectChanges();
+    });
+  }
+
+  this.http.getAllData(`City/GetAllCitiesByCountry/${countryIdValue}`).subscribe((response: any) => {
+    this.newCities = response;
+    this.cdr.detectChanges();
+  });
+}
+
+newCityChanged(): void {
+  if (this.newCityId == null) return;
+  this.http.getAllData(`Area/GetAlAreasByCity/${this.newCityId}`).subscribe((response: any) => {
+    this.newAreas = response;
+    this.cdr.detectChanges();
+  });
+}
+
+AddNewCustomerFromModal(): void {
+  if (this.addingNewCustomer) return;
+  this.addingNewCustomer = true;
+
+  const allAddressFieldsEmpty =
+    !this.newLine1 && !this.newLine2 && !this.newUsCity && !this.newLandMark &&
+    !this.newPostCode && !this.newCountryId && !this.newStateId &&
+    !this.newCityId && !this.newAreaId;
+
+  let addressPayload: any = null;
+
+  if (!allAddressFieldsEmpty) {
+    addressPayload = {
+      line_1: this.newLine1,
+      line_2: this.newLine2,
+      us_City: this.newUsCity,
+      landMark: this.newLandMark,
+      post_code: this.newPostCode,
+      countryId: Number(this.newCountryId)
+    };
+
+    if (this.newStateId != null) addressPayload.stateId = this.newStateId;
+    if (this.newCityId != null) addressPayload.cityId = this.newCityId;
+    if (this.newAreaId != null) addressPayload.areaId = this.newAreaId;
+  }
+
+  if (this.newCustomerMobile?.startsWith('0')) {
+    this.newCustomerMobile = this.newCustomerMobile.substring(1);
+  }
+  if (this.newCustomerMobile?.includes('+964')) {
+    this.newCustomerMobile = this.newCustomerMobile.replace('+964', '');
+  }
+
+  const correctedPhone = this.newSelectedCountry == 'Iraq'
+    ? this.newCustomerMobileCode + this.newCustomerMobile
+    : this.newCustomerMobile;
+
+  const currentBusinessId = Number(localStorage.getItem('businessId'));
+
+  const mainPayLoad = {
+    customerName: this.newCustomerName,
+    customerMobile: correctedPhone,
+    businessesIds: [currentBusinessId],
+    country_id: this.newCountryId ? Number(this.newCountryId) : null,
+    address: addressPayload
+  };
+
+  this.http.posteData('Customers', mainPayLoad).subscribe(
+    (response: any) => {
+      this.addingNewCustomer = false;
+      this.showAddCustomerModal = false;
+      this.customerNotFound = false;
+      this.cdr.detectChanges();
+    },
+    (error: any) => {
+      this.addingNewCustomer = false;
+      this.cdr.detectChanges();
+    }
+  );
+}
 
 }

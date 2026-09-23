@@ -1,13 +1,13 @@
 <div *ngIf="isConsumer == false">
   <div class="m-2 p-2">
-    <button class="btn btn-primary" routerLink="./add-supplier"
+    <!-- <button class="btn btn-primary" routerLink="./add-supplier"
       [queryParams]="{ businessServiceId: businessServiceId }">
       Add New Platform Supplier
-    </button>
+    </button> -->
   </div>
   <div class="card">
     <div class="card-header">
-      Platforms
+      Suppliers
     </div>
     <div class="card-body">
       <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
@@ -16,25 +16,27 @@
         </div>
       </div>
       <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
-      <div *ngIf="!isLoading && platformsSup.length === 0" class="alert alert-info">
-        No Platforms found.
+      <div *ngIf="!isLoading && providers.length === 0" class="alert alert-info">
+        No Suppliers found.
       </div>
-      <table *ngIf="platformsSup.length > 0" class="table table-hover">
+      <table *ngIf="providers.length > 0" class="table table-hover">
         <thead class="table-light">
           <tr>
             <th>#</th>
+            <th>Provider</th>
+            <th>Service</th>
             <th>Platform</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let type of platformsSup; index as i">
+          <tr *ngFor="let type of providers; index as i">
             <td>{{ i + 1 }}</td>
-            <td>{{ type.platform.description }}</td>
+            <td>{{ type.providerBusiness.business_name }}</td>
+            <td>{{ type.service.description }}</td>
             <td>
               <div>
-                <img *ngIf="type.platform.logoUrl" [src]="type.platform.logoUrl" alt="Platform Logo"
-                  (click)="openOrdersModal(type.platform.platform_id)"
+                <img *ngIf="type?.platform?.logoUrl" [src]="type?.platform?.logoUrl" alt="Platform Logo"
+                  (click)="openOrdersModal(type.platform.platform_id, type.providerBusiness.business_id)"
                   style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
               </div>
             </td>
@@ -132,7 +134,7 @@
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                   <span class="text-muted small">المزود</span>
-                  <span class="small fw-medium">{{ order?.supplier?.providerBusiness?.business_name  ?? '--'}}</span>
+                  <span class="small fw-medium">{{ order?.supplier?.providerBusiness?.business_name ?? '--'}}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                   <span class="text-muted small">نوع الشحن</span>
@@ -180,9 +182,17 @@
               </button>
             </div>
           </div>
+          <div *ngIf="customerNotFound"
+            class="alert alert-info mt-2 py-2 flex-column align-items-center justify-content-center">
+            <div>
+              الزبون غير موجود بالنظام
+            </div>
+<button class="btn btn-success text-white" (click)="openAddCustomerModal()">
+  إضافة
+</button>
+            <div>
 
-          <div class="alert alert-info mt-2 py-2" *ngIf="customerNotFound">
-            الزبون غير موجود بالنظام — رح نتعامل مع هالحالة لاحقًا.
+            </div>
           </div>
 
           <button class="btn btn-sm btn-outline-secondary mt-2" *ngIf="selectedCustomer"
@@ -411,3 +421,84 @@
     </c-toast>
   </c-toaster>
 </div>
+
+<!-- Add Customer Modal -->
+<c-modal [(visible)]="showAddCustomerModal" [size]="'lg'">
+  <c-modal-header>إضافة زبون جديد</c-modal-header>
+  <c-modal-body style="direction: rtl; text-align: right;">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">الاسم</label>
+        <input class="form-control" [(ngModel)]="newCustomerName" />
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">الهاتف</label>
+        <div class="d-flex gap-1">
+          <input class="form-control" [(ngModel)]="newCustomerMobile" />
+          <input *ngIf="newSelectedCountry == 'Iraq'" class="form-control" style="max-width: 90px;"
+            [(ngModel)]="newCustomerMobileCode" />
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">الدولة</label>
+        <select class="form-select" [(ngModel)]="newCountryId" (change)="newCountryChanged(newCountryId!)">
+          <option *ngFor="let one of countries" [value]="one.countryId">{{ one.name }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry != 'USA' && newSelectedCountry != null">
+        <label class="form-label">المدينة</label>
+        <select class="form-select" [(ngModel)]="newCityId" (change)="newCityChanged()">
+          <option *ngFor="let city of newCities" [ngValue]="city.cityId">{{ city.description }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry != 'USA' && newSelectedCountry != null">
+        <label class="form-label">المنطقة</label>
+        <select class="form-select" [(ngModel)]="newAreaId">
+          <option *ngFor="let area of newAreas" [ngValue]="area.areaId">{{ area.description }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry != 'USA' && newSelectedCountry != null">
+        <label class="form-label">أقرب نقطة دالة</label>
+        <input class="form-control" [(ngModel)]="newLandMark" />
+      </div>
+
+      <div class="col-md-6" *ngIf="newSelectedCountry == 'USA'">
+        <label class="form-label">Line 1</label>
+        <input class="form-control" [(ngModel)]="newLine1" />
+      </div>
+
+      <div class="col-md-6" *ngIf="newSelectedCountry == 'USA'">
+        <label class="form-label">Line 2</label>
+        <input class="form-control" [(ngModel)]="newLine2" />
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry == 'USA'">
+        <label class="form-label">State</label>
+        <select class="form-select" [(ngModel)]="newStateId">
+          <option *ngFor="let state of newStates" [ngValue]="state.stateId">{{ state.name }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry == 'USA'">
+        <label class="form-label">Post Code</label>
+        <input class="form-control" [(ngModel)]="newPostCode" />
+      </div>
+
+      <div class="col-md-4" *ngIf="newSelectedCountry == 'USA'">
+        <label class="form-label">City</label>
+        <input class="form-control" [(ngModel)]="newUsCity" />
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showAddCustomerModal = false">إلغاء</button>
+    <button class="btn btn-success" [disabled]="addingNewCustomer" (click)="AddNewCustomerFromModal()">
+      {{ addingNewCustomer ? 'جارِ الإضافة...' : 'إضافة' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

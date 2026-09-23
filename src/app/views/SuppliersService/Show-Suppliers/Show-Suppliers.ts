@@ -69,6 +69,8 @@ export class ShowSuppliersServicessComponent implements OnInit {
     this.getAllProviders()
   }
 
+  
+
   getAllProviders() {
     this.isLoading = true
     this.http.getAllData(`Supplier/${this.businessId}`).subscribe(res => {
