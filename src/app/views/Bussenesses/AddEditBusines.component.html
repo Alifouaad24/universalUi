@@ -346,7 +346,7 @@
                     <ul>
                       <li *ngFor="let one of servicesBusiness; index as i">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                          <div>{{ one.service?.description }}</div>
+                          <div>{{ getServiceName(one.service_id) }}</div>
                           <div><button class="btn btn-sm btn-danger"
                               (click)="removeServiceFromBusiness(one.service_id!, one.business_id!)">
                               ✕

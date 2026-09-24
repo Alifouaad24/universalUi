@@ -125,6 +125,7 @@ export class AddEditBusniessComponent implements OnInit {
     id: number;
   }[] = [];
   servicesBusiness: any[] = [];
+  Servicess: any[] = [];
   consumerBusinessRelations: any[] = [];
   providerBusinessRelations: any[] = [];
   Description?: String;
@@ -172,6 +173,7 @@ export class AddEditBusniessComponent implements OnInit {
         this.getAllAddresses()
         this.getAllActivities()
         this.getAllAssets()
+        this.getAllServices()
         this.getAllBusinessesTypes()
         this.getAlRless()
         this.getAllSystems()
@@ -208,6 +210,7 @@ export class AddEditBusniessComponent implements OnInit {
           });
         }, 50);
       } else {
+        this.getAllServices()
         this.getAllAddresses()
         this.getAllBusinessesTypes()
         this.getAllCountries()
@@ -228,6 +231,15 @@ export class AddEditBusniessComponent implements OnInit {
     this.http.getAllData(`Platform/${businessId}`).subscribe((res: any) => {
       console.log(res)
       this.Platforms = res;
+
+    })
+  }
+
+  getAllServices() {
+    const businessId = Number(localStorage.getItem('businessId'));
+    this.http.getAllData(`Service/${businessId}`).subscribe((res: any) => {
+      console.log(res)
+      this.Servicess = res;
 
     })
   }
@@ -1210,7 +1222,7 @@ export class AddEditBusniessComponent implements OnInit {
     });
   }
 
-   fillAddress(place: any) {
+  fillAddress(place: any) {
 
     if (!place.address_components) return;
 
@@ -1250,6 +1262,11 @@ export class AddEditBusniessComponent implements OnInit {
     this.Line1 = `${streetNumber} ${route}`;
     this.Line2 = '';
     this.cdr.detectChanges();
+  }
+
+
+  getServiceName(id: number): string {
+    return this.Servicess.find(el => el.service_id == id)?.description
   }
 
 }
