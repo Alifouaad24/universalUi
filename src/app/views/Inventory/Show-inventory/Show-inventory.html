@@ -132,65 +132,40 @@
 
 
 <!-- Images Gallery Modal -->
-<c-modal [(visible)]="imagesModalVisible" [fullscreen]="true">
-  <c-modal-header class="bg-black text-white border-0">
-    <button class="btn btn-sm text-white fs-5 p-0 me-3" (click)="closeImagesModal()">
-      <i class="bi bi-x-lg"></i>
-    </button>
-    <span class="small">{{ selectedImageIndex + 1 }} / {{ selectedImages.length }}</span>
-  </c-modal-header>
-
-  <c-modal-body class="bg-black p-0 position-relative">
-    <!-- حالة التكبير والتدوير (عناصر مخفية داخل القالب، بدون أي كود TS) -->
-    <input #zoom type="range" min="1" max="4" step="0.5" value="1" hidden />
-    <input #rot type="number" value="0" hidden />
-
-    <!-- الصورة -->
-    <div class="w-100 h-100 overflow-auto py-3" style="max-height: calc(100vh - 140px);">
-      <img *ngIf="selectedImages[selectedImageIndex]" [src]="selectedImages[selectedImageIndex].imageUrl"
+<c-modal [(visible)]="imagesModalVisible" [fullscreen]="true"> <c-modal-header class="bg-black text-white border-0">
+    <!-- إغلاق --> <button class="btn btn-sm text-white fs-5 p-0 me-3" (click)="closeImagesModal()"> <c-icon
+        name="cil-x"></c-icon> </button> <span class="small"> {{ selectedImageIndex + 1 }} / {{ selectedImages.length }}
+    </span> </c-modal-header> <c-modal-body class="bg-black p-0 position-relative"> <!-- حالة التكبير والتدوير -->
+    <input #zoom type="range" min="1" max="4" step="0.5" value="1" hidden /> <input #rot type="number" value="0"
+      hidden /> <!-- الصورة -->
+    <div class="w-100 h-100 overflow-auto py-3" style="max-height: calc(100vh - 140px);"> <img
+        *ngIf="selectedImages[selectedImageIndex]" [src]="selectedImages[selectedImageIndex].imageUrl"
         class="d-block mx-auto" [style.width.%]="zoom.valueAsNumber * 100"
-        [style.max-height]="zoom.valueAsNumber === 1 ? 'calc(100vh - 170px)' : 'none'"
+        [style.max-height]=" zoom.valueAsNumber === 1 ? 'calc(100vh - 170px)' : 'none' "
         [style.transform]="'rotate(' + rot.valueAsNumber + 'deg)'"
-        style="object-fit: contain; transition: transform .2s;"
-        (dblclick)="zoom.valueAsNumber = zoom.valueAsNumber === 1 ? 2 : 1" />
-    </div>
-
-    <!-- السابق -->
-    <button *ngIf="selectedImageIndex > 0"
+        style=" object-fit: contain; transition: transform .2s; "
+        (dblclick)=" zoom.valueAsNumber = zoom.valueAsNumber === 1 ? 2 : 1 " /> </div> <!-- السابق --> <button
+      *ngIf="selectedImageIndex > 0"
       class="btn btn-dark bg-opacity-50 rounded-circle position-absolute top-50 start-0 translate-middle-y ms-2"
       style="width: 44px; height: 44px;"
-      (click)="selectImage(selectedImageIndex - 1); zoom.valueAsNumber = 1; rot.valueAsNumber = 0">
-      <i class="bi bi-chevron-left"></i>
-    </button>
-
-    <!-- التالي -->
-    <button *ngIf="selectedImageIndex < selectedImages.length - 1"
+      (click)=" selectImage(selectedImageIndex - 1); zoom.valueAsNumber = 1; rot.valueAsNumber = 0 "> <c-icon
+        name="cil-chevron-left"></c-icon> </button> <!-- التالي --> <button
+      *ngIf="selectedImageIndex < selectedImages.length - 1"
       class="btn btn-dark bg-opacity-50 rounded-circle position-absolute top-50 end-0 translate-middle-y me-2"
       style="width: 44px; height: 44px;"
-      (click)="selectImage(selectedImageIndex + 1); zoom.valueAsNumber = 1; rot.valueAsNumber = 0">
-      <i class="bi bi-chevron-right"></i>
-    </button>
-  </c-modal-body>
-
-  <c-modal-footer class="bg-black border-0 justify-content-center gap-2">
-    <button class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Zoom out"
-      (click)="zoom.valueAsNumber = zoom.valueAsNumber - 0.5">
-      <i class="bi bi-zoom-out"></i>
-    </button>
-    <button class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Zoom in"
-      (click)="zoom.valueAsNumber = zoom.valueAsNumber + 0.5">
-      <i class="bi bi-zoom-in"></i>
-    </button>
-    <button class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Rotate"
-      (click)="rot.valueAsNumber = rot.valueAsNumber + 90">
-      <i class="bi bi-arrow-clockwise"></i>
-    </button>
-    <button class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Reset"
-      (click)="zoom.valueAsNumber = 1; rot.valueAsNumber = 0">
-      <i class="bi bi-arrows-angle-contract"></i>
-    </button>
-  </c-modal-footer>
-</c-modal>
+      (click)=" selectImage(selectedImageIndex + 1); zoom.valueAsNumber = 1; rot.valueAsNumber = 0 "> <c-icon
+        name="cil-chevron-right"></c-icon> </button>
+  </c-modal-body> <c-modal-footer class="bg-black border-0 justify-content-center gap-2"> <!-- Zoom Out --> <button
+      class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Zoom out"
+      (click)=" zoom.valueAsNumber = zoom.valueAsNumber > 1 ? zoom.valueAsNumber - 0.5 : 1 "><c-icon
+        name="cil-zoom-out"></c-icon> </button> <!-- Zoom In --> <button class="btn btn-outline-light rounded-circle"
+      style="width: 44px; height: 44px;" title="Zoom in"
+      (click)=" zoom.valueAsNumber = zoom.valueAsNumber < 4 ? zoom.valueAsNumber + 0.5 : 4 "> <c-icon
+        name="cil-zoom-in"></c-icon> </button> <!-- Rotate --> <button class="btn btn-outline-light rounded-circle"
+      style="width: 44px; height: 44px;" title="Rotate" (click)="rot.valueAsNumber = rot.valueAsNumber + 90"> <c-icon
+        name="cil-reload">R</c-icon> </button> <!-- Reset --> <button class="btn btn-outline-light rounded-circle"
+      style="width: 44px; height: 44px;" title="Reset" (click)="zoom.valueAsNumber = 1; rot.valueAsNumber = 0"> <c-icon
+        name="cil-fullscreen"></c-icon></button> </c-modal-footer> </c-modal>
 
 
 <c-modal [(visible)]="showScrapeModal" [size]="'lg'">

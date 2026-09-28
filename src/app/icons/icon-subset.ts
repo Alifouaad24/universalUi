@@ -99,6 +99,10 @@ import {
   cilScrubber,
   cilPlus,
   cilApplications,
+  cilFullscreen,
+  cilZoomIn,
+  cilZoomOut,
+  cilReload
 } from '@coreui/icons';
 
 import { signet } from './signet';
@@ -207,6 +211,10 @@ export const iconSubset = {
   cilScrubber,
   cilPlus,
   cilApplications,
+cilFullscreen,
+cilZoomIn,
+cilZoomOut,
+cilReload
 };
 
 export enum IconSubset {
@@ -312,6 +320,10 @@ export enum IconSubset {
   cilScrubber = 'cilScrubber',
   cilPlus = 'cilPlus',
   cilApplications = 'cis-applications',
+  cilFullscreen = 'cil-fullscreen',
+   cilZoomIn= 'cil-zoom-in',
+   cilZoomOut = 'cil-zoom-out',
+   cilReload = 'cil-reload'
 
 }
 

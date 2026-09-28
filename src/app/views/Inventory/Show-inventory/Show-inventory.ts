@@ -57,7 +57,7 @@ import { BusinessModel } from '../../../Models/Business/BusinessModel';
     DropdownItemDirective, DropdownDividerDirective,
     ButtonDirective, ImageCropperComponent,
     ProgressComponent,
-    ToasterComponent, ButtonModule,
+    ToasterComponent, ButtonModule, 
     ToastComponent,
     ToastHeaderComponent,
 
