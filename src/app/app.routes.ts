@@ -72,7 +72,7 @@ export const routes: Routes = [
       },
       {
         path: 'products',
-        loadChildren: () => import('./views/Items/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/Under-Proccess-Items/routes').then((m) => m.routes)
       },
       {
         path: 'users',

@@ -343,17 +343,35 @@
                 <div *ngIf="business" class="container card mb-4 mt-4">
                   <div *ngIf="servicesBusiness && servicesBusiness.length > 0" class="m-3">
                     <div class="mb-2 text-danger">Services</div>
-                    <ul>
-                      <li *ngFor="let one of servicesBusiness; index as i">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                          <div>{{ getServiceName(one.service_id) }}</div>
-                          <div><button class="btn btn-sm btn-danger"
-                              (click)="removeServiceFromBusiness(one.service_id!, one.business_id!)">
-                              ✕
-                            </button></div>
-                        </div>
-                      </li>
-                    </ul>
+                    <table class="table table-bordered table-hover align-middle">
+  <thead>
+    <tr>
+      <th>Service</th>
+      <th>Type</th>
+      <th class="text-center">Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let one of servicesBusiness">
+      <td>
+        {{ getServiceName(one.service_id).name }}
+      </td>
+
+      <td>
+        {{ getServiceName(one.service_id).type }}
+      </td>
+
+      <td class="text-center">
+        <button
+          class="btn btn-sm btn-danger"
+          (click)="removeServiceFromBusiness(one.service_id!, one.business_id!)">
+          ✕
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
                   </div>
                   <div class="card-body">
                     <!-- Description -->
@@ -802,7 +820,7 @@
                             <div class="fw-semibold">
                               {{ one.description }}
                             </div>
-                      
+
                           </div>
                           <span class="badge bg-danger" (click)="deletePlatformFromThisBusiness(one.platform_id)">
                             <c-icon name="cil-trash"></c-icon>

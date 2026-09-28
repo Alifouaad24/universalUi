@@ -87,6 +87,7 @@ export class ShowItemsComponent implements OnInit {
   brands: any[] = [];
   itemConditions: any[] = [];
   currencies: any[] = [];
+  selectedSituation: string = 'All Products'
 
   selectedCurrency?: string
   selectedPrice?: number
@@ -103,6 +104,9 @@ export class ShowItemsComponent implements OnInit {
   Colors: any[] = [];
   Currencies: any[] = [];
   loading: boolean = false;
+  selectedImageUrl: string | null = null;
+  selectedPlatformId: number | null = null;
+  filteredItems: any[] = [];
 
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef,
@@ -111,7 +115,7 @@ export class ShowItemsComponent implements OnInit {
 
   ngOnInit(): void {
     this.businessId = Number(localStorage.getItem('businessId'))
-    this.getItems()
+    this.getAllItems()
     this.getPlatforms();
     this.getCategories();
     this.getSizes();
@@ -192,7 +196,7 @@ export class ShowItemsComponent implements OnInit {
     })
   }
 
-  getItems() {
+  GetAllUndeProccessItems() {
     this.isLoading = true;
     const businessId = localStorage.getItem('businessId')
     this.http.getAllData(`Item/GetAllUndeProccessItems/${businessId}`).subscribe(
@@ -200,6 +204,44 @@ export class ShowItemsComponent implements OnInit {
         console.log(res)
         this.inventory = res;
         this.allItems = res;
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  getComplatedItems() {
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Item/${businessId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.inventory = res;
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  getAllItems() {
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId')
+    this.http.getAllData(`Item/GetAllItems/${businessId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.inventory = res;
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -224,6 +266,7 @@ export class ShowItemsComponent implements OnInit {
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.upc || type.sku || 'Item'} deleted successfully`);
       this.toastVisible.set(true);
+      this.cdr.detectChanges();
     }, (error) => {
       this.toastMessage.set(`An error occured during delete (${type.upc || type.sku || 'Item'})`);
       this.toastVisible.set(true);
@@ -899,7 +942,40 @@ export class ShowItemsComponent implements OnInit {
     });
   }
 
-  selectedImageUrl: string | null = null;
 
+
+
+  filterByPlatform(platformId: number | null): void {
+    this.selectedPlatformId = platformId;
+
+    if (platformId === null) {
+      this.filteredItems = [...this.inventory];
+      return;
+    }
+
+    this.filteredItems = this.inventory.filter(
+      item => item.platformId === platformId
+    );
+  }
+
+  getPlatformss(): any[] {
+    const platforms = this.allItems
+      .filter(item => item.platform)
+      .map(item => item.platform);
+
+    return platforms.filter(
+      (platform, index, self) =>
+        index === self.findIndex(p => p.platform_id === platform.platform_id)
+    );
+  }
+  filterBySituation(st: string): void {
+    if (st === 'All Products') {
+      this.getAllItems();
+    } else if (st === 'Complated') {
+      this.getComplatedItems();
+    } else if (st === 'Under proccess') {
+      this.GetAllUndeProccessItems();
+    }
+  }
 
 }

@@ -1265,8 +1265,15 @@ export class AddEditBusniessComponent implements OnInit {
   }
 
 
-  getServiceName(id: number): string {
-    return this.Servicess.find(el => el.service_id == id)?.description
+  getServiceName(id: number): { name: string; type: string } {
+    const service = this.Servicess.find(
+      el => el.service_id === id
+    );
+
+    return {
+      name: service?.description ?? '',
+      type: service?.isPublic ? 'Public' : 'Local'
+    };
   }
 
 }

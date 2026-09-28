@@ -133,7 +133,7 @@ export class ShowFeaturesComponent implements OnInit {
     const serviceId = Number(localStorage.getItem('selectedServiceId'));
     this.http.getAllData(`UniversalOrder/GetAllOrderStatusByService/${serviceId}`).subscribe((res: any) => {
       this.OrderStatuses = res as OrderStatusOption[];
-      
+
     }, (error) => {
       console.error(error);
     });
@@ -168,6 +168,10 @@ export class ShowFeaturesComponent implements OnInit {
         this.orders = (res as any[]).map(item => new GlobalOrder(item));
         this.allCountOfTasks = this.orders.length;
         this.allOrders = this.orders;
+        if (this.myTasksOnly) {
+          const me = this.myName.trim().toLowerCase();
+          this.allOrders = this.allOrders.filter(o => (o.assigneeName ?? '').trim().toLowerCase() === me);
+        }
         this.calculateStats();
         this.isLoading = false;
         this.cdr.detectChanges();

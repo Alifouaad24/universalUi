@@ -241,11 +241,11 @@ export class ShowSuppliersComponent implements OnInit {
     this.selectedPlatformId = platformId;
     this.selectedproviderId = supplierId
     this.showOrdersModal = true;
-    this.getUniversalOrders(platformId)
+    this.getAllOrders(platformId)
     localStorage.setItem('selectedPlatformId', platformId.toString());
   }
 
-  getUniversalOrders(platformId: number) {
+  getAllOrders(platformId: number) {
     this.isLoading = true
     const businessId = localStorage.getItem('businessId');
 

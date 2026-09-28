@@ -121,6 +121,7 @@ export class ShowInventoryComponent implements OnInit {
   selectedEbayType: string = 'UPC';
   QuantityItem: number = 0
   BrandToEdit: string = ''
+  basePrice?: number
   proccessedInInv: boolean = false
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
@@ -161,10 +162,9 @@ export class ShowInventoryComponent implements OnInit {
     })
   }
 
-
   getInventory() {
     this.isLoading = true;
-    this.http.getAllData(`Inventory/${this.businessId}`).subscribe(
+    this.http.getAllData(`Inventory/GetAllInventory/${this.businessId}`).subscribe(
       (res: any) => {
         console.log(res);
         this.inventory = (res as any[]).map(item => new InventoryModel({
@@ -193,15 +193,7 @@ export class ShowInventoryComponent implements OnInit {
         }));
 
         this.tempInventory = [...this.inventory];
-        this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold'));
         this.isLoading = false;
-        this.selectedFilter = 'All';
-
-        this.route.queryParams.subscribe(param => {
-          var filtter = param['filtter']
-          if (filtter)
-            this.filterDutyInventory(filtter);
-        })
         this.cdr.detectChanges();
       },
       (err) => {
@@ -211,6 +203,91 @@ export class ShowInventoryComponent implements OnInit {
       }
     );
   }
+
+
+  getUnderProccessInventory() {
+    this.isLoading = true;
+    this.http.getAllData(`Inventory/${this.businessId}`).subscribe(
+      (res: any) => {
+        console.log(res);
+        this.inventory = (res as any[]).map(item => new InventoryModel({
+          inventory_id: item.inventory_id,
+          item: item.item,
+          platform: item.platform,
+          folderImages: item.folderImages,
+          size_id: item.size_id,
+          platform_id: item.platform_id,
+          category_id: item.category_id,
+          size: item.size,
+          sku: item.sku,
+          sitePrice: item.sitePrice,
+          ebayOfferID: item.ebayOfferID,
+          qty: item.qtyPublished,
+          publishedQty: item.qtyInInventory,
+          status: item.status,
+          category: item.category,
+          ebayListingId: item.ebayListingId,
+          notFound: item.notFound,
+          Product_name: item.product_name,
+          product_description: item.product_description,
+          itemCondition: item.itemCondition,
+          isProccessedInInventory: item.isProccessedInInventory,
+          isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
+        }));
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  GetAllWhereReadyToPublish() {
+    this.isLoading = true;
+    this.http.getAllData(`Inventory/GetAllWhereReadyToPublish/${this.businessId}`).subscribe(
+      (res: any) => {
+        console.log(res);
+        this.inventory = (res as any[]).map(item => new InventoryModel({
+          inventory_id: item.inventory_id,
+          item: item.item,
+          platform: item.platform,
+          folderImages: item.folderImages,
+          size_id: item.size_id,
+          platform_id: item.platform_id,
+          category_id: item.category_id,
+          size: item.size,
+          sku: item.sku,
+          sitePrice: item.sitePrice,
+          ebayOfferID: item.ebayOfferID,
+          qty: item.qtyPublished,
+          publishedQty: item.qtyInInventory,
+          status: item.status,
+          category: item.category,
+          ebayListingId: item.ebayListingId,
+          notFound: item.notFound,
+          Product_name: item.product_name,
+          product_description: item.product_description,
+          itemCondition: item.itemCondition,
+          isProccessedInInventory: item.isProccessedInInventory,
+          isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
+        }));
+
+        this.tempInventory = [...this.inventory];
+this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+
   PlatformId: number | null = null;
   Platforms?: any[]
   getPlatforms() {
@@ -471,26 +548,16 @@ export class ShowInventoryComponent implements OnInit {
 
     const filterValue = event;
     this.selectedDutyFilter = filterValue;
-    if (filterValue === 'needUpdates') {
-      this.inventory = this.inventory.filter(inv => !inv.category == null ||
-        inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
-    } else if (filterValue === 'published') {
-      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
+    if (filterValue === 'All') {
+      this.inventory = []
+      this.getInventory()
+    } else if (filterValue === 'Under proccess') {
+      this.inventory = []
+      this.getUnderProccessInventory()
     }
-    else if (filterValue === 'unpublished') {
-      this.inventory = this.inventory.filter(inv => inv.status == null && inv.isProccessedInInventory);
-    }
-    else if (filterValue === 'needScrape') {
-      this.inventory = this.inventory.filter(inv => !inv.isProccessedInInventory);
-    }
-    else if (filterValue === 'Sold') {
-      this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
-    }
-    else if (filterValue === 'parcialSold') {
-      this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
-    }
-    else if (filterValue === 'unpublishedOnMarketPlace') {
-      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory && !inv.isPublishedOnMarketPlace);
+    else if (filterValue === 'Complated') {
+      this.inventory = []
+      this.GetAllWhereReadyToPublish()
     }
     else {
       this.inventory = [];
@@ -539,20 +606,23 @@ export class ShowInventoryComponent implements OnInit {
   title: string = '';
   descriptionToEdit: string = '';
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean) {
+  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number, basePrice?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
     this.PlatformId = platformId || null;
     this.SKUFOREDIT = sku || '';
+    this.basePrice = basePrice || 0
     this.QuantityItem = qty || 0
     this.UPCFOREDIT = upc || '';
     this.PriceFOREDIT = price || '';
+    this.ItemConditionId = conditionId || null;
     this.BrandToEdit = brand || '';
     this.proccessedInInv = isproccessed || false
     this.title = title || ''
     this.descriptionToEdit = description || ';'
     this.showEditModal = true;
+    console.log(inventoryId)
   }
 
 
@@ -572,17 +642,19 @@ export class ShowInventoryComponent implements OnInit {
       SizeId: this.SizeId,
       SKU: this.SKUFOREDIT,
       upc: this.UPCFOREDIT,
-      price: realPrice,
       platformId: this.PlatformId,
-      itemCondition: this.ItemConditionId,
+      ItemConditionId: this.ItemConditionId,
       title: this.title,
-      description: this.descriptionToEdit,
+      ItemPrice: this.basePrice,
+      WarehousePrice: this.PriceFOREDIT,
+      Description: this.descriptionToEdit,
       qty: this.QuantityItem,
+      Details: this.title,
       isProccessedInInventory: this.proccessedInInv,
       brand: this.BrandToEdit
     };
     console.log('Payload for editing inventory item:', payload);
-    this.http.putData(`Inventory/AddCategoryAndSizeToInv/${this.currentInventoryId}`, payload).subscribe(
+    this.http.putData(`Inventory/${this.currentInventoryId}`, payload).subscribe(
       (res: any) => {
         this.isLoading = false;
         this.toastMessage.set('Inventory item successfully updated.');
@@ -1422,7 +1494,7 @@ export class ShowInventoryComponent implements OnInit {
     this.http.putData(`Inventory/SetPublishOnMarketPlase`, payLoad).subscribe(
       (res: any) => {
         this.isChangeStatus = false;
-        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastMessage.set('Inventory item successfully Set Publish On MarketPlase.');
         this.toastVisible.set(true);
         this.inventory.find(inv => inv.inventory_id == this.selctedInvId)!.isPublishedOnMarketPlace = res.status;
         this.showMarketPlacePopup = false
@@ -1659,7 +1731,7 @@ export class ShowInventoryComponent implements OnInit {
     this.selectedImageIndex = 0;
     this.imagesModalVisible = true;
   }
-  
+
 
   closeImagesModal() {
     this.imagesModalVisible = false;

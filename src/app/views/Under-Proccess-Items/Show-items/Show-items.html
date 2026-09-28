@@ -4,16 +4,71 @@
   </button>
 </div>
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <div class="fw-bold col-2">
-      Products
-    </div>
-    <div class="col-8 d-flex justify-content-center">
-      <input type="text" class="form-control col-6" placeholder="Search..." [(ngModel)]="searchTerm"
-        (input)="searchAboutItem(searchTerm)">
-    </div>
-    <div class="fw-bold col-2 text-end">
-      Count: {{ inventory.length }}
+  <div class="card-header">
+    <div class="row align-items-center g-3">
+
+      <!-- Title + Count -->
+      <div class="col-12 col-lg-2">
+        <div class="d-flex align-items-center gap-3">
+          <div>
+            <h5 class="mb-0 fw-bold">Products</h5>
+            <small class="text-muted">Inventory products</small>
+          </div>
+
+          <span class="badge bg-primary rounded-pill">
+            {{ inventory.length }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="col-12 col-lg-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white">
+            🔍
+          </span>
+
+          <input type="text" class="form-control" placeholder="Search products..." [(ngModel)]="searchTerm"
+            (input)="searchAboutItem(searchTerm)">
+        </div>
+      </div>
+
+      <!-- Platform Filter -->
+      <div class="col-12 col-lg-3">
+        <div class="input-group">
+          <span class="input-group-text">
+            Platform
+          </span>
+
+          <select class="form-select" [(ngModel)]="selectedPlatformId" (ngModelChange)="filterByPlatform($event)">
+
+            <option [ngValue]="null">
+              All Platforms
+            </option>
+
+            <option *ngFor="let platform of getPlatformss()" [ngValue]="platform.platform_id">
+              {{ platform.description }}
+            </option>
+
+          </select>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <div class="input-group">
+          <select
+  class="form-select"
+  [(ngModel)]="selectedSituation"
+  (ngModelChange)="filterBySituation($event)">
+
+  <option value="All Products">All Products</option>
+  <option value="Complated">Complated</option>
+  <option value="Under proccess">Under proccess</option>
+
+</select>
+        </div>
+      </div>
+
     </div>
   </div>
   <div class="card-body">

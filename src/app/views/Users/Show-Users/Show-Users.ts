@@ -102,7 +102,6 @@ busId?: number
           businesses: item.businesses,
         }));
         this.isLoading = false;
-
         this.cdr.detectChanges();
       },
       (err) => {
