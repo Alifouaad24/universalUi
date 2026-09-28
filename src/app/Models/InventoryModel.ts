@@ -23,6 +23,7 @@ export class InventoryModel {
     ebayListingId?: string;
     Product_name?: string;
     itemCondition?: any;
+    itemConditionId?: number
     isProccessedInInventory?: boolean;
     isPublishedOnMarketPlace?: boolean
     constructor(init: Partial<InventoryModel>) {

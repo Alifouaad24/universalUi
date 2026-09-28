@@ -188,6 +188,8 @@ export class ShowInventoryComponent implements OnInit {
           Product_name: item.product_name,
           product_description: item.product_description,
           itemCondition: item.itemCondition,
+          itemConditionId: item.itemConditionId,
+
           isProccessedInInventory: item.isProccessedInInventory,
           isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
         }));
@@ -220,6 +222,7 @@ export class ShowInventoryComponent implements OnInit {
           category_id: item.category_id,
           size: item.size,
           sku: item.sku,
+          
           sitePrice: item.sitePrice,
           ebayOfferID: item.ebayOfferID,
           qty: item.qtyPublished,
@@ -231,6 +234,7 @@ export class ShowInventoryComponent implements OnInit {
           Product_name: item.product_name,
           product_description: item.product_description,
           itemCondition: item.itemCondition,
+          itemConditionId: item.itemConditionId,
           isProccessedInInventory: item.isProccessedInInventory,
           isPublishedOnMarketPlace: item.isPublishedOnMarketPlace
         }));
@@ -265,6 +269,7 @@ export class ShowInventoryComponent implements OnInit {
           qty: item.qtyPublished,
           publishedQty: item.qtyInInventory,
           status: item.status,
+          itemConditionId: item.itemConditionId,
           category: item.category,
           ebayListingId: item.ebayListingId,
           notFound: item.notFound,
@@ -622,7 +627,7 @@ this.isLoading = false;
     this.title = title || ''
     this.descriptionToEdit = description || ';'
     this.showEditModal = true;
-    console.log(inventoryId)
+    console.log(this.CategoryId)
   }
 
 
@@ -638,18 +643,18 @@ this.isLoading = false;
     this.isLoading = true;
     const realPrice = this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT.replace(/\$/g, '') + '$' : undefined;
     const payload = {
-      CategoryId: this.CategoryId,
-      SizeId: this.SizeId,
-      SKU: this.SKUFOREDIT,
+      categoryId: Number(this.CategoryId),
+      sizeId: this.SizeId,
+      sKU: this.SKUFOREDIT,
       upc: this.UPCFOREDIT,
       platformId: this.PlatformId,
-      ItemConditionId: this.ItemConditionId,
+      itemConditionId: Number(this.ItemConditionId),
       title: this.title,
-      ItemPrice: this.basePrice,
-      WarehousePrice: this.PriceFOREDIT,
+      itemPrice: this.basePrice,
+      warehousePrice: this.PriceFOREDIT,
       Description: this.descriptionToEdit,
-      qty: this.QuantityItem,
-      Details: this.title,
+      qty: Number(this.QuantityItem),
+      details: this.title,
       isProccessedInInventory: this.proccessedInInv,
       brand: this.BrandToEdit
     };

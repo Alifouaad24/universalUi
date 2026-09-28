@@ -104,9 +104,9 @@
             : 'bg-danger-subtle text-danger border border-danger-subtle'"
             [style.cursor]="(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null) ? 'default' : 'pointer'"
             (click)="!(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null)
-            && ShowEditModal(type.inventory_id, type.item.category_id, type.size_id, 
+            && ShowEditModal(type.inventory_id, type.item.categoryId, type.size_id, 
             type.item?.sku, type.item?.upc, type?.sitePrice, type.item.platformId, type.item.itemDescription, type.item.itemDetails,
-            type.qty, type.item?.brand, type.isProccessedInInventory, type.itemCondition, type?.item.basePrice)">
+            type.qty, type.item?.brand, type.isProccessedInInventory, type.itemConditionId, type?.item.basePrice)">
             <i class="bi bi-fingerprint"></i>
             <span class="fw-bold mt-1" style="font-size: 9px;">BIO</span>
           </div>
