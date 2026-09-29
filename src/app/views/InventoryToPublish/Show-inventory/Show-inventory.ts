@@ -105,6 +105,7 @@ export class ShowInventoryComponent implements OnInit {
   desc?: string
   Model?: string
   Internet?: string
+  currentItemId?: number
   Brand?: string
   Dimention?: string
   SKU?: string
@@ -122,6 +123,7 @@ export class ShowInventoryComponent implements OnInit {
   QuantityItem: number = 0
   BrandToEdit: string = ''
   proccessedInInv: boolean = false
+  EbayTitle?: string
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
@@ -538,10 +540,11 @@ export class ShowInventoryComponent implements OnInit {
   PriceFOREDIT: string = '';
   title: string = '';
   descriptionToEdit: string = '';
-
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean) {
+isEditMode = false
+  ShowEditModal(itemId?: number, inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
+    this.currentItemId = itemId
     this.CategoryId = categoryId || null;
     this.PlatformId = platformId || null;
     this.SKUFOREDIT = sku || '';
@@ -553,6 +556,7 @@ export class ShowInventoryComponent implements OnInit {
     this.title = title || ''
     this.descriptionToEdit = description || ';'
     this.showEditModal = true;
+    this.ItemConditionId = conditionId || null
   }
 
 
@@ -961,6 +965,7 @@ export class ShowInventoryComponent implements OnInit {
 
   ShowDetailsModal(inventory: InventoryModel) {
     this.selectedImagesToEbay = [];
+    this.EbayTitle = inventory.item?.carBrand?.carBrandName + ' ' + inventory.item.itemDescription + ' ' + inventory.item.model 
     this.selectedType = inventory;
     this.DetailsModalVisible = true;
     inventory.item.images.map((el: any) => {
@@ -1017,7 +1022,7 @@ export class ShowInventoryComponent implements OnInit {
 
     const payload = {
       'sku': skuValue,
-      'title': titleValue,
+      'title': this.EbayTitle,
       'description': product.product_description,
       'brand': product.item.brand,
       'quantity': Number(product.qty),
@@ -1109,9 +1114,9 @@ export class ShowInventoryComponent implements OnInit {
 
       const payload = {
         'sku': skuValue,
-        'title': titleValue,
+        'title': this.EbayTitle,
         'description': product.product_description,
-        'brand': product.item.brand,
+        'brand': product.item.carBrand.carBrandName,
         'quantity': Number(product.qty),
         'condition': product.itemCondition?.description ?? 'NEW',
         'imageUrls': (() => {
@@ -1235,6 +1240,10 @@ export class ShowInventoryComponent implements OnInit {
 
   loginingInToEbay = false;
   LogInToEbayDiredty(token: string, inputElement: HTMLInputElement) {
+    if(this.isAuthInEbay == true){
+      this.isAuthInEbay = false
+      return
+    }
     this.loginingInToEbay = true;
     this.http.posteData('Ebay/save-token', {
       'accessToken': token
@@ -1666,6 +1675,55 @@ export class ShowInventoryComponent implements OnInit {
 
   selectImage(index: number) {
     this.selectedImageIndex = index;
+  }
+
+  /////
+
+  removeImageField(index: number) {
+    URL.revokeObjectURL(this.selectedImages[index].previewUrl);
+    this.selectedImages.splice(index, 1);
+  }
+
+
+  onFilesSelecteds(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    Array.from(input.files).forEach(file => {
+      const previewUrl = URL.createObjectURL(file);
+      this.selectedImages.push({ file, previewUrl });
+    });
+
+    input.value = ''; // يسمح باختيار نفس الملف مرة ثانية إذا حُذف بالغلط
+  }
+  uploadingImages = false
+  BindImagesWithItem() {
+    this.uploadingImages = true
+    const form = new FormData();
+    this.selectedImages.forEach((image: File) => {
+      form.append('Images', image, image.name);
+    });
+
+    this.http.putData(
+      `BindImagesWithItem/${this.currentItemId}`,
+      form
+    ).subscribe({
+      next: (res) => {
+        const item = this.inventory.find(
+          el => el.item.itemId === this.currentItemId
+        )?.item;
+
+        if (item) {
+          item.images.push(...res.newImages);
+        }
+        this.uploadingImages = false
+        console.log('Images uploaded successfully:', res.newImages);
+      },
+      error: (err) => {
+        console.error('Upload images failed:', err);
+        this.uploadingImages = false
+      }
+    });
   }
 }
 

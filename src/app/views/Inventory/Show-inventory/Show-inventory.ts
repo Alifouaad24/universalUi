@@ -57,7 +57,7 @@ import { BusinessModel } from '../../../Models/Business/BusinessModel';
     DropdownItemDirective, DropdownDividerDirective,
     ButtonDirective, ImageCropperComponent,
     ProgressComponent,
-    ToasterComponent, ButtonModule, 
+    ToasterComponent, ButtonModule,
     ToastComponent,
     ToastHeaderComponent,
 
@@ -123,6 +123,7 @@ export class ShowInventoryComponent implements OnInit {
   BrandToEdit: string = ''
   basePrice?: number
   proccessedInInv: boolean = false
+  isEditMode: boolean = false;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
@@ -222,7 +223,7 @@ export class ShowInventoryComponent implements OnInit {
           category_id: item.category_id,
           size: item.size,
           sku: item.sku,
-          
+
           sitePrice: item.sitePrice,
           ebayOfferID: item.ebayOfferID,
           qty: item.qtyPublished,
@@ -281,7 +282,7 @@ export class ShowInventoryComponent implements OnInit {
         }));
 
         this.tempInventory = [...this.inventory];
-this.isLoading = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       (err) => {
@@ -610,9 +611,11 @@ this.isLoading = false;
   PriceFOREDIT: string = '';
   title: string = '';
   descriptionToEdit: string = '';
+  currentItemId?: number
 
-  ShowEditModal(inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number, basePrice?: number) {
+  ShowEditModal(itemId?: number, inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number, basePrice?: number) {
     this.currentInventoryId = inventoryId;
+    this.currentItemId = itemId
     this.SizeId = sizeId || null;
     this.CategoryId = categoryId || null;
     this.PlatformId = platformId || null;
@@ -651,7 +654,7 @@ this.isLoading = false;
       itemConditionId: Number(this.ItemConditionId),
       title: this.title,
       itemPrice: this.basePrice,
-      warehousePrice: this.PriceFOREDIT,
+      warehousePrice: Number(this.PriceFOREDIT.replace('$', '')),
       Description: this.descriptionToEdit,
       qty: Number(this.QuantityItem),
       details: this.title,
@@ -668,13 +671,14 @@ this.isLoading = false;
         this.CategoryId = null;
         this.SizeId = null;
         this.SKUFOREDIT = '';
-        this.cdr.detectChanges();
         this.getInventory();
+        this.cdr.detectChanges();
       },
       (err) => {
         this.isLoading = false;
         this.toastMessage.set('Error updating inventory item.');
         this.toastVisible.set(true);
+        console.log(err)
         this.cdr.detectChanges();
       }
     );
@@ -1745,6 +1749,65 @@ this.isLoading = false;
 
   selectImage(index: number) {
     this.selectedImageIndex = index;
+  }
+
+  deleteImage(id: number) {
+    this.http.deleteData(`DeleteImage/${id}`).subscribe(res => {
+      this.selectedImages.splice(this.selectedImageIndex, 1);
+
+      if (this.selectedImages.length === 0) {
+        this.selectedImageIndex = 0;
+      } else if (this.selectedImageIndex >= this.selectedImages.length) {
+        this.selectedImageIndex = this.selectedImages.length - 1;
+      }
+    });
+  }
+
+  removeImageField(index: number) {
+    URL.revokeObjectURL(this.selectedImages[index].previewUrl);
+    this.selectedImages.splice(index, 1);
+  }
+
+
+  onFilesSelecteds(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    Array.from(input.files).forEach(file => {
+      const previewUrl = URL.createObjectURL(file);
+      this.selectedImages.push({ file, previewUrl });
+    });
+
+    input.value = ''; // يسمح باختيار نفس الملف مرة ثانية إذا حُذف بالغلط
+  }
+  uploadingImages = false
+  BindImagesWithItem() {
+    this.uploadingImages = true
+    const form = new FormData();
+    this.selectedImages.forEach((image: File) => {
+      form.append('Images', image, image.name);
+    });
+
+    this.http.putData(
+      `BindImagesWithItem/${this.currentItemId}`,
+      form
+    ).subscribe({
+      next: (res) => {
+        const item = this.inventory.find(
+          el => el.item.itemId === this.currentItemId
+        )?.item;
+
+        if (item) {
+          item.images.push(...res.newImages);
+        }
+        this.uploadingImages = false
+        console.log('Images uploaded successfully:', res.newImages);
+      },
+      error: (err) => {
+        console.error('Upload images failed:', err);
+        this.uploadingImages = false
+      }
+    });
   }
 }
 
