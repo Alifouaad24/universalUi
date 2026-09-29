@@ -124,7 +124,7 @@ export class ShowInventoryComponent implements OnInit {
   basePrice?: number
   proccessedInInv: boolean = false
   isEditMode: boolean = false;
-
+  selectedNewImages: any[] = []
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
@@ -1752,7 +1752,7 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   deleteImage(id: number) {
-    this.http.deleteData(`DeleteImage/${id}`).subscribe(res => {
+    this.http.deleteData(`Inventory/DeleteImage/${id}`).subscribe(res => {
       this.selectedImages.splice(this.selectedImageIndex, 1);
 
       if (this.selectedImages.length === 0) {
@@ -1760,12 +1760,13 @@ export class ShowInventoryComponent implements OnInit {
       } else if (this.selectedImageIndex >= this.selectedImages.length) {
         this.selectedImageIndex = this.selectedImages.length - 1;
       }
+      this.cdr.detectChanges()
     });
   }
 
   removeImageField(index: number) {
-    URL.revokeObjectURL(this.selectedImages[index].previewUrl);
-    this.selectedImages.splice(index, 1);
+    URL.revokeObjectURL(this.selectedNewImages[index].previewUrl);
+    this.selectedNewImages.splice(index, 1);
   }
 
 
@@ -1775,39 +1776,44 @@ export class ShowInventoryComponent implements OnInit {
 
     Array.from(input.files).forEach(file => {
       const previewUrl = URL.createObjectURL(file);
-      this.selectedImages.push({ file, previewUrl });
+      this.selectedNewImages.push({ file, previewUrl });
     });
 
     input.value = ''; // يسمح باختيار نفس الملف مرة ثانية إذا حُذف بالغلط
   }
   uploadingImages = false
-  BindImagesWithItem() {
-    this.uploadingImages = true
+   BindImagesWithItem() {
+    console.log('>>> NEW VERSION 2');
+    if (!this.selectedNewImages.length) return;
+    this.uploadingImages = true;
+
     const form = new FormData();
-    this.selectedImages.forEach((image: File) => {
-      form.append('Images', image, image.name);
-    });
 
-    this.http.putData(
-      `BindImagesWithItem/${this.currentItemId}`,
-      form
-    ).subscribe({
-      next: (res) => {
-        const item = this.inventory.find(
-          el => el.item.itemId === this.currentItemId
-        )?.item;
-
-        if (item) {
-          item.images.push(...res.newImages);
-        }
-        this.uploadingImages = false
-        console.log('Images uploaded successfully:', res.newImages);
-      },
-      error: (err) => {
-        console.error('Upload images failed:', err);
-        this.uploadingImages = false
+    this.selectedNewImages.forEach(({ file }, index) => {
+      if (file instanceof File) {
+        form.append('Images', file, file.name);
+      } else {
+        console.error('ملف غير صالح في الموقع:', index, file);
       }
     });
+
+    this.http.putData(`Inventory/BindImagesWithItem/${this.currentItemId}`, form, true)
+      .subscribe({
+        next: (res: any) => {
+          const item = this.inventory.find(el => el.item.itemId === this.currentItemId)?.item;
+          if (item) item.images.push(...res.newImages);
+          console.log(res)
+          // تحرير روابط المعاينة من الذاكرة قبل التفريغ
+          this.selectedNewImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
+          this.selectedNewImages = [];
+          this.uploadingImages = false;
+          this.cdr.detectChanges()
+        },
+        error: (err) => {
+          console.error('فشل رفع الصور:', err);
+          this.uploadingImages = false;
+        }
+      });
   }
 }
 

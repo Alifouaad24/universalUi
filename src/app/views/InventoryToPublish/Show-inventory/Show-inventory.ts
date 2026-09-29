@@ -124,6 +124,7 @@ export class ShowInventoryComponent implements OnInit {
   BrandToEdit: string = ''
   proccessedInInv: boolean = false
   EbayTitle?: string
+  selectedNewImages: { file: File; previewUrl: string }[] = [];
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
@@ -540,7 +541,7 @@ export class ShowInventoryComponent implements OnInit {
   PriceFOREDIT: string = '';
   title: string = '';
   descriptionToEdit: string = '';
-isEditMode = false
+  isEditMode = false
   ShowEditModal(itemId?: number, inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number) {
     this.currentInventoryId = inventoryId;
     this.SizeId = sizeId || null;
@@ -965,7 +966,7 @@ isEditMode = false
 
   ShowDetailsModal(inventory: InventoryModel) {
     this.selectedImagesToEbay = [];
-    this.EbayTitle = inventory.item?.carBrand?.carBrandName + ' ' + inventory.item.itemDescription + ' ' + inventory.item.model 
+    this.EbayTitle = inventory.item?.carBrand?.carBrandName + ' ' + inventory.item.itemDescription + ' ' + inventory.item.model
     this.selectedType = inventory;
     this.DetailsModalVisible = true;
     inventory.item.images.map((el: any) => {
@@ -1240,7 +1241,7 @@ isEditMode = false
 
   loginingInToEbay = false;
   LogInToEbayDiredty(token: string, inputElement: HTMLInputElement) {
-    if(this.isAuthInEbay == true){
+    if (this.isAuthInEbay == true) {
       this.isAuthInEbay = false
       return
     }
@@ -1680,8 +1681,8 @@ isEditMode = false
   /////
 
   removeImageField(index: number) {
-    URL.revokeObjectURL(this.selectedImages[index].previewUrl);
-    this.selectedImages.splice(index, 1);
+    URL.revokeObjectURL(this.selectedNewImages[index].previewUrl);
+    this.selectedNewImages.splice(index, 1);
   }
 
 
@@ -1691,39 +1692,43 @@ isEditMode = false
 
     Array.from(input.files).forEach(file => {
       const previewUrl = URL.createObjectURL(file);
-      this.selectedImages.push({ file, previewUrl });
+      this.selectedNewImages.push({ file, previewUrl });
     });
 
     input.value = ''; // يسمح باختيار نفس الملف مرة ثانية إذا حُذف بالغلط
   }
   uploadingImages = false
   BindImagesWithItem() {
-    this.uploadingImages = true
+    console.log('>>> NEW VERSION 2');
+    if (!this.selectedNewImages.length) return;
+    this.uploadingImages = true;
+
     const form = new FormData();
-    this.selectedImages.forEach((image: File) => {
-      form.append('Images', image, image.name);
-    });
 
-    this.http.putData(
-      `BindImagesWithItem/${this.currentItemId}`,
-      form
-    ).subscribe({
-      next: (res) => {
-        const item = this.inventory.find(
-          el => el.item.itemId === this.currentItemId
-        )?.item;
-
-        if (item) {
-          item.images.push(...res.newImages);
-        }
-        this.uploadingImages = false
-        console.log('Images uploaded successfully:', res.newImages);
-      },
-      error: (err) => {
-        console.error('Upload images failed:', err);
-        this.uploadingImages = false
+    this.selectedNewImages.forEach(({ file }, index) => {
+      if (file instanceof File) {
+        form.append('Images', file, file.name);
+      } else {
+        console.error('ملف غير صالح في الموقع:', index, file);
       }
     });
+
+    this.http.putData(`Inventory/BindImagesWithItem/${this.currentItemId}`, form, true)
+      .subscribe({
+        next: (res: any) => {
+          const item = this.inventory.find(el => el.item.itemId === this.currentItemId)?.item;
+          if (item) item.images.push(...res.newImages);
+          console.log(res)
+          // تحرير روابط المعاينة من الذاكرة قبل التفريغ
+          this.selectedNewImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
+          this.selectedNewImages = [];
+          this.uploadingImages = false;
+        },
+        error: (err) => {
+          console.error('فشل رفع الصور:', err);
+          this.uploadingImages = false;
+        }
+      });
   }
 }
 
