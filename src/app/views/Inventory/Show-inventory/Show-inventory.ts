@@ -70,6 +70,7 @@ export class ShowInventoryComponent implements OnInit {
   selectedSource: string = 'homeDepot';
   isLoading: boolean = false;
   showScrapeModal: boolean = false;
+  platformsScraps: any[] = [];
   showScrapeDutyModal: boolean = false;
   selectedType?: InventoryModel;
   ImagesUrlsFromScrape: string[] = [];
@@ -81,6 +82,8 @@ export class ShowInventoryComponent implements OnInit {
   autoHideToast = signal(true);
   businessId?: number;
   currentBusiness?: BusinessModel;
+  showScrapDetailsBool = false;
+  selectedPlatform: any = null;
   sourceCode: string = '';
   priceFromScrape: string = '';
   productNameFromScrape: string = '';
@@ -125,6 +128,10 @@ export class ShowInventoryComponent implements OnInit {
   proccessedInInv: boolean = false
   isEditMode: boolean = false;
   selectedNewImages: any[] = []
+  imagesModalVisible = false;
+  selectedImages: any[] = [];
+  selectedImageIndex = 0;
+
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
@@ -1728,9 +1735,7 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
-  imagesModalVisible = false;
-  selectedImages: any[] = [];
-  selectedImageIndex = 0;
+
 
   ShowAllImages(images: any[] | undefined) {
     console.log("bgv")
@@ -1782,7 +1787,7 @@ export class ShowInventoryComponent implements OnInit {
     input.value = ''; // يسمح باختيار نفس الملف مرة ثانية إذا حُذف بالغلط
   }
   uploadingImages = false
-   BindImagesWithItem() {
+  BindImagesWithItem() {
     console.log('>>> NEW VERSION 2');
     if (!this.selectedNewImages.length) return;
     this.uploadingImages = true;
@@ -1814,6 +1819,71 @@ export class ShowInventoryComponent implements OnInit {
           this.uploadingImages = false;
         }
       });
+  }
+
+  getingPlatformsScraps = false;
+  showPlatformsScrapsBool = false;
+  UpcForScrape?: string;
+
+  showPlatformsScraps(upc: string) {
+    this.getingPlatformsScraps = true;
+    this.showPlatformsScrapsBool = true;
+    this.UpcForScrape = upc;
+    this.cdr.detectChanges();
+    console.log('>>> SHOW PLATFORMS SCRAPS');
+    const currentBusiness = localStorage.getItem('businessId');
+    this.http.getAllData(`Platform/${currentBusiness}`).subscribe(
+      (res: any) => {
+        console.log('Platforms Scraps:', res);
+        this.platformsScraps = res;
+        this.showPlatformsScrapsBool = true;
+        this.getingPlatformsScraps = false;
+
+        this.cdr.detectChanges();
+
+      },
+      (err) => {
+        console.error('Error fetching platforms scraps:', err);
+      }
+    );
+  }
+
+  selectPlatform(platform: any) {
+    this.scrapedProduct = null;
+    this.selectedPlatform = platform;
+    // Close platforms modal
+    this.showPlatformsScrapsBool = false;
+    // Open selected platform modal
+    this.showScrapDetailsBool = true;
+
+  }
+
+  scrapedProduct: any = null;
+  isScraping = false;
+
+  startScraping() {
+    this.scrapedProduct = null;
+    this.isScraping = true;
+    if (this.selectedPlatform.description == 'Home Depot') {
+      this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${this.UpcForScrape}`).subscribe(
+        (res: any) => {
+          console.log('Scraped data from Home Depot:', res);
+          this.showScrapDetailsBool = true;
+          console.log('Scraping response:', res);
+
+          if (res?.products?.length > 0) {
+            this.scrapedProduct = res.products[0];
+          }
+
+          this.isScraping = false;
+
+          this.cdr.detectChanges();
+        },
+        (err) => {
+          console.error('Error scraping from Home Depot:', err);
+        }
+      );
+    }
   }
 }
 
