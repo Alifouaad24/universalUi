@@ -1006,6 +1006,9 @@ export class ShowItemsComponent implements OnInit {
       },
       (err) => {
         console.error('Error scraping from Home Depot:', err);
+          alert(err.error?.message + '\n' + err.error?.details || 'Error scraping from Home Depot');
+          this.isScraping = false;
+          this.cdr.detectChanges();
       }
     );
   }
