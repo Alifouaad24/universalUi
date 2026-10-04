@@ -1825,10 +1825,11 @@ export class ShowInventoryComponent implements OnInit {
   showPlatformsScrapsBool = false;
   UpcForScrape?: string;
 
-  showPlatformsScraps(upc: string) {
+  showPlatformsScraps(upc: string, itemId: number) {
     this.getingPlatformsScraps = true;
     this.showPlatformsScrapsBool = true;
     this.UpcForScrape = upc;
+    this.currentItemId = itemId;
     this.cdr.detectChanges();
     console.log('>>> SHOW PLATFORMS SCRAPS');
     const currentBusiness = localStorage.getItem('businessId');
@@ -1885,9 +1886,64 @@ export class ShowInventoryComponent implements OnInit {
       );
     }
   }
+
+  UpdateItemDataFromScraping() {
+    if (!this.scrapedProduct) {
+      this.toastMessage.set('No scraped product data available to update.');
+      this.toastVisible.set(true);
+      return;
+    }
+
+    this.isLoading = true;
+    const payload = {
+      description: this.scrapedProduct.name,
+      brand: this.scrapedProduct.brand,
+      model: this.scrapedProduct.model_number,
+      itemPrice: parseFloat(this.scrapedProduct.pricing.current_price) || 0,
+      images: (this.scrapedProduct.images || []).flat(),
+    };
+
+    console.log('Payload for updating item data from scraping:', payload);
+    console.log('currentItemId', this.currentItemId);
+    this.http.putData(`Item/UpdateItemFromScraping/${this.currentItemId}`, payload).subscribe(
+      (res: any) => {
+        this.isLoading = false;
+        this.toastMessage.set('Item data updated successfully from scraping.');
+        this.toastVisible.set(true);
+        this.getInventory();
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.toastMessage.set('Error updating item data from scraping.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      }
+    );
+  }
+
+  currentScrapedImageIndex = 0;
+
+  nextScrapedImage() {
+    const images = this.scrapedProduct?.images?.flat() || [];
+
+    if (!images.length) return;
+
+    this.currentScrapedImageIndex =
+      (this.currentScrapedImageIndex + 1) % images.length;
+  }
+
+  previousScrapedImage() {
+    const images = this.scrapedProduct?.images?.flat() || [];
+
+    if (!images.length) return;
+
+    this.currentScrapedImageIndex =
+      (this.currentScrapedImageIndex - 1 + images.length) % images.length;
+  }
+
+
 }
-
-
 
 // {
 //   "sku": "SKU-mrafm7ro-GSW2U6",

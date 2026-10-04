@@ -101,7 +101,7 @@
           <div class="d-flex flex-column align-items-center rounded-4 px-2 py-2 cursor-pointer"
             style="min-width: 48px; cursor: pointer;"
             [ngClass]="type.item?.isScraped ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-            (click)="showPlatformsScraps(type.item?.upc)">
+            (click)="showPlatformsScraps(type.item?.upc, type.item?.itemId)">
             <i class="bi bi-globe2"></i>
             <span class="fw-bold mt-1" style="font-size: 9px;">Scrape</span>
           </div>
@@ -323,7 +323,7 @@
       </div>
 
       <!-- Processed -->
-      <div class="col-md-6">
+      <!-- <div class="col-md-6">
         <label class="form-label fw-semibold d-block">
           Is Processed?
         </label>
@@ -339,7 +339,7 @@
           </div>
         </div>
 
-      </div>
+      </div> -->
 
     </div>
 
@@ -1055,136 +1055,121 @@
   </c-modal-body>
   <c-modal-footer>
     <button type="button" class="btn btn-secondary" (click)="showScrapDetailsBool = false">
-      <i class="fas fa-times me-1"></i>
       Close
+    </button>
+    <button type="button" class="btn btn-success" >
+      Save
     </button>
   </c-modal-footer>
 </c-modal>
 
+<!-- scraping modal indian -->
+
 <c-modal [(visible)]="showScrapDetailsBool" [size]="'lg'">
-
   <c-modal-header>
-
     <div class="d-flex align-items-center gap-2">
-
       <i class="fas fa-store text-primary"></i>
-
       <span class="fw-bold">
         {{ selectedPlatform?.description }}
       </span>
-
     </div>
-
   </c-modal-header>
-
-
   <c-modal-body>
-
     <!-- ========================= -->
     <!-- BEFORE SCRAPING -->
     <!-- ========================= -->
-
     <div *ngIf="!scrapedProduct" class="text-center">
-
       <div class="mb-3">
-
         <div class="bg-primary bg-opacity-10 text-primary rounded-circle
                  d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-
           <i class="fas fa-store fs-2"></i>
-
         </div>
-
       </div>
-
-
       <h5 class="fw-bold mb-1">
         {{ selectedPlatform?.description }}
       </h5>
-
       <p class="text-muted mb-4">
         Start scraping to get product information.
       </p>
-
-
       <div class="row g-3">
-
         <div class="col-12">
-
           <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping" (click)="startScraping()">
-
             <span *ngIf="isScraping" class="spinner-border spinner-border-sm me-2"></span>
-
             <i *ngIf="!isScraping" class="fas fa-cloud-download-alt me-2"></i>
-
             {{ isScraping ? 'Scraping...' : 'Start Scraping' }}
-
-          </button>
-
+         </button>
         </div>
-
       </div>
-
     </div>
-
-
     <!-- ========================= -->
     <!-- PRODUCT RESULT -->
     <!-- ========================= -->
-
     <div *ngIf="scrapedProduct">
-
       <!-- Product Header -->
       <div class="border-bottom pb-3 mb-4">
-
         <div class="d-flex align-items-center gap-2">
-
           <span class="badge bg-success">
             <i class="fas fa-check me-1"></i>
             Scraped
           </span>
-
           <span class="text-muted small">
             Product found successfully
           </span>
-
         </div>
-
       </div>
-
 
       <!-- Product -->
       <div class="row g-4">
 
-
         <!-- ========================= -->
         <!-- IMAGE -->
         <!-- ========================= -->
-
         <div class="col-12 col-md-5">
+  <div class="border rounded-3 p-3 bg-light text-center position-relative">
 
-          <div class="border rounded-3 p-3 bg-light text-center">
+    <ng-container *ngIf="scrapedProduct?.images?.length">
 
-            <img *ngIf="scrapedProduct.images?.length" [src]="scrapedProduct.images[0][3]" [alt]="scrapedProduct.name"
-              class="img-fluid" style="max-height: 300px; object-fit: contain;">
+      <!-- الصورة -->
+      <img
+        [src]="scrapedProduct.images.flat()[currentScrapedImageIndex]"
+        [alt]="scrapedProduct.name"
+        class="img-fluid"
+        style="max-height: 300px; object-fit: contain;"
+      />
 
-          </div>
+      <!-- Previous -->
+      <button
+        type="button"
+        class="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+        (click)="previousScrapedImage()">
+        <
+      </button>
 
-        </div>
+      <!-- Next -->
+      <button
+        type="button"
+        class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+        (click)="nextScrapedImage()">
+        >
+      </button>
 
+      <!-- رقم الصورة -->
+      <div class="mt-2 small text-muted">
+        {{ currentScrapedImageIndex + 1 }} / {{ scrapedProduct.images.flat().length }}
+      </div>
 
+    </ng-container>
+
+  </div>
+</div>
         <!-- ========================= -->
         <!-- PRODUCT INFO -->
         <!-- ========================= -->
-
         <div class="col-12 col-md-7">
-
-  
           <!-- Name -->
           <h5 class="fw-bold mb-3">
             {{ scrapedProduct.name }}
           </h5>
-
           <!-- Details -->
           <div class="row g-2">
             <!-- Model -->
@@ -1198,7 +1183,6 @@
                 </strong>
               </div>
             </div>
-
             <!-- Item ID -->
             <div class="col-6">
               <div class="border rounded p-2">
@@ -1252,9 +1236,10 @@
       <i class="fas fa-times me-1"></i>
       Close
     </button>
-
+    <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()" [disabled]="!scrapedProduct">
+      Save
+    </button>
   </c-modal-footer>
-
 </c-modal>
 
 <!-- Add new inv manual -->

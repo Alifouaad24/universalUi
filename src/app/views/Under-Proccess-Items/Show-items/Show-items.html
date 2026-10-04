@@ -56,16 +56,13 @@
 
       <div class="col-12 col-lg-3">
         <div class="input-group">
-          <select
-  class="form-select"
-  [(ngModel)]="selectedSituation"
-  (ngModelChange)="filterBySituation($event)">
+          <select class="form-select" [(ngModel)]="selectedSituation" (ngModelChange)="filterBySituation($event)">
 
-  <option value="All Products">All Products</option>
-  <option value="Complated">Complated</option>
-  <option value="Under proccess">Under proccess</option>
+            <option value="All Products">All Products</option>
+            <option value="Complated">Complated</option>
+            <option value="Under proccess">Under proccess</option>
 
-</select>
+          </select>
         </div>
       </div>
 
@@ -406,20 +403,169 @@
             </div>
 
             <div *ngIf="!useInput && selectedSource == 'HomeDepot'">
-              <label class="form-label fw-semibold">
-                Source HTML file:
-                <a class="text-danger" [href]="'https://www.homedepot.com/s/' + selectedItem?.upc" target="_blank">
-                  Go to Source
-                </a>
-              </label>
-              <div class="input-group">
-                <textarea class="form-control" rows="3" [(ngModel)]="htmlContent"
-                  placeholder="Paste HTML content here"></textarea>
-                <button class="btn btn-primary" (click)="GetPriceAndPhotoForLowes()">
-                  <span *ngIf="!isLoading">Get</span>
-                  <c-spinner *ngIf="isLoading" size="sm"></c-spinner>
+
+
+
+              <!-- ========================= -->
+              <!-- BEFORE SCRAPING -->
+              <!-- ========================= -->
+              <div *ngIf="!scrapedProduct" class="text-center">
+                <div class="mb-3">
+                  <div class="bg-primary bg-opacity-10 text-primary rounded-circle
+                 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-store fs-2"></i>
+                  </div>
+                </div>
+
+                <p class="text-muted mb-4">
+                  Start scraping to get product information.
+                </p>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping"
+                      (click)="startScraping()">
+                      <span *ngIf="isScraping" class="spinner-border spinner-border-sm me-2"></span>
+                      <i *ngIf="!isScraping" class="fas fa-cloud-download-alt me-2"></i>
+                      {{ isScraping ? 'Scraping...' : 'Start Scraping' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- ========================= -->
+              <!-- PRODUCT RESULT -->
+              <!-- ========================= -->
+              <div *ngIf="scrapedProduct">
+                <!-- Product Header -->
+                <div class="border-bottom pb-3 mb-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success">
+                      <i class="fas fa-check me-1"></i>
+                      Scraped
+                    </span>
+                    <span class="text-muted small">
+                      Product found successfully
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Product -->
+                <div class="row g-4">
+
+                  <!-- ========================= -->
+                  <!-- IMAGE -->
+                  <!-- ========================= -->
+                  <div class="col-12 col-md-5">
+                    <div class="border rounded-3 p-3 bg-light text-center position-relative">
+
+                      <ng-container *ngIf="scrapedProduct?.images?.length">
+
+                        <!-- الصورة -->
+                        <img [src]="scrapedProduct.images.flat()[currentScrapedImageIndex]" [alt]="scrapedProduct.name"
+                          class="img-fluid" style="max-height: 300px; object-fit: contain;" />
+
+                        <!-- Previous -->
+                        <button type="button"
+                          class="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                          (click)="previousScrapedImage()">
+                          < </button>
+
+                            <!-- Next -->
+                            <button type="button"
+                              class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                              (click)="nextScrapedImage()">
+                              >
+                            </button>
+
+                            <!-- رقم الصورة -->
+                            <div class="mt-2 small text-muted">
+                              {{ currentScrapedImageIndex + 1 }} / {{ scrapedProduct.images.flat().length }}
+                            </div>
+
+                      </ng-container>
+
+                    </div>
+                  </div>
+                  <!-- ========================= -->
+                  <!-- PRODUCT INFO -->
+                  <!-- ========================= -->
+                  <div class="col-12 col-md-7">
+                    <!-- Name -->
+                    <h5 class="fw-bold mb-3">
+                      {{ scrapedProduct.name }}
+                    </h5>
+                    <!-- Details -->
+                    <div class="row g-2">
+                      <!-- Model -->
+                      <div class="col-6">
+                        <div class="border rounded p-2">
+                          <small class="text-muted d-block">
+                            Model Number
+                          </small>
+                          <strong>
+                            {{ scrapedProduct.model_number || '-' }}
+                          </strong>
+                        </div>
+                      </div>
+                      <!-- Item ID -->
+                      <div class="col-6">
+                        <div class="border rounded p-2">
+                          <small class="text-muted d-block">
+                            Item ID
+                          </small>
+                          <strong>
+                            {{ scrapedProduct.item_id || '-' }}
+                          </strong>
+                        </div>
+                      </div>
+                      <!-- Brand -->
+                      <div class="col-6">
+                        <div class="border rounded p-2">
+                          <small class="text-muted d-block">
+                            Brand
+                          </small>
+                          <strong>
+                            {{ scrapedProduct.brand || '-' }}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <!-- price -->
+                      <div class="col-6 fw-bold text-success">
+                        <div class="border rounded p-2">
+                          <small class="text-muted d-block">
+                            Price
+                          </small>
+                          <strong>
+                            {{ scrapedProduct.pricing?.current_price || '-' }}$
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- ========================= -->
+                <!-- PRODUCT URL -->
+                <!-- ========================= -->
+                <div class="mt-4">
+                  <a [href]="scrapedProduct.url" target="_blank" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    View Product
+                  </a>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4" *ngIf="scrapedProduct">
+                <button type="button" class="btn btn-secondary" (click)="showScrapDetailsBool = false">
+                  <i class="fas fa-times me-1"></i>
+                  Close
+                </button>
+                <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()"
+                  [disabled]="!scrapedProduct">
+                  Save
                 </button>
               </div>
+
+
             </div>
           </div>
 
