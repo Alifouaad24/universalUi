@@ -314,7 +314,7 @@
   <c-modal-footer>
     <!--  -->
     <button cButton color="danger"
-      *ngIf="selectedItem?.isScraped == false && selectedItem?.canScrape == true || selectedItem?.canScrape == null"
+      *ngIf="selectedItem?.isScraped == false"
       (click)="openItemModalScrapeItemModal(selectedItem)">
       Scrape item
     </button>
@@ -561,7 +561,7 @@
                 </button>
                 <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()"
                   [disabled]="!scrapedProduct">
-                  Save
+                  {{ isLoading ? 'Updating...' : 'Update Item Data' }}
                 </button>
               </div>
 

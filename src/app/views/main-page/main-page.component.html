@@ -1,0 +1,425 @@
+<div class="apx">
+
+  <!-- ================= Navbar ================= -->
+  <header class="apx-nav-wrap" [class.scrolled]="scrolled">
+    <div class="container">
+      <nav class="navbar navbar-expand-lg apx-navbar" aria-label="القائمة الرئيسية">
+        <a class="navbar-brand apx-brand" href="#" (click)="go('home', $event)" aria-label="Apx الصفحة الرئيسية">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3 30 29H2Z" fill="#4F46E5" />
+            <path d="M16 13 23 26H9Z" fill="#F59E0B" />
+          </svg>
+          <span>Apx</span>
+        </a>
+
+        <!-- زر القائمة: يعمل عبر Angular بدون bootstrap.js -->
+        <button type="button" class="navbar-toggler apx-toggler" (click)="toggleMenu()"
+                [attr.aria-expanded]="menuOpen" aria-controls="apxMenu" aria-label="فتح القائمة">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="apxMenu" [class.show]="menuOpen">
+          <ul class="navbar-nav mx-lg-auto">
+            @for (l of links; track l.id) {
+              <li class="nav-item">
+                <a class="nav-link" href="#" [class.active]="active() === l.id"
+                   [attr.aria-current]="active() === l.id ? 'page' : null"
+                   (click)="go(l.id, $event)">{{ l.label }}</a>
+              </li>
+            }
+          </ul>
+          <div class="apx-nav-actions">
+            <button type="button" class="btn btn-soft" (click)="goToRegister()">إنشاء حساب</button>
+            <button type="button" class="btn btn-apx" (click)="goToLogin()">
+              <apx-icon name="user" />
+              تسجيل الدخول
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================= Hero ================= -->
+  <section id="home" class="apx-hero">
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="grid-bg"></div>
+
+    <div class="container position-relative">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <span class="hero-chip"><span class="dot"></span> متاحون لمشاريع جديدة هذا الشهر</span>
+          <h1>نبني منتجات رقمية تأخذ أعمالك إلى القمة</h1>
+          <p class="hero-lead">
+            في Apx نصمم ونطوّر المواقع والتطبيقات والأنظمة السحابية للشركات، من الفكرة الأولى حتى الإطلاق والدعم المستمر.
+          </p>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-apx btn-xl" (click)="go('contact')">
+              اطلب استشارة مجانية
+              <apx-icon name="arrowLeft" />
+            </button>
+            <button type="button" class="btn btn-ghost btn-xl" (click)="go('services')">استعرض خدماتنا</button>
+          </div>
+          <div class="hero-stats">
+            <div><strong>+150</strong><span>مشروع منجز</span></div>
+            <div><strong>+80</strong><span>عميل في المنطقة</span></div>
+            <div><strong>24/7</strong><span>دعم فني</span></div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="hero-visual">
+            <svg class="apex-art" viewBox="0 0 460 400" role="img" aria-label="شعار Apx: قمة متدرجة">
+              <defs>
+                <linearGradient id="apxHg1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#ffffff" stop-opacity=".22" />
+                  <stop offset="1" stop-color="#ffffff" stop-opacity=".03" />
+                </linearGradient>
+                <linearGradient id="apxHg2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#818CF8" />
+                  <stop offset="1" stop-color="#7C3AED" />
+                </linearGradient>
+                <linearGradient id="apxHg3" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FCD34D" />
+                  <stop offset="1" stop-color="#F59E0B" />
+                </linearGradient>
+              </defs>
+              <path class="layer l1" d="M230 20 450 390H10Z" fill="url(#apxHg1)" stroke="rgba(255,255,255,.25)" />
+              <path class="layer l2" d="M230 110 390 390H70Z" fill="url(#apxHg2)" />
+              <path class="layer l3" d="M230 220 320 390H140Z" fill="url(#apxHg3)" />
+              <circle class="peak" cx="230" cy="20" r="8" fill="#22D3EE" />
+            </svg>
+
+            <div class="float-card fc1">
+              <div class="fc-row">
+                <span class="fc-icon"><apx-icon name="chart" /></span>
+                <div><small>رضا العملاء</small><b>98%</b></div>
+              </div>
+            </div>
+
+            <div class="float-card fc2">
+              <small>مشروع قيد الإطلاق</small>
+              <b>منصة متجر إلكتروني</b>
+              <div class="bar"><span></span></div>
+              <small class="muted">78% مكتمل</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Services ================= -->
+  <section id="services" class="apx-section apx-services">
+    <div class="container">
+      <div class="sec-head">
+        <h2>الخدمات التي نقدمها</h2>
+        <p>فريق واحد يغطي كل مراحل مشروعك الرقمي، فلا تحتاج إلى التنسيق بين أكثر من جهة.</p>
+      </div>
+
+      <div class="bento">
+        <article class="svc svc-feature">
+          <span class="svc-icon"><apx-icon [name]="featured.icon" /></span>
+          <h3>{{ featured.title }}</h3>
+          <p>{{ featured.text }}</p>
+          <ul class="svc-points">
+            @for (p of featured.points; track p) {
+              <li><apx-icon name="check" />{{ p }}</li>
+            }
+          </ul>
+          <button type="button" class="btn btn-light-apx mt-auto" (click)="go('contact')">
+            ابدأ مشروعك
+            <apx-icon name="arrowLeft" />
+          </button>
+        </article>
+
+        @for (s of services; track s.title) {
+          <article class="svc">
+            <span class="svc-icon"><apx-icon [name]="s.icon" /></span>
+            <h3>{{ s.title }}</h3>
+            <p>{{ s.text }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= About ================= -->
+  <section id="about" class="apx-section">
+    <div class="container">
+      <div class="row g-5 align-items-center">
+        <div class="col-lg-6">
+          <div class="sec-head mb-4">
+            <h2>من نحن</h2>
+            <p>
+              Apx شركة تقنية تأسست عام 2022 على يد مهندسين ومصممين، هدفنا مساعدة الشركات الناشئة والمؤسسات
+              على تحويل أفكارها إلى منتجات رقمية حقيقية تعمل بكفاءة.
+            </p>
+          </div>
+
+          <div class="about-stats">
+            <div><strong>8</strong><span>سنوات خبرة</span></div>
+            <div><strong>35</strong><span>خبيراً في الفريق</span></div>
+            <div><strong>12</strong><span>دولة نخدمها</span></div>
+          </div>
+
+          <div class="values">
+            @for (v of values; track v.title) {
+              <div class="value">
+                <apx-icon [name]="v.icon" />
+                <div>
+                  <h4>{{ v.title }}</h4>
+                  <p>{{ v.text }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="process">
+            <div class="glow g3"></div>
+            <h3>كيف نعمل معك</h3>
+            <ol class="steps">
+              @for (st of steps; track st.title; let i = $index) {
+                <li class="step">
+                  <span class="step-num">{{ i + 1 }}</span>
+                  <div>
+                    <h4>{{ st.title }}</h4>
+                    <p>{{ st.text }}</p>
+                  </div>
+                </li>
+              }
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Contact ================= -->
+  <section id="contact" class="apx-section apx-contact">
+    <div class="container">
+      <div class="sec-head">
+        <h2>اتصل بنا</h2>
+        <p>أخبرنا عن مشروعك وسنرد عليك خلال يوم عمل واحد.</p>
+      </div>
+
+      <div class="contact-shell">
+        <aside class="contact-side">
+          <div class="glow g4"></div>
+          <h3>معلومات التواصل</h3>
+          <ul class="contact-info">
+            <li>
+              <span class="ci-icon"><apx-icon name="pin" /></span>
+              <div><strong>العنوان</strong><span>الولايات المتحدة الامريكية, إنديانا</span></div>
+            </li>
+            <li>
+              <span class="ci-icon"><apx-icon name="phone" /></span>
+              <div><strong>الهاتف</strong><a href="tel:+966500000000" dir="ltr">+000 00 000 0000</a></div>
+            </li>
+            <li>
+              <span class="ci-icon"><apx-icon name="mail" /></span>
+              <div><strong>البريد الإلكتروني</strong><a href="mailto:info@apx.com">info&#64;apx.com</a></div>
+            </li>
+            <li>
+              <span class="ci-icon"><apx-icon name="clock" /></span>
+              <div><strong>ساعات العمل</strong><span>الأحد – الخميس، 9 صباحاً – 6 مساءً</span></div>
+            </li>
+          </ul>
+          <div class="social">
+            <a href="#" aria-label="LinkedIn"><apx-icon name="linkedin" /></a>
+            <a href="#" aria-label="Instagram"><apx-icon name="instagram" /></a>
+            <a href="#" aria-label="WhatsApp"><apx-icon name="chat" /></a>
+            <a href="#" aria-label="X"><apx-icon name="x" /></a>
+          </div>
+        </aside>
+
+        <div class="contact-form">
+          <form [formGroup]="contactForm" (ngSubmit)="sendContact()" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="cName">الاسم الكامل</label>
+                <input class="form-control" id="cName" formControlName="name" [class.is-invalid]="bad(contactForm, 'name')" />
+                <div class="invalid-feedback">اكتب اسمك.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="cEmail">البريد الإلكتروني</label>
+                <input class="form-control" id="cEmail" type="email" dir="ltr" formControlName="email" [class.is-invalid]="bad(contactForm, 'email')" />
+                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="cPhone">رقم الجوال <span class="optional">(اختياري)</span></label>
+                <input class="form-control" id="cPhone" type="tel" dir="ltr" formControlName="phone" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="cService">الخدمة المطلوبة</label>
+                <select class="form-select" id="cService" formControlName="service" [class.is-invalid]="bad(contactForm, 'service')">
+                  <option value="" disabled>اختر الخدمة</option>
+                  @for (o of serviceOptions; track o) {
+                    <option [value]="o">{{ o }}</option>
+                  }
+                </select>
+                <div class="invalid-feedback">اختر الخدمة التي تهمك.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="cMsg">تفاصيل المشروع</label>
+                <textarea class="form-control" id="cMsg" rows="5" formControlName="message" [class.is-invalid]="bad(contactForm, 'message')"></textarea>
+                <div class="invalid-feedback">اكتب نبذة عن مشروعك (10 أحرف على الأقل).</div>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-apx btn-xl">
+                  <apx-icon name="send" />
+                  إرسال الرسالة
+                </button>
+              </div>
+            </div>
+          </form>
+
+          @if (contactSent) {
+            <div class="alert alert-success mt-4 mb-0" role="status">تم إرسال رسالتك. سنتواصل معك قريباً.</div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Footer ================= -->
+  <footer class="apx-footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <a href="#" class="apx-brand light" (click)="go('home', $event)">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16 3 30 29H2Z" fill="#818CF8" />
+              <path d="M16 13 23 26H9Z" fill="#F59E0B" />
+            </svg>
+            <span>Apx</span>
+          </a>
+          <p class="footer-about">حلول رقمية متكاملة للشركات: مواقع، تطبيقات، أنظمة سحابية ودعم مستمر.</p>
+        </div>
+        <div class="col-6 col-lg-3">
+          <h5>روابط سريعة</h5>
+          <ul class="footer-links">
+            @for (l of links; track l.id) {
+              <li><a href="#" (click)="go(l.id, $event)">{{ l.label }}</a></li>
+            }
+          </ul>
+        </div>
+        <div class="col-6 col-lg-4">
+          <h5>تواصل معنا</h5>
+          <ul class="footer-links">
+            <li><a href="mailto:info@apx.com">info&#64;apx.com</a></li>
+            <li><a href="tel:+966500000000" dir="ltr">+000 00 000 0000</a></li>
+            <li>الولاياتالمتحدة الأمريكية, إنديانا</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© {{ year }} Apx. جميع الحقوق محفوظة.</span>
+        <span><a href="#">سياسة الخصوصية</a> | <a href="#">الشروط والأحكام</a></span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= Login Modal (Bootstrap classes + Angular state) ================= -->
+@if (loginOpen) {
+  <div class="modal-backdrop show apx-backdrop"></div>
+  <div class="modal d-block apx-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="authTitle" (click)="closeLogin()">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-brand">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16 3 30 29H2Z" fill="#4F46E5" />
+              <path d="M16 13 23 26H9Z" fill="#F59E0B" />
+            </svg>
+            <h2 class="modal-title" id="authTitle">{{ authTab === 'login' ? 'مرحباً بعودتك' : 'أنشئ حسابك في Apx' }}</h2>
+          </div>
+          <button type="button" class="btn-close" (click)="closeLogin()" aria-label="إغلاق"></button>
+        </div>
+
+        <div class="modal-body">
+          <ul class="nav nav-pills nav-fill auth-pills" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'login'"
+                      [attr.aria-selected]="authTab === 'login'" (click)="goToLogin()">تسجيل الدخول</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'register'"
+                      [attr.aria-selected]="authTab === 'register'" (click)="goToRegister()">إنشاء حساب</button>
+            </li>
+          </ul>
+
+          @if (authTab === 'login') {
+            <form [formGroup]="loginForm" (ngSubmit)="submitAuth()" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="lEmail">البريد الإلكتروني</label>
+                <input class="form-control" id="lEmail" type="email" dir="ltr" autocomplete="email"
+                       formControlName="email" [class.is-invalid]="bad(loginForm, 'email')" />
+                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="lPass">كلمة المرور</label>
+                <div class="input-group has-validation">
+                  <input class="form-control" id="lPass" dir="ltr" [type]="showPassword ? 'text' : 'password'"
+                         autocomplete="current-password" formControlName="password" [class.is-invalid]="bad(loginForm, 'password')" />
+                  <button type="button" class="btn btn-eye" (click)="showPassword = !showPassword"
+                          [attr.aria-label]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
+                    <apx-icon [name]="showPassword ? 'eyeOff' : 'eye'" />
+                  </button>
+                  <div class="invalid-feedback">كلمة المرور 6 أحرف على الأقل.</div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="remember" formControlName="remember" />
+                  <label class="form-check-label" for="remember">تذكرني</label>
+                </div>
+                <a href="#" class="link-apx small">نسيت كلمة المرور؟</a>
+              </div>
+              <button type="submit" class="btn btn-apx w-100 justify-content-center">تسجيل الدخول</button>
+              <div class="divider">أو</div>
+              <button type="button" class="btn btn-outline-apx w-100 justify-content-center">
+                <apx-icon name="google" />
+                المتابعة باستخدام Google
+              </button>
+            </form>
+          } @else {
+            <form [formGroup]="registerForm" (ngSubmit)="submitAuth()" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="rName">الاسم الكامل</label>
+                <input class="form-control" id="rName" autocomplete="name" formControlName="name" [class.is-invalid]="bad(registerForm, 'name')" />
+                <div class="invalid-feedback">اكتب اسمك.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="rEmail">البريد الإلكتروني</label>
+                <input class="form-control" id="rEmail" type="email" dir="ltr" autocomplete="email"
+                       formControlName="email" [class.is-invalid]="bad(registerForm, 'email')" />
+                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="rPass">كلمة المرور</label>
+                <input class="form-control" id="rPass" type="password" dir="ltr" autocomplete="new-password"
+                       formControlName="password" [class.is-invalid]="bad(registerForm, 'password')" />
+                <div class="invalid-feedback">كلمة المرور 6 أحرف على الأقل.</div>
+              </div>
+              <div class="form-check mb-4">
+                <input class="form-check-input" type="checkbox" id="terms" formControlName="terms" [class.is-invalid]="bad(registerForm, 'terms')" />
+                <label class="form-check-label" for="terms">أوافق على الشروط والأحكام</label>
+                <div class="invalid-feedback">يجب الموافقة على الشروط للمتابعة.</div>
+              </div>
+              <button type="submit" class="btn btn-apx w-100 justify-content-center">إنشاء حساب</button>
+            </form>
+          }
+
+          @if (authMsg) {
+            <div class="alert alert-success mt-3 mb-0" role="status">{{ authMsg }}</div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

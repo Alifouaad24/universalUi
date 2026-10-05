@@ -8,6 +8,10 @@ import { ShippingMasterOrdersHistoryComponent } from './views/Shipping-master/or
 export const routes: Routes = [
   {
     path: '',
+    loadComponent: () => import('./views/main-page/main-page.component').then(m => m.ApxLandingComponent),
+  },
+   {
+    path: 'login',
     loadComponent: () => import('./views/pages/login/login.component').then(m => m.LoginComponent),
   },
   {

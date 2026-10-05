@@ -1031,12 +1031,13 @@ export class ShowItemsComponent implements OnInit {
 
     console.log('Payload for updating item data from scraping:', payload);
     console.log('currentItemId', this.currentItemId);
-    this.http.putData(`Item/UpdateItemFromScraping/${this.currentItemId}`, payload).subscribe(
+    this.http.putData(`Item/UpdateItemDataFromScraping/${this.currentItemId}`, payload).subscribe(
       (res: any) => {
         this.isLoading = false;
         this.toastMessage.set('Item data updated successfully from scraping.');
         this.toastVisible.set(true);
         this.getAllItems();
+        this.showScrapDetailsBool = false;
         this.cdr.detectChanges();
       },
       (err) => {
