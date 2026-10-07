@@ -134,6 +134,7 @@ export class AddEditFeatureComponent implements OnInit {
   getOrderStatuses() {
     const serviceId = Number(localStorage.getItem('selectedServiceId'));
     this.http.getAllData(`UniversalOrder/GetAllOrderStatusByService/${serviceId}`).subscribe((res: any) => {
+      console.log(res)
       this.OrderStatuses = res as OrderStatusOption[];
       this.selectedOrderStatusId = this.OrderStatuses.filter((el) => el.statusEn.includes('New'))[0].orderStatusId
     }, (error) => {

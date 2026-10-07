@@ -115,7 +115,7 @@
             [style.cursor]="(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null) ? 'pointer' : 'pointer'"
             (click)="ShowEditModal(type.item!.itemId, type.inventory_id, type.item.categoryId, type.size_id, 
             type.item?.sku, type.item?.upc, type?.sitePrice, type.item.platformId, type.item.itemDescription, type.item.itemDetails,
-            type.qty, type.item?.brand, type.isProccessedInInventory, type.itemConditionId, type?.item.basePrice)">
+            type.qty, type.item?.carBrand?.carBrandName, type.isProccessedInInventory, type.itemConditionId, type?.item.basePrice)">
             <i class="bi bi-fingerprint"></i>
             <span class="fw-bold mt-1" style="font-size: 9px;">BIO</span>
           </div>
@@ -308,13 +308,12 @@
 
 
     <div class="row mb-4 mt-3 g-4">
-
       <!-- Brand -->
-      <div class="col-md-6">
+      <div class="col-md-6" >
         <label class="form-label fw-semibold">
           Brand
         </label>
-        <div class="input-group">
+        <div class="input-group" [ngClass]="{ 'border border-danger border-2 rounded': BrandToEdit === null }">
           <span class="input-group-text bg-light">
             <i class="bi bi-tag"></i>
           </span>
@@ -1065,182 +1064,295 @@
 
 <!-- scraping modal indian -->
 
-<c-modal [(visible)]="showScrapDetailsBool" [size]="'lg'">
+<c-modal [(visible)]="showScrapDetailsBool" [size]="'xl'" [scrollable]="true">
   <c-modal-header>
     <div class="d-flex align-items-center gap-2">
       <i class="fas fa-store text-primary"></i>
-      <span class="fw-bold">
-        {{ selectedPlatform?.description }}
-      </span>
+      <span class="fw-bold">{{ selectedPlatform?.description }}</span>
     </div>
   </c-modal-header>
+
   <c-modal-body>
     <!-- ========================= -->
     <!-- BEFORE SCRAPING -->
     <!-- ========================= -->
     <div *ngIf="!scrapedProduct" class="text-center">
       <div class="mb-3">
-        <div class="bg-primary bg-opacity-10 text-primary rounded-circle
-                 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center"
+             style="width: 80px; height: 80px;">
           <i class="fas fa-store fs-2"></i>
         </div>
       </div>
-      <h5 class="fw-bold mb-1">
-        {{ selectedPlatform?.description }}
-      </h5>
-      <p class="text-muted mb-4">
-        Start scraping to get product information.
-      </p>
-      <div class="row g-3">
-        <div class="col-12">
-          <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping" (click)="startScraping()">
-            <span *ngIf="isScraping" class="spinner-border spinner-border-sm me-2"></span>
-            <i *ngIf="!isScraping" class="fas fa-cloud-download-alt me-2"></i>
-            {{ isScraping ? 'Scraping...' : 'Start Scraping' }}
-         </button>
-        </div>
-      </div>
+      <h5 class="fw-bold mb-1">{{ selectedPlatform?.description }}</h5>
+      <p class="text-muted mb-4">Start scraping to get product information.</p>
+      <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping" (click)="startScraping()">
+        <span *ngIf="isScraping" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isScraping" class="fas fa-cloud-download-alt me-2"></i>
+        {{ isScraping ? 'Scraping...' : 'Start Scraping' }}
+      </button>
     </div>
+
     <!-- ========================= -->
     <!-- PRODUCT RESULT -->
     <!-- ========================= -->
     <div *ngIf="scrapedProduct">
-      <!-- Product Header -->
-      <div class="border-bottom pb-3 mb-4">
+      <!-- Status + Breadcrumbs -->
+      <div class="border-bottom pb-3 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-success">
-            <i class="fas fa-check me-1"></i>
-            Scraped
-          </span>
-          <span class="text-muted small">
-            Product found successfully
-          </span>
+          <span class="badge bg-success"><i class="fas fa-check me-1"></i>Scraped</span>
+          <span class="text-muted small">Product found successfully</span>
+        </div>
+        <nav *ngIf="scrapedProduct.breadcrumbs.length" class="small">
+          <ng-container *ngFor="let crumb of scrapedProduct.breadcrumbs; let last = last">
+            <a [href]="crumb.url" target="_blank" class="text-decoration-none">{{ crumb.label }}</a>
+            <i *ngIf="!last" class="fas fa-chevron-right mx-1 text-muted" style="font-size: 10px;"></i>
+          </ng-container>
+        </nav>
+      </div>
+
+      <div class="row g-4">
+        <!-- ========================= -->
+        <!-- IMAGES -->
+        <!-- ========================= -->
+        <div class="col-12 col-lg-5">
+          <div class="border rounded-3 p-3 bg-light text-center position-relative">
+            <ng-container *ngIf="scrapedImages.length; else noImage">
+              <img [src]="scrapedImages[currentScrapedImageIndex]" [alt]="scrapedProduct.name"
+                   class="img-fluid" style="height: 320px; width: 100%; object-fit: contain;" />
+
+              <ng-container *ngIf="scrapedImages.length > 1">
+                <button type="button"
+                        class="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                        style="width: 34px; height: 34px;" (click)="previousScrapedImage()">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <button type="button"
+                        class="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                        style="width: 34px; height: 34px;" (click)="nextScrapedImage()">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </ng-container>
+
+              <div class="mt-2 small text-muted">
+                {{ currentScrapedImageIndex + 1 }} / {{ scrapedImages.length }}
+              </div>
+            </ng-container>
+            <ng-template #noImage>
+              <div class="text-muted py-5"><i class="fas fa-image fs-1 mb-2 d-block"></i>No images</div>
+            </ng-template>
+          </div>
+
+          <!-- Thumbnails -->
+          <div *ngIf="scrapedImages.length > 1" class="d-flex gap-2 mt-2 overflow-auto pb-1">
+            <img *ngFor="let img of scrapedImages; let i = index"
+                 [src]="img" (click)="selectScrapedImage(i)"
+                 class="rounded border bg-white flex-shrink-0"
+                 [class.border-primary]="i === currentScrapedImageIndex"
+                 [class.border-2]="i === currentScrapedImageIndex"
+                 style="width: 60px; height: 60px; object-fit: contain; cursor: pointer;" />
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- MAIN INFO -->
+        <!-- ========================= -->
+        <div class="col-12 col-lg-7">
+          <!-- Brand -->
+          <div *ngIf="scrapedProduct.brandName" class="mb-1">
+            <a *ngIf="scrapedProduct.brandUrl; else brandText" [href]="scrapedProduct.brandUrl" target="_blank"
+               class="fw-semibold text-uppercase small text-decoration-none">{{ scrapedProduct.brandName }}</a>
+            <ng-template #brandText>
+              <span class="fw-semibold text-uppercase small">{{ scrapedProduct.brandName }}</span>
+            </ng-template>
+          </div>
+
+          <!-- Name -->
+          <h5 class="fw-bold mb-2">{{ scrapedProduct.name }}</h5>
+
+          <!-- Rating -->
+          <div *ngIf="scrapedProduct.avg_rating" class="d-flex align-items-center gap-2 mb-3">
+            <span class="text-warning">
+              <i *ngFor="let s of [1, 2, 3, 4, 5]" class="me-1"
+                 [ngClass]="starType(s) === 'full' ? 'fas fa-star'
+                          : starType(s) === 'half' ? 'fas fa-star-half-alt'
+                          : 'far fa-star'"></i>
+            </span>
+            <span class="fw-semibold">{{ scrapedProduct.avg_rating | number: '1.1-1' }}</span>
+            <span class="text-muted small">({{ scrapedProduct.review_count || 0 }} reviews)</span>
+          </div>
+
+          <!-- Price -->
+          <div class="fs-3 fw-bold text-success mb-3">
+            {{ scrapedProduct.pricing?.current_price != null ? ('$' + scrapedProduct.pricing.current_price) : '-' }}
+          </div>
+
+          <!-- Identifiers -->
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Item ID</small>
+                <strong>{{ scrapedProduct.item_id || '-' }}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Model Number</small>
+                <strong>{{ scrapedProduct.model_number || '-' }}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">UPC</small>
+                <strong>{{ scrapedProduct.upc || '-' }}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">SKU</small>
+                <strong>{{ scrapedProduct.sku || '-' }}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Min Order Qty</small>
+                <strong>{{ scrapedProduct.min_order_qty || '-' }}</strong>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="border rounded p-2 h-100">
+                <small class="text-muted d-block">Saves</small>
+                <strong>{{ scrapedProduct.saves_count ?? '-' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Highlights -->
+          <div *ngIf="scrapedProduct.highlights.length">
+            <h6 class="fw-bold mb-2">Highlights</h6>
+            <ul class="list-unstyled mb-0">
+              <li *ngFor="let h of scrapedProduct.highlights" class="d-flex gap-2 mb-1">
+                <i class="fas fa-check-circle text-success mt-1"></i>
+                <span>{{ h }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <!-- Product -->
-      <div class="row g-4">
-
-        <!-- ========================= -->
-        <!-- IMAGE -->
-        <!-- ========================= -->
-        <div class="col-12 col-md-5">
-  <div class="border rounded-3 p-3 bg-light text-center position-relative">
-
-    <ng-container *ngIf="scrapedProduct?.images?.length">
-
-      <!-- الصورة -->
-      <img
-        [src]="scrapedProduct.images.flat()[currentScrapedImageIndex]"
-        [alt]="scrapedProduct.name"
-        class="img-fluid"
-        style="max-height: 300px; object-fit: contain;"
-      />
-
-      <!-- Previous -->
-      <button
-        type="button"
-        class="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
-        (click)="previousScrapedImage()">
-        <
-      </button>
-
-      <!-- Next -->
-      <button
-        type="button"
-        class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
-        (click)="nextScrapedImage()">
-        >
-      </button>
-
-      <!-- رقم الصورة -->
-      <div class="mt-2 small text-muted">
-        {{ currentScrapedImageIndex + 1 }} / {{ scrapedProduct.images.flat().length }}
+      <!-- ========================= -->
+      <!-- DESCRIPTION -->
+      <!-- ========================= -->
+      <div *ngIf="scrapedProduct.description" class="mt-4">
+        <h6 class="fw-bold mb-2">Description</h6>
+        <p class="text-muted mb-1" style="white-space: pre-line;"
+           [style.display]="showFullDescription ? 'block' : '-webkit-box'"
+           [style.-webkit-line-clamp]="showFullDescription ? null : 4"
+           [style.-webkit-box-orient]="'vertical'"
+           [style.overflow]="'hidden'">
+          {{ scrapedProduct.description }}
+        </p>
+        <button type="button" class="btn btn-link btn-sm p-0" (click)="showFullDescription = !showFullDescription">
+          {{ showFullDescription ? 'Show less' : 'Show more' }}
+        </button>
       </div>
 
-    </ng-container>
-
-  </div>
-</div>
-        <!-- ========================= -->
-        <!-- PRODUCT INFO -->
-        <!-- ========================= -->
-        <div class="col-12 col-md-7">
-          <!-- Name -->
-          <h5 class="fw-bold mb-3">
-            {{ scrapedProduct.name }}
-          </h5>
-          <!-- Details -->
-          <div class="row g-2">
-            <!-- Model -->
-            <div class="col-6">
-              <div class="border rounded p-2">
-                <small class="text-muted d-block">
-                  Model Number
-                </small>
-                <strong>
-                  {{ scrapedProduct.model_number || '-' }}
-                </strong>
+      <!-- ========================= -->
+      <!-- SPECIFICATIONS (incl. dimensions) -->
+      <!-- ========================= -->
+      <div *ngIf="scrapedProduct.specifications.length" class="mt-4">
+        <h6 class="fw-bold mb-2">Specifications</h6>
+        <div class="row g-3">
+          <div *ngFor="let group of scrapedProduct.specifications" class="col-12 col-md-6">
+            <div class="border rounded-3 h-100">
+              <div class="px-3 py-2 fw-semibold border-bottom rounded-top-3">
+                <i class="fas me-2 text-primary"
+                   [ngClass]="group.group === 'Dimensions' ? 'fa-ruler-combined'
+                            : group.group?.includes('Warranty') ? 'fa-shield-alt'
+                            : 'fa-list-ul'"></i>
+                {{ group.group }}
               </div>
-            </div>
-            <!-- Item ID -->
-            <div class="col-6">
-              <div class="border rounded p-2">
-                <small class="text-muted d-block">
-                  Item ID
-                </small>
-                <strong>
-                  {{ scrapedProduct.item_id || '-' }}
-                </strong>
-              </div>
-            </div>
-            <!-- Brand -->
-            <div class="col-6">
-              <div class="border rounded p-2">
-                <small class="text-muted d-block">
-                  Brand
-                </small>
-                <strong>
-                  {{ scrapedProduct.brand || '-' }}
-                </strong>
-              </div>
-            </div>
-
-            <!-- price -->
-            <div class="col-6 fw-bold text-success">
-              <div class="border rounded p-2">
-                <small class="text-muted d-block">
-                  Price
-                </small>
-                <strong>
-                  {{ scrapedProduct.pricing?.current_price || '-' }}$
-                </strong>
-              </div>
+              <table class="table table-sm mb-0">
+                <tbody>
+                  <tr *ngFor="let attr of group.attributes">
+                    <td class="text-muted ps-3" style="width: 50%;">{{ attr.label }}</td>
+                    <td class="fw-semibold">{{ attr.detail }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ========================= -->
+      <!-- AVAILABILITY -->
+      <!-- ========================= -->
+      <div *ngIf="scrapedProduct.availability" class="mt-4">
+        <!-- <h6 class="fw-bold mb-2">
+          Availability
+          <span *ngIf="scrapedProduct.availability.store_name" class="text-muted fw-normal small ms-2">
+            <i class="fas fa-map-marker-alt me-1"></i>
+            {{ scrapedProduct.availability.store_name }}
+            ({{ scrapedProduct.availability.store_stock ?? 0 }} in store)
+          </span>
+        </h6> -->
+        <!-- <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Method</th>
+                <th>Estimated</th>
+                <th>Cost</th>
+                <th class="text-center">Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let opt of scrapedProduct.availability.options">
+                <td class="fw-semibold">{{ opt.method }}</td>
+                <td>
+                  <span class="text-muted small">{{ opt.label }}</span>
+                  {{ opt.dates || '-' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="opt.cost === 'Free' || opt.cost === 'FREE' || opt.cost?.toLowerCase().includes('free')
+                                                  ? 'bg-success' : 'bg-secondary'">
+                    {{ opt.cost }}
+                  </span>
+                </td>
+                <td class="text-center">{{ opt.stock ?? '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div> -->
+      </div>
+
       <!-- ========================= -->
       <!-- PRODUCT URL -->
       <!-- ========================= -->
       <div class="mt-4">
         <a [href]="scrapedProduct.url" target="_blank" class="btn btn-outline-primary w-100">
-          <i class="fas fa-external-link-alt me-2"></i>
-          View Product
+          <i class="fas fa-external-link-alt me-2"></i>View Product on Home Depot
         </a>
       </div>
     </div>
   </c-modal-body>
+
   <c-modal-footer>
     <button type="button" class="btn btn-secondary" (click)="showScrapDetailsBool = false">
-      <i class="fas fa-times me-1"></i>
-      Close
+      <i class="fas fa-times me-1"></i>Close
     </button>
-    <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()" [disabled]="!scrapedProduct">
+    <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()"
+            [disabled]="!scrapedProduct || isLoading">
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
       {{ isLoading ? 'Updating...' : 'Update Item Data' }}
     </button>
   </c-modal-footer>
 </c-modal>
+
+
+
+
+
 
 <!-- Add new inv manual -->
 <c-modal [visible]="showAddItemModal" (visibleChange)="showAddItemModal=$event">

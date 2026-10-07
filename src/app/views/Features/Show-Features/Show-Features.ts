@@ -100,6 +100,7 @@ export class ShowFeaturesComponent implements OnInit {
     this.myName = currentUser.userName ?? '';
   }
 
+
   // -------- دالة جديدة: بتتنادى من زرار الـ toggle --------
   selectTaskView(mine: boolean) {
     this.myTasksOnly = mine;
@@ -303,7 +304,7 @@ export class ShowFeaturesComponent implements OnInit {
   }
 
   SetStatusCompleted(id: number) {
-    this.http.putData(`Orders/SetStatusCompleted/${id}`, {}).subscribe(
+    this.http.putData(`Orders/SetOrderCompleted/${id}`, {}).subscribe(
       () => {
         this.toastMessage.set('Order updated successfully');
         this.toastVisible.set(true);

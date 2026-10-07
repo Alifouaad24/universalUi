@@ -247,6 +247,7 @@ export class ShowItemsComponent implements OnInit {
       (res: any) => {
         console.log(res)
         this.inventory = res;
+        this.allItems = res;
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -949,11 +950,12 @@ export class ShowItemsComponent implements OnInit {
         (item.model && item.model.toLowerCase().includes(searchLower))
       );
     });
+    this.cdr.detectChanges();
   }
 
 
 
-
+  showFullDescription = false;
   filterByPlatform(platformId: number | null): void {
     this.selectedPlatformId = platformId;
 
@@ -989,30 +991,85 @@ export class ShowItemsComponent implements OnInit {
 
   startScraping() {
     this.scrapedProduct = null;
-    this.isScraping = true;
-    this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${this.UpcForScrape}`).subscribe(
-      (res: any) => {
-        console.log('Scraped data from Home Depot:', res);
-        this.showScrapDetailsBool = true;
-        console.log('Scraping response:', res);
+    this.currentScrapedImageIndex = 0;
+    const term = encodeURIComponent((this.UpcForScrape ?? '').toString().trim());
+    if (!term) {
+      alert('Please enter a UPC first');
+      return;
+    }
 
-        if (res?.products?.length > 0) {
-          this.scrapedProduct = res.products[0];
+    this.isScraping = true;
+
+    this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${term}`).subscribe({
+      next: (res: any) => {
+        console.log('Scraped product from Home Depot:', res);
+
+        // الرد الآن هو المنتج نفسه مباشرة (وليس res.products)
+        this.scrapedProduct = res?.item_id ? this.normalizeProduct(res) : null;
+        if (!this.scrapedProduct) {
+          alert('No product found for this UPC');
         }
 
+        this.showScrapDetailsBool = true;
         this.isScraping = false;
-
         this.cdr.detectChanges();
       },
-      (err) => {
+      error: (err) => {
         console.error('Error scraping from Home Depot:', err);
-          alert(err.error?.message + '\n' + err.error?.details || 'Error scraping from Home Depot');
-          this.isScraping = false;
-          this.cdr.detectChanges();
-      }
-    );
+        const message = err?.error?.message || 'Error scraping from Home Depot';
+        const details = err?.error?.details ? '\n' + err.error.details : '';
+        alert(message + details);
+        this.isScraping = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
+  /** توحيد شكل البيانات حتى يكون الـ template بسيطاً وآمناً */
+  private normalizeProduct(p: any) {
+    const images: string[] = Array.isArray(p.images)
+      ? p.images.flat().filter((x: any) => typeof x === 'string' && x)
+      : [];
+
+    const options = (p.availability?.options ?? []).map((o: any) => ({
+      ...o,
+      // إزالة التواريخ المكررة مثل ["Oct 09", "Oct 09"]
+      dates: [...new Set<string>(o.estimated_dates ?? [])].join(' - '),
+      cost: !o.cost_note || o.cost_note === '0.0' ? 'Free' : o.cost_note,
+    }));
+
+    return {
+      ...p,
+      images,
+      brandName: typeof p.brand === 'string' ? p.brand : p.brand?.name ?? '',
+      brandUrl: typeof p.brand === 'object' ? p.brand?.url ?? null : null,
+      highlights: p.highlights ?? [],
+      breadcrumbs: p.breadcrumbs ?? [],
+      specifications: p.specifications ?? [],
+      availability: p.availability ? { ...p.availability, options } : null,
+    };
+  }
+
+  // ======================= Image gallery =======================
+
+  get scrapedImages(): string[] {
+    return this.scrapedProduct?.images ?? [];
+  }
+
+
+  selectScrapedImage(index: number) {
+    this.currentScrapedImageIndex = index;
+  }
+
+  // ======================= Rating =======================
+
+  /** يرجع نوع النجمة: full / half / empty */
+  starType(position: number): 'full' | 'half' | 'empty' {
+    const rating = Number(this.scrapedProduct?.avg_rating ?? 0);
+    if (rating >= position) return 'full';
+    if (rating >= position - 0.5) return 'half';
+    return 'empty';
+  }
   UpdateItemDataFromScraping() {
     if (!this.scrapedProduct) {
       this.toastMessage.set('No scraped product data available to update.');
@@ -1021,12 +1078,24 @@ export class ShowItemsComponent implements OnInit {
     }
 
     this.isLoading = true;
+    const p = this.scrapedProduct;
+
     const payload = {
-      description: this.scrapedProduct.name,
-      brand: this.scrapedProduct.brand,
-      model: this.scrapedProduct.model_number,
-      itemPrice: parseFloat(this.scrapedProduct.pricing.current_price) || 0,
-      images: (this.scrapedProduct.images || []).flat(),
+      description: p.name,
+      brand: p.brandName ?? (typeof p.brand === 'string' ? p.brand : p.brand?.name) ?? '',
+      model: p.model_number,
+      itemPrice: parseFloat(p.pricing?.current_price) || 0,
+      images: (p.images || []).flat(),
+      //////////////////////////////////////////////
+      details: p.description,
+      sku: p.sku,
+      upc: p.upc,
+      item_number_id: p.item_id,
+      height: this.getSpecNumber('product height', 'height'),
+      width: this.getSpecNumber('product width', 'width'),
+      deepEqual: this.getSpecNumber('product depth', 'depth', 'length'),
+      weight: this.getSpecNumber('product weight', 'weight'),
+      color: this.getSpec('color family', 'color/finish', 'color'),
     };
 
     console.log('Payload for updating item data from scraping:', payload);
@@ -1038,6 +1107,7 @@ export class ShowItemsComponent implements OnInit {
         this.toastVisible.set(true);
         this.getAllItems();
         this.showScrapDetailsBool = false;
+        this.IsScrapeItemModalVisible = false;
         this.cdr.detectChanges();
       },
       (err) => {
@@ -1047,6 +1117,28 @@ export class ShowItemsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     );
+  }
+
+  /** يرجع النص كما هو (للون مثلاً) */
+  private getSpec(...keywords: string[]): string | null {
+    const groups: any[] = this.scrapedProduct?.specifications ?? [];
+    for (const keyword of keywords) {
+      const k = keyword.toLowerCase();
+      for (const group of groups) {
+        const attr = (group.attributes ?? []).find((a: any) =>
+          (a.label ?? '').toLowerCase().includes(k)
+        );
+        if (attr?.detail) return attr.detail.replace(/<[^>]*>/g, '').trim();
+      }
+    }
+    return null;
+  }
+
+  private getSpecNumber(...keywords: string[]): number | null {
+    const text = this.getSpec(...keywords);
+    if (!text) return null;
+    const match = text.replace(/,/g, '').match(/\d*\.?\d+/);
+    return match ? parseFloat(match[0]) : null;
   }
 
   currentScrapedImageIndex = 0;
