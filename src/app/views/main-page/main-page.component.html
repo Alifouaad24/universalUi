@@ -1,38 +1,43 @@
-<div class="apx">
+<div class="apx" [attr.dir]="dir()" [attr.lang]="lang()">
 
   <!-- ================= Navbar ================= -->
   <header class="apx-nav-wrap" [class.scrolled]="scrolled">
     <div class="container">
-      <nav class="navbar navbar-expand-lg apx-navbar" aria-label="القائمة الرئيسية">
-        <a class="navbar-brand apx-brand" href="#" (click)="go('home', $event)" aria-label="Apx الصفحة الرئيسية">
-          <svg viewBox="0 0 32 32" aria-hidden="true">
-            <path d="M16 3 30 29H2Z" fill="#4F46E5" />
-            <path d="M16 13 23 26H9Z" fill="#F59E0B" />
-          </svg>
-          <span>Apx</span>
+      <nav class="navbar navbar-expand-lg apx-navbar" [attr.aria-label]="t().nav.aria">
+        <a class="navbar-brand apx-brand" href="#" (click)="go('home', $event)" [attr.aria-label]="t().nav.brandAria">
+          <img viewBox="0 0 32 32" aria-hidden="true" height="50" width="50"
+            src="https://res.cloudinary.com/dianvimfq/image/upload/v1766428830/Inventory_uploads/Logo_3c405b69-11db-4309-aedb-c49259b42632_c9nsrj.jpg" />
         </a>
 
-        <!-- زر القائمة: يعمل عبر Angular بدون bootstrap.js -->
-        <button type="button" class="navbar-toggler apx-toggler" (click)="toggleMenu()"
-                [attr.aria-expanded]="menuOpen" aria-controls="apxMenu" aria-label="فتح القائمة">
+        <button type="button" class="navbar-toggler apx-toggler" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen"
+          aria-controls="apxMenu" [attr.aria-label]="t().nav.toggle">
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="apxMenu" [class.show]="menuOpen">
           <ul class="navbar-nav mx-lg-auto">
-            @for (l of links; track l.id) {
-              <li class="nav-item">
-                <a class="nav-link" href="#" [class.active]="active() === l.id"
-                   [attr.aria-current]="active() === l.id ? 'page' : null"
-                   (click)="go(l.id, $event)">{{ l.label }}</a>
-              </li>
+            @for (l of t().links; track l.id) {
+            <li class="nav-item">
+              <a class="nav-link" href="#" [class.active]="active() === l.id"
+                [attr.aria-current]="active() === l.id ? 'page' : null" (click)="go(l.id, $event)">{{ l.label }}</a>
+            </li>
             }
           </ul>
           <div class="apx-nav-actions">
-            <button type="button" class="btn btn-soft" (click)="goToRegister()">إنشاء حساب</button>
+            <!-- زر تبديل اللغة -->
+            <button type="button" class="btn btn-lang" (click)="toggleLang()" [attr.aria-label]="t().langSwitch.aria"
+              [attr.lang]="lang() === 'ar' ? 'en' : 'ar'">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"
+                  stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              </svg>
+              <span>{{ t().langSwitch.label }}</span>
+            </button>
+            <button type="button" class="btn btn-soft" (click)="goToRegister()">{{ t().nav.register }}</button>
             <button type="button" class="btn btn-apx" (click)="goToLogin()">
               <apx-icon name="user" />
-              تسجيل الدخول
+              {{ t().nav.login }}
             </button>
           </div>
         </div>
@@ -49,60 +54,40 @@
     <div class="container position-relative">
       <div class="row align-items-center g-5">
         <div class="col-lg-6">
-          <span class="hero-chip"><span class="dot"></span> متاحون لمشاريع جديدة هذا الشهر</span>
-          <h1>نبني منتجات رقمية تأخذ أعمالك إلى القمة</h1>
-          <p class="hero-lead">
-            في Apx نصمم ونطوّر المواقع والتطبيقات والأنظمة السحابية للشركات، من الفكرة الأولى حتى الإطلاق والدعم المستمر.
-          </p>
+          <span class="hero-chip"><span class="dot"></span> {{ t().hero.chip }}</span>
+          <h1>{{ t().hero.title }}</h1>
+          <p class="hero-lead">{{ t().hero.lead }}</p>
           <div class="hero-actions">
             <button type="button" class="btn btn-apx btn-xl" (click)="go('contact')">
-              اطلب استشارة مجانية
-              <apx-icon name="arrowLeft" />
+              {{ t().hero.cta }}
+              <apx-icon name="arrowLeft" class="dir-arrow" />
             </button>
-            <button type="button" class="btn btn-ghost btn-xl" (click)="go('services')">استعرض خدماتنا</button>
+            <button type="button" class="btn btn-ghost btn-xl" (click)="go('services')">{{ t().hero.secondary
+              }}</button>
           </div>
           <div class="hero-stats">
-            <div><strong>+150</strong><span>مشروع منجز</span></div>
-            <div><strong>+80</strong><span>عميل في المنطقة</span></div>
-            <div><strong>24/7</strong><span>دعم فني</span></div>
+            @for (s of t().hero.stats; track s.label) {
+            <div><strong>{{ s.value }}</strong><span>{{ s.label }}</span></div>
+            }
           </div>
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-lg-6 text-dark">
           <div class="hero-visual">
-            <svg class="apex-art" viewBox="0 0 460 400" role="img" aria-label="شعار Apx: قمة متدرجة">
-              <defs>
-                <linearGradient id="apxHg1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#ffffff" stop-opacity=".22" />
-                  <stop offset="1" stop-color="#ffffff" stop-opacity=".03" />
-                </linearGradient>
-                <linearGradient id="apxHg2" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#818CF8" />
-                  <stop offset="1" stop-color="#7C3AED" />
-                </linearGradient>
-                <linearGradient id="apxHg3" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#FCD34D" />
-                  <stop offset="1" stop-color="#F59E0B" />
-                </linearGradient>
-              </defs>
-              <path class="layer l1" d="M230 20 450 390H10Z" fill="url(#apxHg1)" stroke="rgba(255,255,255,.25)" />
-              <path class="layer l2" d="M230 110 390 390H70Z" fill="url(#apxHg2)" />
-              <path class="layer l3" d="M230 220 320 390H140Z" fill="url(#apxHg3)" />
-              <circle class="peak" cx="230" cy="20" r="8" fill="#22D3EE" />
-            </svg>
-
+            <img viewBox="0 0 32 32" aria-hidden="true" height="500" width="500"
+              src="https://res.cloudinary.com/dianvimfq/image/upload/v1766428830/Inventory_uploads/Logo_3c405b69-11db-4309-aedb-c49259b42632_c9nsrj.jpg" />
             <div class="float-card fc1">
               <div class="fc-row">
                 <span class="fc-icon"><apx-icon name="chart" /></span>
-                <div><small>رضا العملاء</small><b>98%</b></div>
+                <div><small>{{ t().hero.satisfaction }}</small><b>98%</b></div>
               </div>
             </div>
 
             <div class="float-card fc2">
-              <small>مشروع قيد الإطلاق</small>
-              <b>منصة متجر إلكتروني</b>
+              <small>{{ t().hero.launching }}</small>
+              <b>{{ t().hero.projectName }}</b>
               <div class="bar"><span></span></div>
-              <small class="muted">78% مكتمل</small>
+              <small class="muted">{{ t().hero.progress }}</small>
             </div>
           </div>
         </div>
@@ -114,32 +99,32 @@
   <section id="services" class="apx-section apx-services">
     <div class="container">
       <div class="sec-head">
-        <h2>الخدمات التي نقدمها</h2>
-        <p>فريق واحد يغطي كل مراحل مشروعك الرقمي، فلا تحتاج إلى التنسيق بين أكثر من جهة.</p>
+        <h2>{{ t().services.title }}</h2>
+        <p>{{ t().services.subtitle }}</p>
       </div>
 
       <div class="bento">
         <article class="svc svc-feature">
-          <span class="svc-icon"><apx-icon [name]="featured.icon" /></span>
-          <h3>{{ featured.title }}</h3>
-          <p>{{ featured.text }}</p>
+          <span class="svc-icon"><apx-icon [name]="t().services.featured.icon" /></span>
+          <h3>{{ t().services.featured.title }}</h3>
+          <p>{{ t().services.featured.text }}</p>
           <ul class="svc-points">
-            @for (p of featured.points; track p) {
-              <li><apx-icon name="check" />{{ p }}</li>
+            @for (p of t().services.featured.points; track p) {
+            <li><apx-icon name="check" />{{ p }}</li>
             }
           </ul>
           <button type="button" class="btn btn-light-apx mt-auto" (click)="go('contact')">
-            ابدأ مشروعك
-            <apx-icon name="arrowLeft" />
+            {{ t().services.cta }}
+            <apx-icon name="arrowLeft" class="dir-arrow" />
           </button>
         </article>
 
-        @for (s of services; track s.title) {
-          <article class="svc">
-            <span class="svc-icon"><apx-icon [name]="s.icon" /></span>
-            <h3>{{ s.title }}</h3>
-            <p>{{ s.text }}</p>
-          </article>
+        @for (s of t().services.items; track s.title) {
+        <article class="svc">
+          <span class="svc-icon"><apx-icon [name]="s.icon" /></span>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.text }}</p>
+        </article>
         }
       </div>
     </div>
@@ -151,28 +136,25 @@
       <div class="row g-5 align-items-center">
         <div class="col-lg-6">
           <div class="sec-head mb-4">
-            <h2>من نحن</h2>
-            <p>
-              Apx شركة تقنية تأسست عام 2022 على يد مهندسين ومصممين، هدفنا مساعدة الشركات الناشئة والمؤسسات
-              على تحويل أفكارها إلى منتجات رقمية حقيقية تعمل بكفاءة.
-            </p>
+            <h2>{{ t().about.title }}</h2>
+            <p>{{ t().about.text }}</p>
           </div>
 
           <div class="about-stats">
-            <div><strong>8</strong><span>سنوات خبرة</span></div>
-            <div><strong>35</strong><span>خبيراً في الفريق</span></div>
-            <div><strong>12</strong><span>دولة نخدمها</span></div>
+            @for (s of t().about.stats; track s.label) {
+            <div><strong>{{ s.value }}</strong><span>{{ s.label }}</span></div>
+            }
           </div>
 
           <div class="values">
-            @for (v of values; track v.title) {
-              <div class="value">
-                <apx-icon [name]="v.icon" />
-                <div>
-                  <h4>{{ v.title }}</h4>
-                  <p>{{ v.text }}</p>
-                </div>
+            @for (v of t().about.values; track v.title) {
+            <div class="value">
+              <apx-icon [name]="v.icon" />
+              <div>
+                <h4>{{ v.title }}</h4>
+                <p>{{ v.text }}</p>
               </div>
+            </div>
             }
           </div>
         </div>
@@ -180,16 +162,16 @@
         <div class="col-lg-6">
           <div class="process">
             <div class="glow g3"></div>
-            <h3>كيف نعمل معك</h3>
+            <h3>{{ t().about.processTitle }}</h3>
             <ol class="steps">
-              @for (st of steps; track st.title; let i = $index) {
-                <li class="step">
-                  <span class="step-num">{{ i + 1 }}</span>
-                  <div>
-                    <h4>{{ st.title }}</h4>
-                    <p>{{ st.text }}</p>
-                  </div>
-                </li>
+              @for (st of t().about.steps; track st.title; let i = $index) {
+              <li class="step">
+                <span class="step-num">{{ i + 1 }}</span>
+                <div>
+                  <h4>{{ st.title }}</h4>
+                  <p>{{ st.text }}</p>
+                </div>
+              </li>
               }
             </ol>
           </div>
@@ -202,30 +184,32 @@
   <section id="contact" class="apx-section apx-contact">
     <div class="container">
       <div class="sec-head">
-        <h2>اتصل بنا</h2>
-        <p>أخبرنا عن مشروعك وسنرد عليك خلال يوم عمل واحد.</p>
+        <h2>{{ t().contact.title }}</h2>
+        <p>{{ t().contact.subtitle }}</p>
       </div>
 
       <div class="contact-shell">
         <aside class="contact-side">
           <div class="glow g4"></div>
-          <h3>معلومات التواصل</h3>
+          <h3>{{ t().contact.infoTitle }}</h3>
           <ul class="contact-info">
             <li>
               <span class="ci-icon"><apx-icon name="pin" /></span>
-              <div><strong>العنوان</strong><span>الولايات المتحدة الامريكية, إنديانا</span></div>
+              <div><strong>{{ t().contact.addressLabel }}</strong><span>{{ t().contact.address }}</span></div>
             </li>
             <li>
               <span class="ci-icon"><apx-icon name="phone" /></span>
-              <div><strong>الهاتف</strong><a href="tel:+966500000000" dir="ltr">+000 00 000 0000</a></div>
+              <div><strong>{{ t().contact.phoneLabel }}</strong><a href="tel:+966500000000" dir="ltr">+000 00 000
+                  0000</a></div>
             </li>
             <li>
               <span class="ci-icon"><apx-icon name="mail" /></span>
-              <div><strong>البريد الإلكتروني</strong><a href="mailto:info@apx.com">info&#64;apx.com</a></div>
+              <div><strong>{{ t().contact.emailLabel }}</strong><a href="mailto:info@apx.com"
+                  dir="ltr">info&#64;apx.com</a></div>
             </li>
             <li>
               <span class="ci-icon"><apx-icon name="clock" /></span>
-              <div><strong>ساعات العمل</strong><span>الأحد – الخميس، 9 صباحاً – 6 مساءً</span></div>
+              <div><strong>{{ t().contact.hoursLabel }}</strong><span>{{ t().contact.hours }}</span></div>
             </li>
           </ul>
           <div class="social">
@@ -240,45 +224,50 @@
           <form [formGroup]="contactForm" (ngSubmit)="sendContact()" novalidate>
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label" for="cName">الاسم الكامل</label>
-                <input class="form-control" id="cName" formControlName="name" [class.is-invalid]="bad(contactForm, 'name')" />
-                <div class="invalid-feedback">اكتب اسمك.</div>
+                <label class="form-label" for="cName">{{ t().contact.form.name }}</label>
+                <input class="form-control" id="cName" formControlName="name"
+                  [class.is-invalid]="bad(contactForm, 'name')" />
+                <div class="invalid-feedback">{{ t().contact.form.nameErr }}</div>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="cEmail">البريد الإلكتروني</label>
-                <input class="form-control" id="cEmail" type="email" dir="ltr" formControlName="email" [class.is-invalid]="bad(contactForm, 'email')" />
-                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
+                <label class="form-label" for="cEmail">{{ t().contact.form.email }}</label>
+                <input class="form-control" id="cEmail" type="email" dir="ltr" formControlName="email"
+                  [class.is-invalid]="bad(contactForm, 'email')" />
+                <div class="invalid-feedback">{{ t().contact.form.emailErr }}</div>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="cPhone">رقم الجوال <span class="optional">(اختياري)</span></label>
+                <label class="form-label" for="cPhone">{{ t().contact.form.phone }} <span class="optional">{{
+                    t().contact.form.optional }}</span></label>
                 <input class="form-control" id="cPhone" type="tel" dir="ltr" formControlName="phone" />
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="cService">الخدمة المطلوبة</label>
-                <select class="form-select" id="cService" formControlName="service" [class.is-invalid]="bad(contactForm, 'service')">
-                  <option value="" disabled>اختر الخدمة</option>
-                  @for (o of serviceOptions; track o) {
-                    <option [value]="o">{{ o }}</option>
+                <label class="form-label" for="cService">{{ t().contact.form.service }}</label>
+                <select class="form-select" id="cService" formControlName="service"
+                  [class.is-invalid]="bad(contactForm, 'service')">
+                  <option value="" disabled>{{ t().contact.form.servicePlaceholder }}</option>
+                  @for (o of t().contact.serviceOptions; track o.value) {
+                  <option [value]="o.value">{{ o.label }}</option>
                   }
                 </select>
-                <div class="invalid-feedback">اختر الخدمة التي تهمك.</div>
+                <div class="invalid-feedback">{{ t().contact.form.serviceErr }}</div>
               </div>
               <div class="col-12">
-                <label class="form-label" for="cMsg">تفاصيل المشروع</label>
-                <textarea class="form-control" id="cMsg" rows="5" formControlName="message" [class.is-invalid]="bad(contactForm, 'message')"></textarea>
-                <div class="invalid-feedback">اكتب نبذة عن مشروعك (10 أحرف على الأقل).</div>
+                <label class="form-label" for="cMsg">{{ t().contact.form.message }}</label>
+                <textarea class="form-control" id="cMsg" rows="5" formControlName="message"
+                  [class.is-invalid]="bad(contactForm, 'message')"></textarea>
+                <div class="invalid-feedback">{{ t().contact.form.messageErr }}</div>
               </div>
               <div class="col-12">
                 <button type="submit" class="btn btn-apx btn-xl">
-                  <apx-icon name="send" />
-                  إرسال الرسالة
+                  <apx-icon name="send" class="dir-arrow" />
+                  {{ t().contact.form.submit }}
                 </button>
               </div>
             </div>
           </form>
 
           @if (contactSent) {
-            <div class="alert alert-success mt-4 mb-0" role="status">تم إرسال رسالتك. سنتواصل معك قريباً.</div>
+          <div class="alert alert-success mt-4 mb-0" role="status">{{ t().contact.form.sent }}</div>
           }
         </div>
       </div>
@@ -297,129 +286,134 @@
             </svg>
             <span>Apx</span>
           </a>
-          <p class="footer-about">حلول رقمية متكاملة للشركات: مواقع، تطبيقات، أنظمة سحابية ودعم مستمر.</p>
+          <p class="footer-about">{{ t().footer.about }}</p>
         </div>
         <div class="col-6 col-lg-3">
-          <h5>روابط سريعة</h5>
+          <h5>{{ t().footer.quickLinks }}</h5>
           <ul class="footer-links">
-            @for (l of links; track l.id) {
-              <li><a href="#" (click)="go(l.id, $event)">{{ l.label }}</a></li>
+            @for (l of t().links; track l.id) {
+            <li><a href="#" (click)="go(l.id, $event)">{{ l.label }}</a></li>
             }
           </ul>
         </div>
         <div class="col-6 col-lg-4">
-          <h5>تواصل معنا</h5>
+          <h5>{{ t().footer.contactUs }}</h5>
           <ul class="footer-links">
-            <li><a href="mailto:info@apx.com">info&#64;apx.com</a></li>
+            <li><a href="mailto:info@apx.com" dir="ltr">info&#64;apx.com</a></li>
             <li><a href="tel:+966500000000" dir="ltr">+000 00 000 0000</a></li>
-            <li>الولاياتالمتحدة الأمريكية, إنديانا</li>
+            <li>{{ t().footer.address }}</li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© {{ year }} Apx. جميع الحقوق محفوظة.</span>
-        <span><a href="#">سياسة الخصوصية</a> | <a href="#">الشروط والأحكام</a></span>
+        <span>© {{ year }} Apx. {{ t().footer.rights }}</span>
+        <span><a href="#">{{ t().footer.privacy }}</a> | <a href="#">{{ t().footer.terms }}</a></span>
       </div>
     </div>
   </footer>
 </div>
 
-<!-- ================= Login Modal (Bootstrap classes + Angular state) ================= -->
+<!-- ================= Login Modal ================= -->
 @if (loginOpen) {
-  <div class="modal-backdrop show apx-backdrop"></div>
-  <div class="modal d-block apx-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="authTitle" (click)="closeLogin()">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <div class="modal-brand">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M16 3 30 29H2Z" fill="#4F46E5" />
-              <path d="M16 13 23 26H9Z" fill="#F59E0B" />
-            </svg>
-            <h2 class="modal-title" id="authTitle">{{ authTab === 'login' ? 'مرحباً بعودتك' : 'أنشئ حسابك في Apx' }}</h2>
+<div class="modal-backdrop show apx-backdrop"></div>
+<div class="modal d-block apx-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="authTitle"
+  [attr.dir]="dir()" [attr.lang]="lang()" (click)="closeLogin()">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-brand">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 3 30 29H2Z" fill="#4F46E5" />
+            <path d="M16 13 23 26H9Z" fill="#F59E0B" />
+          </svg>
+          <h2 class="modal-title" id="authTitle">{{ authTab === 'login' ? t().auth.loginTitle : t().auth.registerTitle
+            }}</h2>
+        </div>
+        <button type="button" class="btn-close" (click)="closeLogin()" [attr.aria-label]="t().auth.close"></button>
+      </div>
+
+      <div class="modal-body">
+        <ul class="nav nav-pills nav-fill auth-pills" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'login'"
+              [attr.aria-selected]="authTab === 'login'" (click)="goToLogin()">{{ t().auth.loginTab }}</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'register'"
+              [attr.aria-selected]="authTab === 'register'" (click)="goToRegister()">{{ t().auth.registerTab }}</button>
+          </li>
+        </ul>
+
+        @if (authTab === 'login') {
+        <form [formGroup]="loginForm" (ngSubmit)="submitAuth()" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="lEmail">{{ t().auth.email }}</label>
+            <input class="form-control" id="lEmail" type="email" dir="ltr" autocomplete="email" formControlName="email"
+              [class.is-invalid]="bad(loginForm, 'email')" />
+            <div class="invalid-feedback">{{ t().auth.emailErr }}</div>
           </div>
-          <button type="button" class="btn-close" (click)="closeLogin()" aria-label="إغلاق"></button>
-        </div>
-
-        <div class="modal-body">
-          <ul class="nav nav-pills nav-fill auth-pills" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'login'"
-                      [attr.aria-selected]="authTab === 'login'" (click)="goToLogin()">تسجيل الدخول</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button type="button" class="nav-link" role="tab" [class.active]="authTab === 'register'"
-                      [attr.aria-selected]="authTab === 'register'" (click)="goToRegister()">إنشاء حساب</button>
-            </li>
-          </ul>
-
-          @if (authTab === 'login') {
-            <form [formGroup]="loginForm" (ngSubmit)="submitAuth()" novalidate>
-              <div class="mb-3">
-                <label class="form-label" for="lEmail">البريد الإلكتروني</label>
-                <input class="form-control" id="lEmail" type="email" dir="ltr" autocomplete="email"
-                       formControlName="email" [class.is-invalid]="bad(loginForm, 'email')" />
-                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="lPass">كلمة المرور</label>
-                <div class="input-group has-validation">
-                  <input class="form-control" id="lPass" dir="ltr" [type]="showPassword ? 'text' : 'password'"
-                         autocomplete="current-password" formControlName="password" [class.is-invalid]="bad(loginForm, 'password')" />
-                  <button type="button" class="btn btn-eye" (click)="showPassword = !showPassword"
-                          [attr.aria-label]="showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'">
-                    <apx-icon [name]="showPassword ? 'eyeOff' : 'eye'" />
-                  </button>
-                  <div class="invalid-feedback">كلمة المرور 6 أحرف على الأقل.</div>
-                </div>
-              </div>
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="remember" formControlName="remember" />
-                  <label class="form-check-label" for="remember">تذكرني</label>
-                </div>
-                <a href="#" class="link-apx small">نسيت كلمة المرور؟</a>
-              </div>
-              <button type="submit" class="btn btn-apx w-100 justify-content-center">تسجيل الدخول</button>
-              <div class="divider">أو</div>
-              <button type="button" class="btn btn-outline-apx w-100 justify-content-center">
-                <apx-icon name="google" />
-                المتابعة باستخدام Google
+          <div class="mb-3">
+            <label class="form-label" for="lPass">{{ t().auth.password }}</label>
+            <div class="input-group has-validation">
+              <input class="form-control" id="lPass" dir="ltr" [type]="showPassword ? 'text' : 'password'"
+                autocomplete="current-password" formControlName="password"
+                [class.is-invalid]="bad(loginForm, 'password')" />
+              <button type="button" class="btn btn-eye" (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? t().auth.hidePassword : t().auth.showPassword">
+                <apx-icon [name]="showPassword ? 'eyeOff' : 'eye'" />
               </button>
-            </form>
-          } @else {
-            <form [formGroup]="registerForm" (ngSubmit)="submitAuth()" novalidate>
-              <div class="mb-3">
-                <label class="form-label" for="rName">الاسم الكامل</label>
-                <input class="form-control" id="rName" autocomplete="name" formControlName="name" [class.is-invalid]="bad(registerForm, 'name')" />
-                <div class="invalid-feedback">اكتب اسمك.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="rEmail">البريد الإلكتروني</label>
-                <input class="form-control" id="rEmail" type="email" dir="ltr" autocomplete="email"
-                       formControlName="email" [class.is-invalid]="bad(registerForm, 'email')" />
-                <div class="invalid-feedback">اكتب بريداً إلكترونياً صحيحاً.</div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="rPass">كلمة المرور</label>
-                <input class="form-control" id="rPass" type="password" dir="ltr" autocomplete="new-password"
-                       formControlName="password" [class.is-invalid]="bad(registerForm, 'password')" />
-                <div class="invalid-feedback">كلمة المرور 6 أحرف على الأقل.</div>
-              </div>
-              <div class="form-check mb-4">
-                <input class="form-check-input" type="checkbox" id="terms" formControlName="terms" [class.is-invalid]="bad(registerForm, 'terms')" />
-                <label class="form-check-label" for="terms">أوافق على الشروط والأحكام</label>
-                <div class="invalid-feedback">يجب الموافقة على الشروط للمتابعة.</div>
-              </div>
-              <button type="submit" class="btn btn-apx w-100 justify-content-center">إنشاء حساب</button>
-            </form>
-          }
+              <div class="invalid-feedback">{{ t().auth.passwordErr }}</div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember" formControlName="remember" />
+              <label class="form-check-label" for="remember">{{ t().auth.remember }}</label>
+            </div>
+            <a href="#" class="link-apx small">{{ t().auth.forgot }}</a>
+          </div>
+          <button type="submit" class="btn btn-apx w-100 justify-content-center">{{ t().auth.loginBtn }}</button>
+          <div class="divider">{{ t().auth.or }}</div>
+          <button type="button" class="btn btn-outline-apx w-100 justify-content-center">
+            <apx-icon name="google" />
+            {{ t().auth.google }}
+          </button>
+        </form>
+        } @else {
+        <form [formGroup]="registerForm" (ngSubmit)="submitAuth()" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="rName">{{ t().auth.name }}</label>
+            <input class="form-control" id="rName" autocomplete="name" formControlName="name"
+              [class.is-invalid]="bad(registerForm, 'name')" />
+            <div class="invalid-feedback">{{ t().auth.nameErr }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="rEmail">{{ t().auth.email }}</label>
+            <input class="form-control" id="rEmail" type="email" dir="ltr" autocomplete="email" formControlName="email"
+              [class.is-invalid]="bad(registerForm, 'email')" />
+            <div class="invalid-feedback">{{ t().auth.emailErr }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="rPass">{{ t().auth.password }}</label>
+            <input class="form-control" id="rPass" type="password" dir="ltr" autocomplete="new-password"
+              formControlName="password" [class.is-invalid]="bad(registerForm, 'password')" />
+            <div class="invalid-feedback">{{ t().auth.passwordErr }}</div>
+          </div>
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="terms" formControlName="terms"
+              [class.is-invalid]="bad(registerForm, 'terms')" />
+            <label class="form-check-label" for="terms">{{ t().auth.terms }}</label>
+            <div class="invalid-feedback">{{ t().auth.termsErr }}</div>
+          </div>
+          <button type="submit" class="btn btn-apx w-100 justify-content-center">{{ t().auth.registerBtn }}</button>
+        </form>
+        }
 
-          @if (authMsg) {
-            <div class="alert alert-success mt-3 mb-0" role="status">{{ authMsg }}</div>
-          }
-        </div>
+        @if (authMsgKey; as key) {
+        <div class="alert alert-success mt-3 mb-0" role="status">{{ t().auth.messages[key] }}</div>
+        }
       </div>
     </div>
   </div>
+</div>
 }

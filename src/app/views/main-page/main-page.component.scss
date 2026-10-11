@@ -1,6 +1,7 @@
 /* =========================================================
-   Apx Landing — Angular + Bootstrap 5 (RTL)
+   Apx Landing — Angular + Bootstrap 5 (RTL / LTR)
    الأنماط محصورة في هذا المكوّن (View Encapsulation)
+   الاتجاه واللغة يُضبطان من LanguageService على عنصر <html>
    ========================================================= */
 
 :host {
@@ -16,10 +17,29 @@
   --line: #E4E7F2;
   --font-head: "Readex Pro", "IBM Plex Sans Arabic", Tahoma, sans-serif;
   --font-body: "IBM Plex Sans Arabic", "Readex Pro", Tahoma, sans-serif;
+  --body-lh: 1.8;
 
   display: block;
   font-family: var(--font-body);
 }
+
+/* ===================== Language (EN) ===================== */
+/* خطوط وتباعد مناسبة للإنجليزية عند lang="en" */
+:host-context([lang="en"]) {
+  --font-head: "Readex Pro", "Inter", "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", "Readex Pro", "Segoe UI", Roboto, sans-serif;
+  --body-lh: 1.7;
+}
+
+/* التباعد السالب بين الحروف يكسر اتصال الحروف العربية، لذا يُطبَّق على الإنجليزية فقط */
+:host-context([lang="en"]) .apx-hero h1 { letter-spacing: -.5px; }
+
+/* الأسهم الاتجاهية: arrowLeft تشير للأمام في العربية وتنقلب في الإنجليزية */
+apx-icon.dir-arrow {
+  display: inline-flex;
+  transition: transform .15s ease;
+}
+:host-context([dir="ltr"]) apx-icon.dir-arrow { transform: scaleX(-1); }
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-head);
@@ -68,6 +88,22 @@ h1, h2, h3, h4, h5 {
   &:hover, &:active { background: var(--bg); color: var(--primary); }
 }
 
+/* زر تبديل اللغة */
+.btn-lang {
+  padding: .5rem .95rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: .92rem;
+  svg { flex-shrink: 0; color: var(--primary); }
+  &:hover, &:active {
+    border-color: var(--primary);
+    background: rgba(79, 70, 229, .06);
+    color: var(--primary);
+  }
+}
+
 .btn-outline-apx {
   background: #fff;
   border: 1.5px solid var(--line);
@@ -111,11 +147,14 @@ h1, h2, h3, h4, h5 {
 .optional { color: var(--muted); font-weight: 400; font-size: .85rem; }
 .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
 
+/* الحقول ذات dir="ltr" (البريد، الهاتف، كلمة المرور) تبقى محاذاتها لبداية سطرها */
+.form-control[dir="ltr"] { text-align: left; }
+
 /* ===================== Base ===================== */
 .apx {
   color: var(--ink);
   background: #fff;
-  line-height: 1.8;
+  line-height: var(--body-lh);
   overflow-x: hidden;
 }
 p { color: var(--muted); }
@@ -195,6 +234,7 @@ section { scroll-margin-top: 90px; }
     align-items: stretch;
     .btn { justify-content: center; }
   }
+  .btn-lang { border-radius: 12px; }
 }
 
 /* ===================== Hero ===================== */
@@ -208,7 +248,6 @@ section { scroll-margin-top: 90px; }
   h1 {
     font-size: clamp(2.3rem, 5.2vw, 3.9rem);
     font-weight: 700;
-    letter-spacing: -.5px;
     margin-bottom: 1.25rem;
   }
 }
@@ -304,11 +343,17 @@ section { scroll-margin-top: 90px; }
   display: grid; place-items: center;
   background: linear-gradient(135deg, var(--cyan), var(--primary));
 }
+
+/* شريط التقدم: يمتلئ من بداية السطر في الاتجاهين، والتدرج يتبع الاتجاه */
 .bar {
   height: 6px; margin-top: .6rem; border-radius: 99px;
   background: rgba(255, 255, 255, .15);
-  span { display: block; height: 100%; width: 78%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), #818CF8); }
+  span {
+    display: block; height: 100%; width: 78%; border-radius: inherit;
+    background: linear-gradient(270deg, var(--cyan), #818CF8);
+  }
 }
+:host-context([dir="ltr"]) .bar span { background: linear-gradient(90deg, var(--cyan), #818CF8); }
 
 @keyframes apxRise { from { transform: translateY(40px) scaleY(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes apxFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -374,19 +419,22 @@ section { scroll-margin-top: 90px; }
   apx-icon { width: 26px; height: 26px; }
 }
 
+/* توهج الزاوية في بطاقة الخدمة المميزة يبقى في زاوية بداية السطر */
 .svc-feature {
+  --glow-x: 100%;
   grid-row: span 2;
   color: #fff;
   border: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 0% 0%, rgba(34, 211, 238, .35), transparent 45%),
+    radial-gradient(circle at var(--glow-x) 0%, rgba(34, 211, 238, .35), transparent 45%),
     linear-gradient(160deg, var(--ink-2), var(--primary) 70%, var(--violet));
 
   h3 { font-size: 1.5rem; }
   p { color: #D9DCF7; margin-bottom: 1.25rem; }
   .svc-icon { background: rgba(255, 255, 255, .16); color: #fff; }
 }
+:host-context([dir="ltr"]) .svc-feature { --glow-x: 0%; }
 
 .svc-points {
   list-style: none;
@@ -518,6 +566,7 @@ section { scroll-margin-top: 90px; }
   li { display: flex; gap: .9rem; margin-bottom: 1.35rem; }
   strong { display: block; font-weight: 500; }
   span, a { color: #C7CCE8; text-decoration: none; font-size: .95rem; }
+  a { display: inline-block; } /* حتى يبقى الرقم/البريد LTR دون أن يكسر محاذاة السطر */
   a:hover { color: #fff; }
 }
 .ci-icon {
@@ -585,6 +634,7 @@ section { scroll-margin-top: 90px; }
 .apx-modal {
   font-family: var(--font-body);
   color: var(--ink);
+  line-height: var(--body-lh);
 
   .modal-content {
     border: 0;
@@ -646,5 +696,5 @@ section { scroll-margin-top: 90px; }
   .apex-art .layer, .apex-art .peak, .float-card,
   .apx-modal .modal-content, .apx-backdrop,
   .apx-navbar .navbar-collapse.show { animation: none; }
-  .svc, .btn, .apx-nav-wrap { transition: none; }
+  .svc, .btn, .apx-nav-wrap, apx-icon.dir-arrow { transition: none; }
 }

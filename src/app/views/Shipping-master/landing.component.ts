@@ -38,7 +38,7 @@ export class ShippingMasterLandingComponent implements OnInit {
         subtitle: 'استعرض جميع الطرود وتابع حالتها',
         accent: 'navy',
         route: '/shipping-master/orders',
-        query: {}
+        query: { statusId: 11 }
       },
       {
         icon: 'receive',
@@ -65,7 +65,7 @@ export class ShippingMasterLandingComponent implements OnInit {
         this.orders = orders.filter(e => e.orderStatus?.orderStatusId != 17);
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => { },
     });
   }
 

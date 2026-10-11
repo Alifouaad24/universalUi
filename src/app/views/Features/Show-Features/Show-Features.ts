@@ -293,12 +293,22 @@ export class ShowFeaturesComponent implements OnInit {
       () => {
         this.toastMessage.set('Order updated successfully');
         this.toastVisible.set(true);
-        this.getAllOrders();
+
+        const order = this.orders.find(
+          (el) => el.globalOrderId === id
+        );
+
+        if (order) {
+          order.orderStatus!.statusEn = 'Closed';
+        }
+
         this.showEditModal = false;
+        this.cdr.detectChanges()
       },
       (error) => {
         this.toastMessage.set('An error occurred while updating the order');
         this.toastVisible.set(true);
+        console.error(error);
       }
     );
   }
@@ -308,8 +318,17 @@ export class ShowFeaturesComponent implements OnInit {
       () => {
         this.toastMessage.set('Order updated successfully');
         this.toastVisible.set(true);
-        this.getAllOrders();
         this.showEditModal = false;
+        const order = this.orders.find(
+          (el) => el.globalOrderId === id
+        );
+
+        if (order) {
+          order.orderStatus!.statusEn = 'Done';
+        }
+
+        this.showEditModal = false;
+        this.cdr.detectChanges()
       },
       (error) => {
         this.toastMessage.set('An error occurred while updating the order');
@@ -346,8 +365,8 @@ export class ShowFeaturesComponent implements OnInit {
     switch (detail.orderStatus?.statusEn?.toLowerCase()?.trim()) {
       case 'pending': return 'warning';
       case 'confirmed':
-      case 'on progress': return 'info';
-      case 'completed': return 'success';
+      case 'in progress': return 'info';
+      case 'done': return 'success';
       case 'cancelled':
       case 'closed': return 'danger';
       default: return 'secondary';

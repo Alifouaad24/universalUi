@@ -2,9 +2,12 @@ import {
   AfterViewInit, Component, HostListener, Input, OnDestroy, PLATFORM_ID,
   inject, signal
 } from '@angular/core';
-import { DOCUMENT, isPlatformBrowser, } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+
+import { LanguageService } from '../../core/Services/LanguageService';
+import { AuthMsgKey, SectionId } from '../../core/Services/l18n';
 
 /* =========================================================
    أيقونات SVG مدمجة (بدون أي مكتبة أيقونات خارجية)
@@ -55,7 +58,7 @@ export class ApxIconComponent {
 /* =========================================================
    صفحة Apx الرئيسية
    ========================================================= */
-type SectionId = 'home' | 'services' | 'about' | 'contact';
+const SECTION_IDS: SectionId[] = ['home', 'services', 'about', 'contact'];
 
 @Component({
   selector: 'app-apx-landing',
@@ -66,16 +69,22 @@ type SectionId = 'home' | 'services' | 'about' | 'contact';
 })
 export class ApxLandingComponent implements AfterViewInit, OnDestroy {
 
-  /**
-   *
-   */
-  constructor(private router: Router) {}
-
+  private router = inject(Router);
   private fb = inject(FormBuilder);
   private doc = inject(DOCUMENT);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private observer?: IntersectionObserver;
   private lastFocused: HTMLElement | null = null;
+
+  /* ---------- اللغة ---------- */
+  private langSvc = inject(LanguageService);
+  lang = this.langSvc.lang;   // 'ar' | 'en'
+  dir = this.langSvc.dir;     // 'rtl' | 'ltr'
+  t = this.langSvc.t;         // نصوص اللغة الحالية (links, hero, services, about, contact, footer, auth)
+
+  toggleLang(): void {
+    this.langSvc.toggle();
+  }
 
   year = new Date().getFullYear();
 
@@ -86,48 +95,11 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
   loginOpen = false;
   authTab: 'login' | 'register' = 'login';
   showPassword = false;
-  authMsg = '';
+  authMsgKey: AuthMsgKey | null = null;
   contactSent = false;
 
-  links: { id: SectionId; label: string }[] = [
-    { id: 'home', label: 'الرئيسية' },
-    { id: 'services', label: 'خدماتنا' },
-    { id: 'about', label: 'من نحن' },
-    { id: 'contact', label: 'اتصل بنا' }
-  ];
-
-  featured = {
-    icon: 'desktop',
-    title: 'تطوير المواقع والمنصات',
-    text: 'مواقع ومنصات ويب سريعة ومتجاوبة، مع لوحة تحكم تتيح لفريقك إدارة المحتوى بسهولة.',
-    points: ['تصميم واجهات حديثة', 'متاجر إلكترونية', 'لوحات تحكم مخصصة', 'تحسين الظهور في محركات البحث']
-  };
-
-  services = [
-    { icon: 'mobile', title: 'تطبيقات الجوال', text: 'تطبيقات iOS وAndroid بتجربة سلسة، ونتولى نشرها على المتاجر.' },
-    { icon: 'cloud', title: 'الحلول السحابية', text: 'نقل أنظمتك إلى السحابة مع نسخ احتياطي تلقائي وتوسّع حسب الحاجة.' },
-    { icon: 'chart', title: 'تحليل البيانات', text: 'لوحات معلومات وتقارير تساعدك على اتخاذ قرارات مبنية على الأرقام.' },
-    { icon: 'shield', title: 'الأمن السيبراني', text: 'فحص الثغرات وتأمين البيانات وحماية أنظمتك من الاختراقات.' },
-    { icon: 'headset', title: 'الدعم والصيانة', text: 'تحديثات دورية واستجابة سريعة لأي مشكلة على مدار الساعة.' }
-  ];
-
-  values = [
-    { icon: 'checkCircle', title: 'التزام بالمواعيد', text: 'جدول زمني واضح من اليوم الأول.' },
-    { icon: 'users', title: 'فريق متكامل', text: 'مطورون ومصممون ومختصو أمن معاً.' },
-    { icon: 'dollar', title: 'أسعار شفافة', text: 'عرض سعر مفصّل بلا تكاليف مخفية.' },
-    { icon: 'refresh', title: 'شراكة مستمرة', text: 'نبقى معك بعد الإطلاق.' }
-  ];
-
-  steps = [
-    { title: 'نفهم احتياجك', text: 'جلسة لتحديد الأهداف والجمهور والميزانية.' },
-    { title: 'نصمم ونخطط', text: 'نماذج أولية توافق عليها قبل بدء التطوير.' },
-    { title: 'نطوّر ونختبر', text: 'تسليم على مراحل مع تقرير تقدم أسبوعي.' },
-    { title: 'نطلق وندعم', text: 'إطلاق المشروع ومتابعته وتطويره بعد التسليم.' }
-  ];
-
-  serviceOptions = ['تطوير المواقع', 'تطبيقات الجوال', 'الحلول السحابية', 'تحليل البيانات', 'الأمن السيبراني', 'الدعم والصيانة'];
-
   // النماذج (Reactive Forms من Angular نفسه)
+  // ملاحظة: قيمة service أصبحت مفتاحاً ثابتاً (web, mobile, cloud, data, security, support)
   contactForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
@@ -166,8 +138,8 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
     this.observer = new IntersectionObserver(entries => {
       entries.forEach(e => e.isIntersecting && this.active.set(e.target.id as SectionId));
     }, { rootMargin: '-45% 0px -50% 0px' });
-    this.links.forEach(l => {
-      const el = this.doc.getElementById(l.id);
+    SECTION_IDS.forEach(id => {
+      const el = this.doc.getElementById(id);
       if (el) this.observer!.observe(el);
     });
   }
@@ -192,7 +164,7 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
   openLogin(tab: 'login' | 'register' = 'login') {
     this.menuOpen = false;
     this.authTab = tab;
-    this.authMsg = '';
+    this.authMsgKey = null;
     this.showPassword = false;
     this.loginOpen = true;
     if (!this.isBrowser) return;
@@ -201,17 +173,17 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
     setTimeout(() => (this.doc.getElementById(tab === 'login' ? 'lEmail' : 'rName') as HTMLInputElement)?.focus());
   }
 
-  goToLogin(){
+  goToLogin() {
     this.router.navigate(['/login']);
   }
 
-  goToRegister(){
+  goToRegister() {
     this.router.navigate(['/register']);
   }
 
   closeLogin() {
     this.loginOpen = false;
-    this.authMsg = '';
+    this.authMsgKey = null;
     if (!this.isBrowser) return;
     this.doc.body.style.overflow = '';
     this.lastFocused?.focus();
@@ -219,7 +191,7 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
 
   switchTab(tab: 'login' | 'register') {
     this.authTab = tab;
-    this.authMsg = '';
+    this.authMsgKey = null;
   }
 
   /* ---------- التحقق والإرسال ---------- */
@@ -233,7 +205,8 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
       this.contactForm.markAllAsTouched();
       return;
     }
-    // TODO: أرسل البيانات إلى الخادم، مثال: this.http.post('/api/contact', this.contactForm.getRawValue())
+    // TODO: أرسل البيانات إلى الخادم، مثال:
+    // this.http.post('/api/contact', { ...this.contactForm.getRawValue(), lang: this.lang() })
     this.contactSent = true;
     this.contactForm.reset();
   }
@@ -245,7 +218,7 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
       return;
     }
     // TODO: اربط هنا مع خدمة المصادقة لديك (AuthService)
-    this.authMsg = this.authTab === 'login' ? 'تم تسجيل الدخول بنجاح.' : 'تم إنشاء حسابك بنجاح.';
+    this.authMsgKey = this.authTab === 'login' ? 'login' : 'register';
     form.reset();
   }
 }

@@ -135,9 +135,9 @@
             <div class="col-lg-9">
               <div class="d-flex align-items-center mb-2">
                 <span class="badge me-3" [ngClass]="{
-                  'bg-success': order.orderStatus?.statusEn === 'Completed',
-                  'bg-warning text-dark': order.orderStatus?.statusEn === 'On progress',
-                  'bg-danger': order.orderStatus?.statusEn === 'New',
+                  'bg-success': order.orderStatus?.statusEn === 'Done',
+                  'bg-warning text-dark': order.orderStatus?.statusEn === 'In progress',
+                  'bg-danger': order.orderStatus?.statusEn === 'Un planned',
                   'bg-secondary': order.orderStatus?.statusEn === 'Closed'
                 }">
                   {{ order.orderStatus?.statusEn || 'Unknown' }}
@@ -211,11 +211,11 @@
               <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
                 <c-icon name="cil-trash"></c-icon>
               </button>
-              <button *ngIf="order.orderStatus?.statusEn === 'Completed'" class="btn btn-info"
+              <button *ngIf="order.orderStatus?.statusEn === 'Done'" class="btn btn-info"
                 (click)="SetStatusClosed(order.globalOrderId)">
                 <c-icon name="cilCheck"></c-icon>
               </button>
-              <button *ngIf="order.orderStatus?.statusEn === 'On progress'" class="btn btn-warning"
+              <button *ngIf="order.orderStatus?.statusEn === 'In progress'" class="btn btn-warning"
                 (click)="SetStatusCompleted(order.globalOrderId)">
                 <c-icon name="cilCheck"></c-icon>
               </button>
