@@ -1,56 +1,60 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { I18N, Lang } from './l18n';
 
-const STORAGE_KEY = 'apx-lang';
+/** دول الجامعة العربية */
+const ARAB_COUNTRIES = new Set([
+  'SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'YE', 'IQ', 'SY', 'JO', 'LB',
+  'PS', 'EG', 'LY', 'TN', 'DZ', 'MA', 'MR', 'SD', 'SO', 'DJ', 'KM',
+]);
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-  private doc = inject(DOCUMENT);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  readonly lang = signal<Lang>(this.readSaved());
+  /** هل غيّر المستخدم اللغة يدوياً خلال هذه الجلسة؟ (في الذاكرة فقط) */
+  private userChose = false;
+
+  readonly lang = signal<Lang>(this.browserLang());
   readonly dir = computed<'rtl' | 'ltr'>(() => (this.lang() === 'ar' ? 'rtl' : 'ltr'));
   readonly t = computed(() => I18N[this.lang()]);
 
   constructor() {
-    effect(() => {
-      const lang = this.lang();
-      const dir = this.dir();
-
-      // 1) اتجاه ولغة الصفحة كاملة
-      const html = this.doc.documentElement;
-      html.lang = lang;
-      html.dir = dir;
-
-      // 2) تبديل نسخة Bootstrap (RTL / LTR)
-      const link = this.doc.getElementById('bootstrap-css') as HTMLLinkElement | null;
-      if (link) {
-        const href = dir === 'rtl' ? 'bootstrap-rtl.css' : 'bootstrap-ltr.css';
-        if (!link.href.endsWith(href)) link.href = href;
-      }
-
-      // 3) حفظ الاختيار
-      try {
-        localStorage.setItem(STORAGE_KEY, lang);
-      } catch {
-        /* SSR أو تخزين غير متاح */
-      }
-    });
+    if (this.isBrowser) this.detectByCountry();
   }
 
   toggle(): void {
-    this.lang.update(l => (l === 'ar' ? 'en' : 'ar'));
+    this.set(this.lang() === 'ar' ? 'en' : 'ar');
   }
 
   set(lang: Lang): void {
+    this.userChose = true;   // حتى لا يغيّرها كشف الدولة بعد ذلك
     this.lang.set(lang);
   }
 
-  private readSaved(): Lang {
+  /** لغة المتصفح كبداية فورية */
+  private browserLang(): Lang {
+    if (!this.isBrowser) return 'ar';
+    const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+    return langs.some(l => l?.toLowerCase().startsWith('ar')) ? 'ar' : 'en';
+  }
+
+  /** كشف دولة الزائر من IP */
+  private async detectByCountry(): Promise<void> {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 3000);
+
     try {
-      return localStorage.getItem(STORAGE_KEY) === 'en' ? 'en' : 'ar';
+      const res = await fetch('https://ipapi.co/country/', { signal: ctrl.signal });
+      const code = (await res.text()).trim().toUpperCase();
+      if (!res.ok || !/^[A-Z]{2}$/.test(code)) return;
+
+      if (!this.userChose) {
+        this.lang.set(ARAB_COUNTRIES.has(code) ? 'ar' : 'en');
+      }
     } catch {
-      return 'ar';
+    } finally {
+      clearTimeout(timer);
     }
   }
 }

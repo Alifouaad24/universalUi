@@ -133,9 +133,9 @@
                 Go to album
               </a> -->
 
-              <button class="btn btn-sm btn-info me-1" (click)="ShowDetailsModal(type)">
-                <c-icon name="cilTags"></c-icon>
-              </button>
+<button class="btn btn-sm btn-info me-1" title="Publish" (click)="openPlatformPicker(type)">
+  <c-icon name="cilTags"></c-icon>
+</button>
               <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
                 [disabled]="type.notFound">
@@ -979,6 +979,65 @@
 </c-modal>
 
 
+    <!-- ================= Platform Picker ================= -->
+<c-modal [(visible)]="showPlatformPicker" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle class="mb-0">Choose platform</h5>
+    <button cButtonClose (click)="showPlatformPicker = false"></button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <!-- المنتج المختار -->
+    <div *ngIf="pickerInventory" class="d-flex align-items-center gap-3 p-2 mb-3 rounded-3 bg-body-tertiary">
+      <img [src]="pickerInventory.item?.images?.[0]?.imageUrl || defaultBusinessLogo"
+        class="rounded border bg-white" style="width: 48px; height: 48px; object-fit: cover;" />
+      <div class="small overflow-hidden">
+        <div class="fw-semibold text-truncate">{{ pickerInventory.item?.itemDescription || pickerInventory.Product_name }}</div>
+        <div class="text-muted">#{{ pickerInventory.inventory_id }} · UPC {{ pickerInventory.item?.upc || '-' }}</div>
+      </div>
+    </div>
+
+    <!-- تحميل -->
+    <div *ngIf="loadingSellingPlatforms" class="text-center py-4">
+      <span class="spinner-border text-primary"></span>
+    </div>
+
+    <!-- لا توجد منصات -->
+    <div *ngIf="!loadingSellingPlatforms && sellingPlatforms.length === 0" class="text-center text-muted py-4">
+      No selling platforms are linked to this business.
+    </div>
+
+    <!-- المنصات -->
+    <div class="d-grid gap-2" *ngIf="!loadingSellingPlatforms">
+      <button *ngFor="let p of sellingPlatforms" type="button"
+        class="btn btn-light border rounded-3 text-start d-flex align-items-center gap-3 p-3"
+        (click)="choosePlatform(p)">
+
+        <img *ngIf="p.logoUrl" [src]="p.logoUrl" class="rounded"
+          style="width: 36px; height: 36px; object-fit: contain;" />
+        <span *ngIf="!p.logoUrl"
+          class="rounded bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center"
+          style="width: 36px; height: 36px;">
+          {{ p.description.charAt(0) | uppercase }}
+        </span>
+
+        <span class="flex-grow-1 fw-semibold">{{ p.description }}</span>
+
+        <span *ngIf="loadingPublished" class="spinner-border spinner-border-sm text-secondary"></span>
+        <ng-container *ngIf="!loadingPublished">
+          <span *ngIf="publishedPlatformIds.has(p.platform_id)" class="badge bg-success">Published</span>
+          <span *ngIf="!publishedPlatformIds.has(p.platform_id)" class="badge bg-secondary-subtle text-secondary">
+            Not published
+          </span>
+        </ng-container>
+
+        <c-icon name="cil-chevron-right" class="text-muted"></c-icon>
+      </button>
+    </div>
+  </c-modal-body>
+</c-modal>
+
+
 <!-- Add new inv manual -->
 <c-modal [visible]="showAddItemModal" (visibleChange)="showAddItemModal=$event">
   <c-modal-header>
@@ -1040,3 +1099,6 @@
     <button class="btn btn-success" (click)="saveItem()">
       Save
     </button>
+
+
+

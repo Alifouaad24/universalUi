@@ -65,7 +65,13 @@ const SECTION_IDS: SectionId[] = ['home', 'services', 'about', 'contact'];
   standalone: true,
   imports: [ReactiveFormsModule, ApxIconComponent],
   templateUrl: './main-page.component.html',
-  styleUrl: './main-page.component.scss'
+  styleUrl: './main-page.component.scss',
+  // الاتجاه واللغة على عنصر المكوّن نفسه (وليس <html>)
+  // حتى تعمل قواعد :host-context في SCSS ولا تتأثر لوحة التحكم
+  host: {
+    '[attr.dir]': 'dir()',
+    '[attr.lang]': 'lang()',
+  },
 })
 export class ApxLandingComponent implements AfterViewInit, OnDestroy {
 
@@ -80,7 +86,7 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
   private langSvc = inject(LanguageService);
   lang = this.langSvc.lang;   // 'ar' | 'en'
   dir = this.langSvc.dir;     // 'rtl' | 'ltr'
-  t = this.langSvc.t;         // نصوص اللغة الحالية (links, hero, services, about, contact, footer, auth)
+  t = this.langSvc.t;         // نصوص اللغة الحالية
 
   toggleLang(): void {
     this.langSvc.toggle();
@@ -98,8 +104,8 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
   authMsgKey: AuthMsgKey | null = null;
   contactSent = false;
 
-  // النماذج (Reactive Forms من Angular نفسه)
-  // ملاحظة: قيمة service أصبحت مفتاحاً ثابتاً (web, mobile, cloud, data, security, support)
+  // النماذج
+  // ملاحظة: قيمة service مفتاح ثابت (web, mobile, cloud, data, security, support)
   contactForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],

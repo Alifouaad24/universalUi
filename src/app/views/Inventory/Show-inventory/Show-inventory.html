@@ -68,7 +68,7 @@
         <!-- صورة بارتفاع ثابت لكل الكروت: الضغط يفتح المعرض (تكبير + تقليب + تدوير) -->
         <div class="position-relative bg-light overflow-hidden" style="height: 230px;"
           [style.cursor]="type.item?.images?.length ? 'zoom-in' : 'default'"
-          (click)="type.item?.images?.length ? ShowAllImages(type.item?.images) : null">
+          (click)="type.item?.images?.length ? ShowAllImages(type.item?.images, type.item?.itemId) : null">
 
           <img *ngIf="type.item?.images?.length" [src]="type.item?.images?.[0]?.imageUrl" alt="Image"
             class="w-100 h-100 d-block" style="object-fit: cover;" />
@@ -109,7 +109,7 @@
           <!-- BIO : (category + description + itemDetails + basePrice)
              لو ناقص → الضغط يفتح نافذة التعديل -->
           <div class="d-flex flex-column align-items-center rounded-4 px-2 py-2 cursor-pointer" style="min-width: 48px;"
-            [ngClass]="(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null && type.itemConditionId != null)
+            [ngClass]="(type.item?.categoryId && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null && type.itemConditionId != null && type.item.carBrandId != null)
             ? 'bg-success-subtle text-success'
             : 'bg-danger-subtle text-danger border border-danger-subtle'"
             [style.cursor]="(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null) ? 'pointer' : 'pointer'"
@@ -172,6 +172,17 @@
         name="cil-fullscreen"></c-icon></button>
     <button class="btn btn-outline-danger rounded-circle" style="width: 44px; height: 44px;" title="Delete"
       (click)="deleteImage(selectedImages[selectedImageIndex].itemImageId)"> <c-icon name="cil-trash"></c-icon></button>
+    <button class="btn btn-outline-light rounded-circle" style="width: 44px; height: 44px;" title="Crop / Edit"
+      (click)="openCropperFromGallery()">
+      <c-icon name="cil-crop"></c-icon>
+    </button>
+
+    <!-- حفظ التدوير: يظهر فقط إذا كانت الصورة مدوّرة -->
+    <button *ngIf="(rot.valueAsNumber % 360) !== 0" class="btn btn-success rounded-pill px-3" style="height: 44px;"
+      [disabled]="savingRotated" (click)="saveRotatedImage(rot, zoom)">
+      <span *ngIf="savingRotated" class="spinner-border spinner-border-sm me-1"></span>
+      {{ savingRotated ? 'Saving...' : 'Save rotation' }}
+    </button>
   </c-modal-footer> </c-modal>
 
 
@@ -286,9 +297,10 @@
       </div>
     </div>
     <div class="d-flex col-md-12  mb-3 mt-3 gap-3">
-      <div class="col-md-4" [ngClass]="{ 'border border-danger border-2 rounded': PlatformId == null }">
+      <div class="col-md-4">
         <p>Platform:</p>
-        <select class="form-select" [(ngModel)]="PlatformId">
+        <select class="form-select" [(ngModel)]="PlatformId"
+          [ngClass]="{ 'border border-danger border-2 rounded': PlatformId == null }">
           <option value="null">Select Platform</option>
           <option *ngFor="let platform of Platforms" [ngValue]="platform.platform_id">{{platform.description}}
           </option>
@@ -309,7 +321,7 @@
 
     <div class="row mb-4 mt-3 g-4">
       <!-- Brand -->
-      <div class="col-md-6" >
+      <div class="col-md-6">
         <label class="form-label fw-semibold">
           Brand
         </label>
@@ -1056,7 +1068,7 @@
     <button type="button" class="btn btn-secondary" (click)="showScrapDetailsBool = false">
       Close
     </button>
-    <button type="button" class="btn btn-success" >
+    <button type="button" class="btn btn-success">
       Save
     </button>
   </c-modal-footer>
@@ -1078,8 +1090,9 @@
     <!-- ========================= -->
     <div *ngIf="!scrapedProduct" class="text-center">
       <div class="mb-3">
-        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center"
-             style="width: 80px; height: 80px;">
+        <div
+          class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width: 80px; height: 80px;">
           <i class="fas fa-store fs-2"></i>
         </div>
       </div>
@@ -1117,18 +1130,18 @@
         <div class="col-12 col-lg-5">
           <div class="border rounded-3 p-3 bg-light text-center position-relative">
             <ng-container *ngIf="scrapedImages.length; else noImage">
-              <img [src]="scrapedImages[currentScrapedImageIndex]" [alt]="scrapedProduct.name"
-                   class="img-fluid" style="height: 320px; width: 100%; object-fit: contain;" />
+              <img [src]="scrapedImages[currentScrapedImageIndex]" [alt]="scrapedProduct.name" class="img-fluid"
+                style="height: 320px; width: 100%; object-fit: contain;" />
 
               <ng-container *ngIf="scrapedImages.length > 1">
                 <button type="button"
-                        class="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
-                        style="width: 34px; height: 34px;" (click)="previousScrapedImage()">
+                  class="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                  style="width: 34px; height: 34px;" (click)="previousScrapedImage()">
                   <i class="fas fa-chevron-left"></i>
                 </button>
                 <button type="button"
-                        class="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
-                        style="width: 34px; height: 34px;" (click)="nextScrapedImage()">
+                  class="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                  style="width: 34px; height: 34px;" (click)="nextScrapedImage()">
                   <i class="fas fa-chevron-right"></i>
                 </button>
               </ng-container>
@@ -1144,12 +1157,10 @@
 
           <!-- Thumbnails -->
           <div *ngIf="scrapedImages.length > 1" class="d-flex gap-2 mt-2 overflow-auto pb-1">
-            <img *ngFor="let img of scrapedImages; let i = index"
-                 [src]="img" (click)="selectScrapedImage(i)"
-                 class="rounded border bg-white flex-shrink-0"
-                 [class.border-primary]="i === currentScrapedImageIndex"
-                 [class.border-2]="i === currentScrapedImageIndex"
-                 style="width: 60px; height: 60px; object-fit: contain; cursor: pointer;" />
+            <img *ngFor="let img of scrapedImages; let i = index" [src]="img" (click)="selectScrapedImage(i)"
+              class="rounded border bg-white flex-shrink-0" [class.border-primary]="i === currentScrapedImageIndex"
+              [class.border-2]="i === currentScrapedImageIndex"
+              style="width: 60px; height: 60px; object-fit: contain; cursor: pointer;" />
           </div>
         </div>
 
@@ -1160,7 +1171,7 @@
           <!-- Brand -->
           <div *ngIf="scrapedProduct.brandName" class="mb-1">
             <a *ngIf="scrapedProduct.brandUrl; else brandText" [href]="scrapedProduct.brandUrl" target="_blank"
-               class="fw-semibold text-uppercase small text-decoration-none">{{ scrapedProduct.brandName }}</a>
+              class="fw-semibold text-uppercase small text-decoration-none">{{ scrapedProduct.brandName }}</a>
             <ng-template #brandText>
               <span class="fw-semibold text-uppercase small">{{ scrapedProduct.brandName }}</span>
             </ng-template>
@@ -1172,8 +1183,7 @@
           <!-- Rating -->
           <div *ngIf="scrapedProduct.avg_rating" class="d-flex align-items-center gap-2 mb-3">
             <span class="text-warning">
-              <i *ngFor="let s of [1, 2, 3, 4, 5]" class="me-1"
-                 [ngClass]="starType(s) === 'full' ? 'fas fa-star'
+              <i *ngFor="let s of [1, 2, 3, 4, 5]" class="me-1" [ngClass]="starType(s) === 'full' ? 'fas fa-star'
                           : starType(s) === 'half' ? 'fas fa-star-half-alt'
                           : 'far fa-star'"></i>
             </span>
@@ -1245,10 +1255,9 @@
       <div *ngIf="scrapedProduct.description" class="mt-4">
         <h6 class="fw-bold mb-2">Description</h6>
         <p class="text-muted mb-1" style="white-space: pre-line;"
-           [style.display]="showFullDescription ? 'block' : '-webkit-box'"
-           [style.-webkit-line-clamp]="showFullDescription ? null : 4"
-           [style.-webkit-box-orient]="'vertical'"
-           [style.overflow]="'hidden'">
+          [style.display]="showFullDescription ? 'block' : '-webkit-box'"
+          [style.-webkit-line-clamp]="showFullDescription ? null : 4" [style.-webkit-box-orient]="'vertical'"
+          [style.overflow]="'hidden'">
           {{ scrapedProduct.description }}
         </p>
         <button type="button" class="btn btn-link btn-sm p-0" (click)="showFullDescription = !showFullDescription">
@@ -1265,8 +1274,7 @@
           <div *ngFor="let group of scrapedProduct.specifications" class="col-12 col-md-6">
             <div class="border rounded-3 h-100">
               <div class="px-3 py-2 fw-semibold border-bottom rounded-top-3">
-                <i class="fas me-2 text-primary"
-                   [ngClass]="group.group === 'Dimensions' ? 'fa-ruler-combined'
+                <i class="fas me-2 text-primary" [ngClass]="group.group === 'Dimensions' ? 'fa-ruler-combined'
                             : group.group?.includes('Warranty') ? 'fa-shield-alt'
                             : 'fa-list-ul'"></i>
                 {{ group.group }}
@@ -1342,7 +1350,7 @@
       <i class="fas fa-times me-1"></i>Close
     </button>
     <button type="button" class="btn btn-success" (click)="UpdateItemDataFromScraping()"
-            [disabled]="!scrapedProduct || isLoading">
+      [disabled]="!scrapedProduct || isLoading">
       <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
       {{ isLoading ? 'Updating...' : 'Update Item Data' }}
     </button>

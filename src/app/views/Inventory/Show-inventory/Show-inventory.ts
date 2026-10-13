@@ -259,7 +259,7 @@ export class ShowInventoryComponent implements OnInit {
 
   GetAllWhereReadyToPublish() {
     this.isLoading = true;
-    this.http.getAllData(`Inventory/GetAllWhereReadyToPublish/${this.businessId}`).subscribe(
+    this.http.getAllData(`Inventory/GetAllCompleted/${this.businessId}`).subscribe(
       (res: any) => {
         console.log(res);
         this.inventory = (res as any[]).map(item => new InventoryModel({
@@ -691,9 +691,13 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
   imagesForCurrentAlbum: string = '';
+  editingImage: any = null;
+  savingEditedImage = false;
+
   showAlbumImages() {
     const albumImages = this.inventory.find(inv => inv.item?.itemId === this.idItemForBindWithImages)?.item?.images || [];
     this.imagesForCurrentAlbum = albumImages[0]?.imageUrl || '';
+    this.editingImage = albumImages[0] ?? null;
     this.openModal(this.imagesForCurrentAlbum);
   }
   modalVisible: boolean = false;
@@ -714,17 +718,18 @@ export class ShowInventoryComponent implements OnInit {
   rotation = 0;
 
   openModal(url: string) {
-    const imgUrl = url;
-    if (!imgUrl) return;
+    if (!url) return;
+    this.zoom = 1;
+    this.rotation = 0;
+    this.translateH = 0;
+    this.translateV = 0;
+    this.updateTransform();
 
-    this.convertImageToBase64(imgUrl).then(base64 => {
+    this.convertImageToBase64(url).then(base64 => {
       this.currentImageBase64 = base64;
       this.croppedImage = base64;
       this.modalVisible = true;
-
-      setTimeout(() => {
-        this.cdr.detectChanges();
-      }, 0);
+      setTimeout(() => this.cdr.detectChanges(), 0);
     });
   }
 
@@ -760,6 +765,8 @@ export class ShowInventoryComponent implements OnInit {
       translateV: this.translateV
     };
   }
+
+  
   onMouseDown(event: MouseEvent) {
     this.isDragging = true;
     this.startX = event.clientX;
@@ -1735,13 +1742,13 @@ export class ShowInventoryComponent implements OnInit {
     );
   }
 
+  galleryItemId?: number;
+  savingRotated = false;
 
-
-  ShowAllImages(images: any[] | undefined) {
-    console.log("bgv")
+  ShowAllImages(images: any[] | undefined, itemId?: number) {
     if (!images || images.length === 0) return;
-
-    this.selectedImages = images;
+    this.selectedImages = images;           // نفس المصفوفة الموجودة في الكارت
+    this.galleryItemId = itemId;
     this.selectedImageIndex = 0;
     this.imagesModalVisible = true;
   }
@@ -2041,6 +2048,169 @@ export class ShowInventoryComponent implements OnInit {
 
     this.currentScrapedImageIndex =
       (this.currentScrapedImageIndex - 1 + images.length) % images.length;
+  }
+
+
+  private dataUrlToFile(dataUrl: string, fileName: string): File {
+    const [meta, data] = dataUrl.split(',');
+    const mime = meta.match(/:(.*?);/)?.[1] ?? 'image/png';
+    const bytes = atob(data);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new File([arr], fileName, { type: mime });
+  }
+
+  /**
+   * حفظ الصورة المعدّلة على السيرفر
+   * @param replace true = استبدال الصورة الأصلية، false = إضافتها كصورة جديدة
+   */
+  saveEditedImage(replace: boolean) {
+    const itemId = this.idItemForBindWithImages;
+    if (!this.croppedImage || !itemId) return;
+
+    this.savingEditedImage = true;
+
+    const ext = this.croppedImage.startsWith('data:image/jpeg') ? 'jpg' : 'png';
+    const file = this.dataUrlToFile(this.croppedImage, `edited-${itemId}-${Date.now()}.${ext}`);
+
+    const form = new FormData();
+    form.append('Images', file, file.name);
+
+    this.http.putData(`Inventory/BindImagesWithItem/${itemId}`, form, true).subscribe({
+      next: (res: any) => {
+        const item = this.inventory.find(el => el.item?.itemId === itemId)?.item;
+        if (item) item.images.push(...(res?.newImages ?? []));
+
+        const oldId = this.editingImage?.itemImageId;
+        if (replace && oldId) {
+          this.http.deleteData(`Inventory/DeleteImage/${oldId}`).subscribe({
+            next: () => {
+              if (item) item.images = item.images.filter((img: any) => img.itemImageId !== oldId);
+              this.finishSaveEdited('Image replaced successfully.');
+            },
+            error: () => this.finishSaveEdited('Edited image saved, but the old image could not be deleted.'),
+          });
+        } else {
+          this.finishSaveEdited('Edited image saved as a new image.');
+        }
+      },
+      error: (err) => {
+        console.error('Error saving edited image:', err);
+        this.savingEditedImage = false;
+        this.toastMessage.set('Error saving the edited image.');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private finishSaveEdited(message: string) {
+    this.savingEditedImage = false;
+    this.modalVisible = false;
+    this.editingImage = null;
+    this.toastMessage.set(message);
+    this.toastVisible.set(true);
+    this.cdr.detectChanges();
+  }
+
+  /** تنزيل الصورة المعدّلة على الجهاز (file-saver مستورد عندك أصلاً) */
+  downloadEditedImage() {
+    if (!this.croppedImage) return;
+    const ext = this.croppedImage.startsWith('data:image/jpeg') ? 'jpg' : 'png';
+    const file = this.dataUrlToFile(this.croppedImage, `edited-image.${ext}`);
+    saveAs(file, file.name);
+  }
+
+
+  private rotateImageToFile(url: string, degrees: number): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const rad = (degrees * Math.PI) / 180;
+        const swap = degrees === 90 || degrees === 270;
+        const canvas = document.createElement('canvas');
+        canvas.width = swap ? img.naturalHeight : img.naturalWidth;
+        canvas.height = swap ? img.naturalWidth : img.naturalHeight;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('Canvas not supported');
+        ctx.fillStyle = '#fff';                       // خلفية بيضاء بدل الشفافية
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(rad);
+        ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
+        canvas.toBlob(
+          blob => blob
+            ? resolve(new File([blob], `rotated-${Date.now()}.jpg`, { type: 'image/jpeg' }))
+            : reject('Failed to export image'),
+          'image/jpeg',
+          0.92
+        );
+      };
+      img.onerror = () => reject('Could not load image (CORS?)');
+      img.src = url;
+    });
+  }
+
+  /** حفظ التدوير: رفع الصورة المدوّرة ثم حذف الأصلية واستبدالها في نفس المكان */
+  async saveRotatedImage(rotInput: HTMLInputElement, zoomInput: HTMLInputElement) {
+    const degrees = ((rotInput.valueAsNumber % 360) + 360) % 360;
+    const current = this.selectedImages[this.selectedImageIndex];
+    const itemId = current?.itemId ?? this.galleryItemId;
+    if (!degrees || !current || !itemId) return;
+
+    this.savingRotated = true;
+    this.cdr.detectChanges();
+
+    try {
+      const file = await this.rotateImageToFile(current.imageUrl, degrees);
+      const form = new FormData();
+      form.append('Images', file, file.name);
+
+      this.http.putData(`Inventory/BindImagesWithItem/${itemId}`, form, true).subscribe({
+        next: (res: any) => {
+          const newImage = res?.newImages?.[0];
+          if (!newImage) { this.finishRotate('Image saved, but no data returned.'); return; }
+
+          this.http.deleteData(`Inventory/DeleteImage/${current.itemImageId}`).subscribe({
+            next: () => {
+              // استبدال الصورة في نفس الموقع (يتحدث الكارت تلقائياً لأنها نفس المصفوفة)
+              this.selectedImages.splice(this.selectedImageIndex, 1, newImage);
+              rotInput.valueAsNumber = 0;
+              zoomInput.valueAsNumber = 1;
+              this.finishRotate('Rotated image saved successfully.');
+            },
+            error: () => {
+              this.selectedImages.push(newImage);
+              this.finishRotate('Rotated image saved, but the original could not be deleted.');
+            },
+          });
+        },
+        error: () => this.finishRotate('Error saving rotated image.'),
+      });
+    } catch (e) {
+      console.error(e);
+      this.finishRotate('Could not process the image (it may be blocked by CORS).');
+    }
+  }
+
+  private finishRotate(message: string) {
+    this.savingRotated = false;
+    this.toastMessage.set(message);
+    this.toastVisible.set(true);
+    this.cdr.detectChanges();
+  }
+
+  /** فتح الصورة الحالية في الـ cropper للقص */
+  openCropperFromGallery() {
+    const current = this.selectedImages[this.selectedImageIndex];
+    if (!current) return;
+    this.editingImage = current;
+    this.idItemForBindWithImages = current.itemId ?? this.galleryItemId;
+    this.imagesModalVisible = false;
+    this.openModal(current.imageUrl);
   }
 
 

@@ -102,7 +102,8 @@ import {
   cilFullscreen,
   cilZoomIn,
   cilZoomOut,
-  cilReload
+  cilReload,
+  cilCrop
 } from '@coreui/icons';
 
 import { signet } from './signet';
@@ -214,7 +215,8 @@ export const iconSubset = {
 cilFullscreen,
 cilZoomIn,
 cilZoomOut,
-cilReload
+cilReload,
+cilCrop
 };
 
 export enum IconSubset {
@@ -323,7 +325,8 @@ export enum IconSubset {
   cilFullscreen = 'cil-fullscreen',
    cilZoomIn= 'cil-zoom-in',
    cilZoomOut = 'cil-zoom-out',
-   cilReload = 'cil-reload'
+   cilReload = 'cil-reload',
+   cilCrop = 'cil-crop'
 
 }
 

@@ -1,11 +1,12 @@
-<div class="apx" [attr.dir]="dir()" [attr.lang]="lang()">
+<!-- الاتجاه واللغة مطبّقان على عنصر المكوّن نفسه (host) من main-page.component.ts -->
+<div class="apx">
 
   <!-- ================= Navbar ================= -->
   <header class="apx-nav-wrap" [class.scrolled]="scrolled">
     <div class="container">
       <nav class="navbar navbar-expand-lg apx-navbar" [attr.aria-label]="t().nav.aria">
         <a class="navbar-brand apx-brand" href="#" (click)="go('home', $event)" [attr.aria-label]="t().nav.brandAria">
-          <img viewBox="0 0 32 32" aria-hidden="true" height="50" width="50"
+          <img class="apx-logo" alt="Apx" width="50" height="50"
             src="https://res.cloudinary.com/dianvimfq/image/upload/v1766428830/Inventory_uploads/Logo_3c405b69-11db-4309-aedb-c49259b42632_c9nsrj.jpg" />
         </a>
 
@@ -74,7 +75,7 @@
 
         <div class="col-lg-6 text-dark">
           <div class="hero-visual">
-            <img viewBox="0 0 32 32" aria-hidden="true" height="500" width="500"
+            <img class="hero-logo" [attr.alt]="t().hero.artAria" width="500" height="500"
               src="https://res.cloudinary.com/dianvimfq/image/upload/v1766428830/Inventory_uploads/Logo_3c405b69-11db-4309-aedb-c49259b42632_c9nsrj.jpg" />
             <div class="float-card fc1">
               <div class="fc-row">
@@ -317,7 +318,7 @@
 @if (loginOpen) {
 <div class="modal-backdrop show apx-backdrop"></div>
 <div class="modal d-block apx-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="authTitle"
-  [attr.dir]="dir()" [attr.lang]="lang()" (click)="closeLogin()">
+  (click)="closeLogin()">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">

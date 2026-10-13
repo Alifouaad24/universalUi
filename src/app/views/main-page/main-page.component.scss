@@ -1,7 +1,8 @@
 /* =========================================================
-   Apx Landing — Angular + Bootstrap 5 (RTL / LTR)
+   Apx Landing — Angular + CoreUI/Bootstrap 5 (RTL / LTR)
    الأنماط محصورة في هذا المكوّن (View Encapsulation)
-   الاتجاه واللغة يُضبطان من LanguageService على عنصر <html>
+   الاتجاه واللغة مطبّقان على عنصر المكوّن نفسه (host)
+   فلا تتأثر بقية صفحات التطبيق (لوحة التحكم)
    ========================================================= */
 
 :host {
@@ -21,25 +22,26 @@
 
   display: block;
   font-family: var(--font-body);
+  text-align: start;
 }
 
 /* ===================== Language (EN) ===================== */
-/* خطوط وتباعد مناسبة للإنجليزية عند lang="en" */
-:host-context([lang="en"]) {
+/* :host([...]) يفحص عنصر المكوّن فقط (وليس <html>) */
+:host([lang="en"]) {
   --font-head: "Readex Pro", "Inter", "Segoe UI", Roboto, sans-serif;
   --font-body: "Inter", "Readex Pro", "Segoe UI", Roboto, sans-serif;
   --body-lh: 1.7;
 }
 
 /* التباعد السالب بين الحروف يكسر اتصال الحروف العربية، لذا يُطبَّق على الإنجليزية فقط */
-:host-context([lang="en"]) .apx-hero h1 { letter-spacing: -.5px; }
+:host([lang="en"]) .apx-hero h1 { letter-spacing: -.5px; }
 
 /* الأسهم الاتجاهية: arrowLeft تشير للأمام في العربية وتنقلب في الإنجليزية */
 apx-icon.dir-arrow {
   display: inline-flex;
   transition: transform .15s ease;
 }
-:host-context([dir="ltr"]) apx-icon.dir-arrow { transform: scaleX(-1); }
+:host([dir="ltr"]) apx-icon.dir-arrow { transform: scaleX(-1); }
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-head);
@@ -213,6 +215,15 @@ section { scroll-margin-top: 90px; }
   &.light, &.light:hover { color: #fff; }
 }
 
+/* شعار الـ Navbar (صورة) */
+.apx-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+}
+
 .apx-toggler {
   border: 0;
   padding: .45rem .6rem;
@@ -313,6 +324,18 @@ section { scroll-margin-top: 90px; }
 }
 
 .hero-visual { position: relative; max-width: 480px; margin-inline: auto; }
+
+/* صورة الشعار في الـ Hero: تتجاوب مع العرض بدل 500px ثابتة */
+.hero-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 28px;
+  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .35));
+}
+
 .apex-art { width: 100%; display: block; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .35)); }
 .apex-art .layer { transform-origin: 50% 100%; animation: apxRise 1s cubic-bezier(.2, .7, .2, 1) both; }
 .apex-art .l2 { animation-delay: .15s; }
@@ -330,6 +353,7 @@ section { scroll-margin-top: 90px; }
   border: 1px solid rgba(255, 255, 255, .2);
   box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .55);
   font-size: .9rem;
+  color: #fff;
   animation: apxFade .6s 1s both;
   small { display: block; color: #C7CCE8; }
   b { display: block; font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; }
@@ -353,7 +377,7 @@ section { scroll-margin-top: 90px; }
     background: linear-gradient(270deg, var(--cyan), #818CF8);
   }
 }
-:host-context([dir="ltr"]) .bar span { background: linear-gradient(90deg, var(--cyan), #818CF8); }
+:host([dir="ltr"]) .bar span { background: linear-gradient(90deg, var(--cyan), #818CF8); }
 
 @keyframes apxRise { from { transform: translateY(40px) scaleY(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes apxFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -434,7 +458,7 @@ section { scroll-margin-top: 90px; }
   p { color: #D9DCF7; margin-bottom: 1.25rem; }
   .svc-icon { background: rgba(255, 255, 255, .16); color: #fff; }
 }
-:host-context([dir="ltr"]) .svc-feature { --glow-x: 0%; }
+:host([dir="ltr"]) .svc-feature { --glow-x: 0%; }
 
 .svc-points {
   list-style: none;
@@ -689,6 +713,47 @@ section { scroll-margin-top: 90px; }
 @media (max-width: 575.98px) {
   .apx-modal .modal-header { padding: 1.5rem 1.25rem 0; }
   .apx-modal .modal-body { padding: 1rem 1.25rem 1.5rem; }
+}
+
+/* =====================================================================
+   RTL fixes: الـ CSS العام (CoreUI/Bootstrap) نسخة LTR،
+   فهذه العناصر تحتاج قلباً يدوياً داخل صفحة عربية
+   ===================================================================== */
+:host([dir="rtl"]) {
+  // سهم القائمة المنسدلة على اليسار
+  .form-select {
+    background-position: left .75rem center;
+    padding-right: 1rem;
+    padding-left: 2.25rem;
+  }
+
+  // مربعات "تذكرني" و"أوافق على الشروط"
+  .form-check {
+    padding-left: 0;
+    padding-right: 1.5em;
+    .form-check-input {
+      float: right;
+      margin-left: 0;
+      margin-right: -1.5em;
+    }
+  }
+
+  // حقل كلمة المرور + زر العين
+  .input-group > .form-control { border-radius: 0 12px 12px 0; }
+  .input-group > .btn-eye {
+    border-radius: 12px 0 0 12px;
+    margin-left: 0;
+    margin-right: -1px;
+  }
+
+  // زر القائمة في الجوال
+  .navbar-toggler { margin-left: 0; }
+}
+
+/* زوايا مجموعة كلمة المرور في الإنجليزية */
+:host([dir="ltr"]) {
+  .input-group > .form-control { border-radius: 12px 0 0 12px; }
+  .input-group > .btn-eye { border-radius: 0 12px 12px 0; }
 }
 
 /* ===================== Reduced motion ===================== */

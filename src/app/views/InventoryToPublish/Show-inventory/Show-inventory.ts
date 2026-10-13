@@ -140,6 +140,7 @@ export class ShowInventoryComponent implements OnInit {
     this.getCategories()
     this.getSizes()
     this.getPlatforms()
+    this.getSellingPlatforms()   // ← جديد
     this.getItemConditions()
   }
 
@@ -1713,6 +1714,7 @@ export class ShowInventoryComponent implements OnInit {
       }
     });
 
+
     this.http.putData(`Inventory/BindImagesWithItem/${this.currentItemId}`, form, true)
       .subscribe({
         next: (res: any) => {
@@ -1729,6 +1731,84 @@ export class ShowInventoryComponent implements OnInit {
           this.uploadingImages = false;
         }
       });
+  }
+
+  /////////////////////////
+  // ===================== اختيار منصة النشر =====================
+  sellingPlatforms: { platform_id: number; description: string; logoUrl?: string }[] = [];
+  loadingSellingPlatforms = false;
+  showPlatformPicker = false;
+  pickerInventory?: InventoryModel;
+  publishedPlatformIds = new Set<number>();
+  loadingPublished = false;
+
+  getSellingPlatforms() {
+    this.loadingSellingPlatforms = true;
+    this.http.getAllData(`Inventory/GetSellingPlatforms/${this.businessId}`).subscribe({
+      next: (res: any) => {
+        this.sellingPlatforms = res ?? [];
+        this.loadingSellingPlatforms = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingSellingPlatforms = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** يفتح نافذة اختيار المنصة لهذا المنتج */
+  openPlatformPicker(inv: InventoryModel) {
+    this.pickerInventory = inv;
+    this.publishedPlatformIds = new Set();
+    this.showPlatformPicker = true;
+
+    if (!inv.inventory_id) return;
+    this.loadingPublished = true;
+    this.http.getAllData(`Inventory/PublishedPlatforms/${inv.inventory_id}`).subscribe({
+      next: (ids: any) => {
+        this.publishedPlatformIds = new Set<number>(ids ?? []);
+        this.loadingPublished = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingPublished = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** يغلق نافذة الاختيار ويفتح نافذة المنصة المناسبة */
+  choosePlatform(platform: { platform_id: number; description: string }) {
+    const inv = this.pickerInventory;
+    if (!inv) return;
+
+    this.showPlatformPicker = false;
+
+    // ننتظر انتهاء حركة إغلاق النافذة الأولى قبل فتح الثانية
+    setTimeout(() => {
+      switch (this.platformKind(platform)) {
+        case 'ebay':
+          this.ShowDetailsModal(inv);
+          break;
+        case 'marketplace':
+          this.MarketPlaceOfferUrl = '';
+          this.showMarketPlaceModal(inv.inventory_id);
+          break;
+        default:
+          this.toastMessage.set(`${platform.description} is not supported yet.`);
+          this.toastVisible.set(true);
+      }
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
+  /** تحديد نوع المنصة من اسمها */
+  private platformKind(p: { description: string }): 'ebay' | 'marketplace' | 'other' {
+    const name = (p.description ?? '').toLowerCase();
+    if (name.includes('ebay')) return 'ebay';
+    if (name.includes('market') || name.includes('facebook')) return 'marketplace';
+    return 'other';
   }
 }
 
