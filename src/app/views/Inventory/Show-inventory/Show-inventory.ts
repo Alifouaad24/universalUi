@@ -766,7 +766,7 @@ export class ShowInventoryComponent implements OnInit {
     };
   }
 
-  
+
   onMouseDown(event: MouseEvent) {
     this.isDragging = true;
     this.startX = event.clientX;
@@ -1896,7 +1896,7 @@ export class ShowInventoryComponent implements OnInit {
         console.log('Scraped product from Home Depot:', res);
 
         // الرد الآن هو المنتج نفسه مباشرة (وليس res.products)
-        this.scrapedProduct = res?.item_id ? this.normalizeProduct(res) : null;
+        this.scrapedProduct = res?.id ? this.normalizeProduct(res) : null;
         if (!this.scrapedProduct) {
           alert('No product found for this UPC');
         }
@@ -1922,22 +1922,32 @@ export class ShowInventoryComponent implements OnInit {
       ? p.images.flat().filter((x: any) => typeof x === 'string' && x)
       : [];
 
-    const options = (p.availability?.options ?? []).map((o: any) => ({
-      ...o,
-      // إزالة التواريخ المكررة مثل ["Oct 09", "Oct 09"]
-      dates: [...new Set<string>(o.estimated_dates ?? [])].join(' - '),
-      cost: !o.cost_note || o.cost_note === '0.0' ? 'Free' : o.cost_note,
-    }));
-
     return {
       ...p,
+      item_id: p.id ?? p.item_id ?? null,
+      model_number: p.model_number ?? null,
+      upc: p.upc ?? null,
+      sku: p.sku ?? p.store_sku ?? null,
+      min_order_qty: p.minimum_order_quantity ?? p.min_order_qty ?? null,
+      saves_count: p.saves_count ?? null,
+      url: p.url ?? p.link ?? null,
+      name: p.name ?? '',
+
+      avg_rating: p.rating?.average ?? p.avg_rating ?? null,
+      review_count: p.rating?.count ?? p.review_count ?? 0,
+
+      pricing: {
+        current_price: p.pricing?.current_price ?? p.pricing?.price ?? null,
+      },
+
       images,
-      brandName: typeof p.brand === 'string' ? p.brand : p.brand?.name ?? '',
-      brandUrl: typeof p.brand === 'object' ? p.brand?.url ?? null : null,
+      brandName: typeof p.brand === 'string' ? p.brand : (p.brand?.name ?? ''),
+      brandUrl: (typeof p.brand === 'object' ? p.brand?.url : null) ?? p.brand_link ?? null,
+
       highlights: p.highlights ?? [],
       breadcrumbs: p.breadcrumbs ?? [],
       specifications: p.specifications ?? [],
-      availability: p.availability ? { ...p.availability, options } : null,
+      availability: p.availability ?? null,
     };
   }
 
@@ -1975,8 +1985,7 @@ export class ShowInventoryComponent implements OnInit {
       description: p.name,
       brand: p.brandName ?? (typeof p.brand === 'string' ? p.brand : p.brand?.name) ?? '',
       model: p.model_number,
-      itemPrice: parseFloat(p.pricing?.current_price) || 0,
-      images: (p.images || []).flat(),
+      itemPrice: Number(p.pricing?.current_price) || 0, images: (p.images || []).flat(),
       //////////////////////////////////////////////
       details: p.description,
       sku: p.sku,
