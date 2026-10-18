@@ -58,12 +58,17 @@
               <span class="code" *ngIf="order.customer.customerCode">{{ order.customer.customerCode }}</span>
             </div>
           </div>
-          <button *ngIf="order?.orderStatus?.orderStatusId != 17" type="button" class="btn btn-warning"
-  [disabled]="isDelivering(order.globalOrderId)"
-  (click)="confirmDeliver(order)">
-  <span *ngIf="isDelivering(order.globalOrderId)" class="btn-spinner"></span>
-  <ng-container *ngIf="!isDelivering(order.globalOrderId)"> سُلمت للمندوب </ng-container>
-</button>
+          <div>
+            <button *ngIf="order?.orderStatus?.orderStatusId != 17" type="button" class="btn btn-warning"
+              [disabled]="isDelivering(order.globalOrderId)" (click)="confirmDeliver(order)">
+              <span *ngIf="isDelivering(order.globalOrderId)" class="btn-spinner"></span>
+              <ng-container *ngIf="!isDelivering(order.globalOrderId)"> سُلمت للمندوب </ng-container>
+            </button>
+            <button *ngIf="order?.orderStatus?.orderStatusId != 17" type="button" class="btn btn-success text-light me-1 ms-1"
+              (click)="ShareOrderInfoWithShare(order)">
+              <c-icon  name="cilShare"></c-icon>
+            </button>
+          </div>
         </div>
 
         <hr />
