@@ -653,12 +653,12 @@ export class ShowInventoryComponent implements OnInit {
     this.isLoading = true;
     const realPrice = this.PriceFOREDIT.trim().replace(/\$/g, '').length > 0 ? this.PriceFOREDIT.replace(/\$/g, '') + '$' : undefined;
     const payload = {
-      categoryId: Number(this.CategoryId),
+      categoryId: this.CategoryId != null ? Number(this.CategoryId) : null,
       sizeId: this.SizeId,
       sKU: this.SKUFOREDIT,
       upc: this.UPCFOREDIT,
       platformId: this.PlatformId,
-      itemConditionId: Number(this.ItemConditionId),
+      itemConditionId: this.ItemConditionId != null ? Number(this.ItemConditionId) : null,
       title: this.title,
       itemPrice: this.basePrice,
       warehousePrice: Number(this.PriceFOREDIT.replace('$', '')),
@@ -2058,7 +2058,6 @@ export class ShowInventoryComponent implements OnInit {
     this.currentScrapedImageIndex =
       (this.currentScrapedImageIndex - 1 + images.length) % images.length;
   }
-
 
   private dataUrlToFile(dataUrl: string, fileName: string): File {
     const [meta, data] = dataUrl.split(',');

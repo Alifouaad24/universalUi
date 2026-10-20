@@ -272,8 +272,8 @@ export class ShowFeaturesComponent implements OnInit {
       notes: this.notes,
       statusId: this.selectedOrderStatusId,
     };
-
-    this.http.putData(`Orders/UpdateETaskOrder/${orderId}`, updatedOrder).subscribe(
+    var servic = localStorage.getItem('selectedServiceId')
+    this.http.putData(`Orders/UpdateETaskOrder/${orderId}/${servic}`, updatedOrder).subscribe(
       () => {
         this.toastMessage.set('Order updated successfully');
         this.toastVisible.set(true);
@@ -371,5 +371,22 @@ export class ShowFeaturesComponent implements OnInit {
       case 'closed': return 'danger';
       default: return 'secondary';
     }
+  }
+
+  getActiveDuration(
+    startDate: string | Date | null | undefined,
+    endDate?: string | Date | null
+  ): number {
+    if (!startDate) return 0;
+
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    const diff = end.getTime() - start.getTime();
+
+    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   }
 }

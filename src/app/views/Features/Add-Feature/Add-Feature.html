@@ -72,6 +72,10 @@
           </option>
         </select>
       </div>
+      <div class="col-md-6 mb-3">
+        <label for="deadLine" class="form-label">Deadline</label>
+        <input type="date" id="deadLine" name="deadLine" class="form-control" [(ngModel)]="deadLine" />
+      </div>
       <div class="col-md-6 mb-3" style="visibility: hidden;">
         <label class="form-label">Assignee Type</label>
         <select class="form-select" [(ngModel)]="selectedAssigneeTypeId"
@@ -80,7 +84,6 @@
           <option *ngFor="let t of assignTypes" [ngValue]="t.assign_typeId">{{ t.type }}</option>
         </select>
       </div>
-
     </div>
 
     <hr class="my-4 text-secondary opacity-25" />

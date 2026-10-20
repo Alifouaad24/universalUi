@@ -37,6 +37,10 @@ export class GlobalOrder {
   modified_by?: string | null;
   createdDate!: string;
 
+  deadLine?: string;
+  startTaskProgressdDate?: string;
+  endTaskDate?: string;
+
   consumerBusiness?: any | null;
   consumerBusiness_id?: number | null;
 

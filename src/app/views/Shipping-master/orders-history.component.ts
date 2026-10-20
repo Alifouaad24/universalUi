@@ -175,17 +175,16 @@ private buildOrderText(order: GlobalOrderModel, imageUrl?: string | null): strin
   // بيانات العميل
   if (order.customer) {
     lines.push('');
-    lines.push('👤 *معلومات العميل*');
-    if (order.customer.customerName)   lines.push(`الاسم: ${order.customer.customerName}`);
-    if (order.customer.customerCode) lines.push(`كود العميل: ${order.customer.customerCode}`);
-    if (order.customer.customerMobile) lines.push(`الهاتف: ${order.customer.customerMobile}`);
+    if (order.customer.customerCode) lines.push(`${order.customer.customerCode}`);
+    if (order.customer.customerName)   lines.push(`${order.customer.customerName}`);
+    if (order.customer.customerMobile) lines.push(`${order.customer.customerMobile}`);
 
     const addr = order.customer.address?.[0];
     if (addr) {
       const parts = [addr.city?.description, addr.area?.description, addr.landMark]
         .filter(Boolean)
         .join(' - ');
-      if (parts) lines.push(`العنوان: ${parts}`);
+      if (parts) lines.push(`${parts}`);
     }
     
   }

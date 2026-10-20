@@ -49,7 +49,7 @@ export class AddEditFeatureComponent implements OnInit {
   selectedBusinessId?: number;
   selectedOrderStatusId?: number;
   selectedCustomerId?: number;
-
+  deadLine = null
   scheduleDate: string = '';
   scheduleTime: string = '';
 
@@ -329,6 +329,7 @@ export class AddEditFeatureComponent implements OnInit {
       AssignerId: this.selectedAssignerId,
       AssigneeTypeId: this.selectedAssigneeTypeId,
       AssigneeId: this.selectedAssigneeId,
+      deadLine: this.deadLine
     };
 
     console.log(payLoad)

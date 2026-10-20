@@ -200,30 +200,56 @@
                     </span>
                   </div>
                 </div>
+                <div *ngIf="order?.startTaskProgressdDate != null">
+                  <small class="text-muted">In progress</small>
+                  <div>
+                    <span class="badge bg-primary">
+                      {{ order?.startTaskProgressdDate | date:'yyyy-MM-dd' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div *ngIf="order?.deadLine">
+                  <small class="text-muted">Deadline</small>
+                  <div>
+                    <span class="badge bg-primary">
+                      {{ order?.deadLine | date:'yyyy-MM-dd' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div *ngIf="order?.startTaskProgressdDate">
+                  <small class="text-muted">Active Duration</small>
+                  <div>
+                    <span class="badge bg-primary">
+                      {{ getActiveDuration(order?.startTaskProgressdDate, order?.endTaskDate) }} days
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Right Side (Buttons) -->
-            <div class="col-lg-3 text-end">
-              <button class="btn btn-primary me-2" (click)="openEditModal(order)">
-                <c-icon name="cil-pencil"></c-icon>
-              </button>
-              <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
-                <c-icon name="cil-trash"></c-icon>
-              </button>
-              <button *ngIf="order.orderStatus?.statusEn === 'Done'" class="btn btn-info"
-                (click)="SetStatusClosed(order.globalOrderId)">
-                <c-icon name="cilCheck"></c-icon>
-              </button>
-              <button *ngIf="order.orderStatus?.statusEn === 'In progress'" class="btn btn-warning"
-                (click)="SetStatusCompleted(order.globalOrderId)">
-                <c-icon name="cilCheck"></c-icon>
-              </button>
-            </div>
+          <!-- Right Side (Buttons) -->
+          <div class="col-lg-3 text-end">
+            <button class="btn btn-primary me-2" (click)="openEditModal(order)">
+              <c-icon name="cil-pencil"></c-icon>
+            </button>
+            <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
+              <c-icon name="cil-trash"></c-icon>
+            </button>
+            <button *ngIf="order.orderStatus?.statusEn === 'Done'" class="btn btn-info"
+              (click)="SetStatusClosed(order.globalOrderId)">
+              <c-icon name="cilCheck"></c-icon>
+            </button>
+            <button *ngIf="order.orderStatus?.statusEn === 'In progress'" class="btn btn-warning"
+              (click)="SetStatusCompleted(order.globalOrderId)">
+              <c-icon name="cilCheck"></c-icon>
+            </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- Empty State -->
