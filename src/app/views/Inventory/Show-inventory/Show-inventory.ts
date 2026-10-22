@@ -1945,8 +1945,17 @@ export class ShowInventoryComponent implements OnInit {
       brandUrl: (typeof p.brand === 'object' ? p.brand?.url : null) ?? p.brand_link ?? null,
 
       highlights: p.highlights ?? [],
-      breadcrumbs: p.breadcrumbs ?? [],
-      specifications: p.specifications ?? [],
+      breadcrumbs: (p.breadcrumbs ?? []).map((b: any) => ({
+        label: b.label ?? b.name,
+        url: b.url ?? b.link,
+      })),
+      specifications: (p.specifications ?? []).map((g: any) => ({
+        group: g.group,
+        attributes: (g.attributes ?? g.specs ?? []).map((a: any) => ({
+          label: a.label ?? a.name,
+          detail: a.detail ?? a.value,
+        })),
+      })),
       availability: p.availability ?? null,
     };
   }
