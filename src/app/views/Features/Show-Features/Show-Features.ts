@@ -86,7 +86,7 @@ export class ShowFeaturesComponent implements OnInit {
   myName: string = '';
 
   showEditModal = false;
-
+  todayTasks = false
   completedCount = 0;
   progressCount = 0;
   newCount = 0;
@@ -104,9 +104,7 @@ export class ShowFeaturesComponent implements OnInit {
   // -------- دالة جديدة: بتتنادى من زرار الـ toggle --------
   selectTaskView(mine: boolean) {
     this.myTasksOnly = mine;
-    // TODO: لما تتحدد الـ API المخصصة لـ "My Tasks" (فلترة server-side
-    // حسب الـ assignee)، نستبدل النداء ده بيها. حاليًا placeholder بيستخدم
-    // نفس getAllOrders الموجودة.
+    this.todayTasks = false
     this.getOrderStatuses()
     this.getAllOrders();
 
@@ -157,6 +155,33 @@ export class ShowFeaturesComponent implements OnInit {
       console.error(error);
       this.loading = false;
     });
+  }
+
+  getTodayTasks() {
+    this.myTasksOnly = null
+    this.getOrderStatuses()
+    this.todayTasks = true
+    this.isLoading = true;
+    const businessId = localStorage.getItem('businessId');
+    const serviceId = localStorage.getItem('selectedServiceId');
+    this.http.getAllData(`Orders/${businessId}/${serviceId}`).subscribe(
+      (res: any) => {
+        console.log(res)
+        this.orders = (res as any[]).map(item => new GlobalOrder(item));
+        this.allCountOfTasks = this.orders.length;
+        this.allOrders = this.orders;
+        this.allOrders = this.allOrders.filter(o => (o.comments?.some(c => !c.isRead)));
+        this.calculateStats();
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      (err) => {
+        this.isLoading = false;
+        this.message = 'Error loading data';
+        this.cdr.detectChanges();
+      }
+    );
+    this.cdr.detectChanges();
   }
 
   getAllOrders() {
