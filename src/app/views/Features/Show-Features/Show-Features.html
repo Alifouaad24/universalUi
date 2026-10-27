@@ -42,7 +42,7 @@
     <button type="button" class="btn px-4" [ngClass]="todayTasks === true ? 'btn-success' : 'btn-outline-success'"
       (click)="getTodayTasks()">
       <i class="fas fa-layer-group me-2"></i>
-      Today Tasks
+      Un read comments
     </button>
   </div>
 </div>
@@ -374,7 +374,7 @@
                     {{ c.addedBy }}
                   </div>
 
-                  <div class="bg-dark rounded-4 px-3 py-2 mt-1 shadow-sm">
+                  <div class="rounded-4 px-3 py-2 mt-1 shadow-sm">
                     {{ c.commentContent }}
                   </div>
 

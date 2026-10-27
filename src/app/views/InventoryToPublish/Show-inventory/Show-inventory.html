@@ -27,16 +27,12 @@
           </select>
         </div>
         <div *ngIf="currentBusinessName.includes('Duty')">
-          <select class="form-select form-select-sm w-auto" #filttered [(ngModel)]="selectedDutyFilter"
-            (change)="filterDutyInventory(filttered.value)">
+          <select class="form-select form-select-sm w-auto" [(ngModel)]="selectedDutyFilter"
+            (ngModelChange)="filterDutyInventory($event)">
             <option value="All">All</option>
-            <option value="needUpdates">Need updates</option>
-            <option value="published">Published</option>
-            <option value="unpublished">Un published On Ebay</option>
-            <option value="unpublishedOnMarketPlace">Un published On MarketPlace</option>
-            <option value="needScrape">Need scrape</option>
-            <option value="Sold">Sold</option>
-            <option value="parcialSold">Partially Sold</option>
+            <option *ngFor="let p of sellingPlatforms" [value]="'unpublished-' + p.platform_id">
+              Not on {{ p.description }}
+            </option>
           </select>
         </div>
       </div>
@@ -53,8 +49,7 @@
         <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
           <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;"
             [ngClass]="{ 'd-none': isAuthInEbay }" />
-          <button class="btn btn-sm"
-            [ngClass]="{ 'btn-danger': !isAuthInEbay, 'btn-success': isAuthInEbay }"
+          <button class="btn btn-sm" [ngClass]="{ 'btn-danger': !isAuthInEbay, 'btn-success': isAuthInEbay }"
             (click)="LogInToEbayDiredty(token.value, token)">
             {{ loginingInToEbay ? 'Logging in...' : isAuthInEbay ? 'Authorized' : 'Login to eBay' }}
           </button>
@@ -120,7 +115,8 @@
           <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
-              <button class="btn btn-sm btn-warning me-1" (click)="ShowEditModal(type.item.itemId, type.inventory_id, type.category_id, type.size_id, 
+              <button class="btn btn-sm btn-warning me-1"
+                (click)="ShowEditModal(type.item.itemId, type.inventory_id, type.category_id, type.size_id, 
                 type.item?.sku, type.item?.upc, type?.sitePrice, type.platform_id, type.Product_name, type.product_description,
                 type.qty, type.item?.carBrand?.carBrandName, type.isProccessedInInventory, type.itemCondition.itemConditionId)">
                 <c-icon name="cil-pencil"></c-icon>
@@ -133,9 +129,12 @@
                 Go to album
               </a> -->
 
-<button class="btn btn-sm btn-info me-1" title="Publish" (click)="openPlatformPicker(type)">
-  <c-icon name="cilTags"></c-icon>
-</button>
+              <button *ngFor="let p of sellingPlatforms" type="button" class="btn btn-sm me-1 mb-1"
+                [ngClass]="isPublishedOn(type, p.platform_id) ? 'btn-success' : 'btn-primary'"
+                [title]="(isPublishedOn(type, p.platform_id) ? 'Published on ' : 'Publish on ') + p.description"
+                (click)="publishOn(type, p)">
+                {{ p.description }}
+              </button>
               <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
                 [disabled]="type.notFound">
@@ -368,45 +367,45 @@
         <input type="text" [(ngModel)]="UPCFOREDIT" class="form-control" />
       </div> -->
     </div>
-        <!-- Images (new uploads) -->
-      <div class="col-md-9">
-        <label class="form-label">{{ isEditMode ? 'Add More Images' : 'Images' }}</label>
+    <!-- Images (new uploads) -->
+    <div class="col-md-9">
+      <label class="form-label">{{ isEditMode ? 'Add More Images' : 'Images' }}</label>
 
-        <div class="border rounded p-3 bg-body-tertiary">
-          <input #fileInput type="file" accept="image/*" multiple class="d-none" (change)="onFilesSelecteds($event)" />
+      <div class="border rounded p-3 bg-body-tertiary">
+        <input #fileInput type="file" accept="image/*" multiple class="d-none" (change)="onFilesSelecteds($event)" />
 
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fileInput.click()">
-              <svg cIcon name="cilCloudUpload" class="me-1"></svg>
-              Select Images
-            </button>
-            <span class="text-muted small" *ngIf="selectedNewImages.length > 0">
-              {{ selectedNewImages.length }} image{{ selectedNewImages.length > 1 ? 's' : '' }} selected
-            </span>
-          </div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fileInput.click()">
+            <svg cIcon name="cilCloudUpload" class="me-1"></svg>
+            Select Images
+          </button>
+          <span class="text-muted small" *ngIf="selectedNewImages.length > 0">
+            {{ selectedNewImages.length }} image{{ selectedNewImages.length > 1 ? 's' : '' }} selected
+          </span>
+        </div>
 
-          <div *ngIf="selectedNewImages.length === 0" class="text-center text-muted small py-3">
-            <svg cIcon name="cilImage" size="lg" class="d-block mx-auto mb-1 opacity-50"></svg>
-            No images selected yet
-          </div>
+        <div *ngIf="selectedNewImages.length === 0" class="text-center text-muted small py-3">
+          <svg cIcon name="cilImage" size="lg" class="d-block mx-auto mb-1 opacity-50"></svg>
+          No images selected yet
+        </div>
 
-          <div class="d-flex flex-wrap gap-2" *ngIf="selectedNewImages.length > 0">
-            <div class="position-relative" style="width: 90px;" *ngFor="let img of selectedNewImages; let i = index">
-              <img [src]="img.previewUrl" class="rounded border w-100" style="height: 90px; object-fit: cover;" />
-              <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle"
-                style="width: 22px; height: 22px; padding: 0; line-height: 1; font-size: 12px; transform: translate(30%, -30%);"
-                (click)="removeImageField(i)">
-                ✕
-              </button>
-            </div>
-          </div>
-          <div *ngIf="selectedNewImages.length > 0" class="mt-3">
-            <button class=" btn btn-success text-light" (click)="BindImagesWithItem()">
-              {{ uploadingImages ? 'Uploading...' : 'Upload' }}
+        <div class="d-flex flex-wrap gap-2" *ngIf="selectedNewImages.length > 0">
+          <div class="position-relative" style="width: 90px;" *ngFor="let img of selectedNewImages; let i = index">
+            <img [src]="img.previewUrl" class="rounded border w-100" style="height: 90px; object-fit: cover;" />
+            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle"
+              style="width: 22px; height: 22px; padding: 0; line-height: 1; font-size: 12px; transform: translate(30%, -30%);"
+              (click)="removeImageField(i)">
+              ✕
             </button>
           </div>
         </div>
+        <div *ngIf="selectedNewImages.length > 0" class="mt-3">
+          <button class=" btn btn-success text-light" (click)="BindImagesWithItem()">
+            {{ uploadingImages ? 'Uploading...' : 'Upload' }}
+          </button>
+        </div>
       </div>
+    </div>
   </c-modal-body>
 
 
@@ -758,7 +757,8 @@
 
             </div>
 
-            <textarea class="form-control mb-0 mt-2" rows="3" [value]="EbayTitle || ''" [(ngModel)]="EbayTitle"></textarea>
+            <textarea class="form-control mb-0 mt-2" rows="3" [value]="EbayTitle || ''"
+              [(ngModel)]="EbayTitle"></textarea>
 
           </div>
 
@@ -979,7 +979,7 @@
 </c-modal>
 
 
-    <!-- ================= Platform Picker ================= -->
+<!-- ================= Platform Picker ================= -->
 <c-modal [(visible)]="showPlatformPicker" alignment="center">
   <c-modal-header>
     <h5 cModalTitle class="mb-0">Choose platform</h5>
@@ -989,10 +989,11 @@
   <c-modal-body>
     <!-- المنتج المختار -->
     <div *ngIf="pickerInventory" class="d-flex align-items-center gap-3 p-2 mb-3 rounded-3 bg-body-tertiary">
-      <img [src]="pickerInventory.item?.images?.[0]?.imageUrl || defaultBusinessLogo"
-        class="rounded border bg-white" style="width: 48px; height: 48px; object-fit: cover;" />
+      <img [src]="pickerInventory.item?.images?.[0]?.imageUrl || defaultBusinessLogo" class="rounded border bg-white"
+        style="width: 48px; height: 48px; object-fit: cover;" />
       <div class="small overflow-hidden">
-        <div class="fw-semibold text-truncate">{{ pickerInventory.item?.itemDescription || pickerInventory.Product_name }}</div>
+        <div class="fw-semibold text-truncate">{{ pickerInventory.item?.itemDescription || pickerInventory.Product_name
+          }}</div>
         <div class="text-muted">#{{ pickerInventory.inventory_id }} · UPC {{ pickerInventory.item?.upc || '-' }}</div>
       </div>
     </div>
@@ -1099,6 +1100,3 @@
     <button class="btn btn-success" (click)="saveItem()">
       Save
     </button>
-
-
-

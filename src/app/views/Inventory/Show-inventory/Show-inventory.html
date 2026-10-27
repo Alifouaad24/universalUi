@@ -35,8 +35,9 @@
           <select class="form-select border-start-0 rounded-end-3" #filttered [(ngModel)]="selectedDutyFilter"
             (change)="filterDutyInventory(filttered.value)">
             <option value="All">All Items</option>
-            <option value="Under proccess">Under Process</option>
-            <option value="Complated">Completed</option>
+            <option value="NoUPC">Missing UPC</option>
+            <option value="NoScrape">Missing Scrape</option>
+            <option value="NoBIO">Missing BIO</option>
           </select>
         </div>
       </div>
@@ -109,10 +110,10 @@
           <!-- BIO : (category + description + itemDetails + basePrice)
              لو ناقص → الضغط يفتح نافذة التعديل -->
           <div class="d-flex flex-column align-items-center rounded-4 px-2 py-2 cursor-pointer" style="min-width: 48px;"
-            [ngClass]="(type.item?.categoryId && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null && type.itemConditionId != null && type.item.carBrandId != null)
-            ? 'bg-success-subtle text-success'
-            : 'bg-danger-subtle text-danger border border-danger-subtle'"
-            [style.cursor]="(type.item?.category?.name?.trim() && type.item?.description?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null) ? 'pointer' : 'pointer'"
+            [title]="missingFields(type).length ? 'Missing: ' + missingFields(type).join(', ') : 'Complete'" [ngClass]="missingFields(type).length === 0
+              ? 'bg-success-subtle text-success'
+              : 'bg-danger-subtle text-danger border border-danger-subtle'"
+            [style.cursor]="(type.item?.category?.name?.trim() && type.item?.itemDescription?.trim() && type.item?.itemDetails?.trim() && type.item?.basePrice != null) ? 'pointer' : 'pointer'"
             (click)="ShowEditModal(type.item!.itemId, type.inventory_id, type.item.categoryId, type.size_id, 
             type.item?.sku, type.item?.upc, type?.sitePrice, type.item.platformId, type.item.itemDescription, type.item.itemDetails,
             type.qty, type.item?.carBrand?.carBrandName, type.isProccessedInInventory, type.itemConditionId, type?.item.basePrice)">
@@ -370,18 +371,19 @@
       </div>
     </div>
     <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
-      <div class="col-md-12" [ngClass]="{ 'border border-danger border-2 rounded': title == null }">
+      <div class="col-md-12">
         <label class="form-label">Title</label>
-        <input type="text" [(ngModel)]="title" class="form-control" />
+        <input type="text" [(ngModel)]="title" class="form-control"
+          [ngClass]="{ 'border border-danger border-2 rounded': !title?.trim() }" />
       </div>
 
     </div>
     <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
-      <div class="col-md-12" [ngClass]="{ 'border border-danger border-2 rounded': descriptionToEdit == null }">
+      <div class="col-md-12">
         <label class="form-label">Description</label>
-        <textarea type="text" [(ngModel)]="descriptionToEdit" class="form-control"></textarea>
+        <textarea [ngClass]="{ 'border border-danger border-2 rounded': !descriptionToEdit?.trim() }" type="text"
+          [(ngModel)]="descriptionToEdit" class="form-control"></textarea>
       </div>
-
     </div>
     <div class="d-flex col-md-12 mb-3 mt-3 gap-3">
       <!-- <div class="col-md-5">
@@ -1057,7 +1059,8 @@
       <div class="row g-3">
         <!-- Start Scraping -->
         <div class="col-12 col-md-12">
-          <button type="button" class="btn btn-primary w-100 py-3" (click)="startScraping()">
+          <button type="button" class="btn btn-primary w-100 py-3"
+            (click)="startScraping(selectedPlatform.description)">
             Start Scraping
           </button>
         </div>
@@ -1098,7 +1101,8 @@
       </div>
       <h5 class="fw-bold mb-1">{{ selectedPlatform?.description }}</h5>
       <p class="text-muted mb-4">Start scraping to get product information.</p>
-      <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping" (click)="startScraping()">
+      <button type="button" class="btn btn-primary w-100 py-3" [disabled]="isScraping"
+        (click)="startScraping(selectedPlatform?.description)">
         <span *ngIf="isScraping" class="spinner-border spinner-border-sm me-2"></span>
         <i *ngIf="!isScraping" class="fas fa-cloud-download-alt me-2"></i>
         {{ isScraping ? 'Scraping...' : 'Start Scraping' }}
@@ -1339,8 +1343,7 @@
       <!-- ========================= -->
       <div class="mt-4">
         <a [href]="scrapedProduct.url" target="_blank" class="btn btn-outline-primary w-100">
-          <i class="fas fa-external-link-alt me-2"></i>View Product on Home Depot
-        </a>
+          <i class="fas fa-external-link-alt me-2"></i>View Product on {{ selectedPlatform?.description }} </a>
       </div>
     </div>
   </c-modal-body>

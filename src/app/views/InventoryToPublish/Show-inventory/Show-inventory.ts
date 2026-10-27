@@ -43,6 +43,7 @@ import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper';
 import { AppConstants } from '../../../shared/constant';
 import { StorageService } from '../../../core/Services/StorageService';
 import { BusinessModel } from '../../../Models/Business/BusinessModel';
+import { catchError, forkJoin, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-button-groups',
@@ -131,7 +132,6 @@ export class ShowInventoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAuthInEbay = this.storage.getWithExpiry('ebayToken') != null ? true : false;
-
     this.businessId = Number(localStorage.getItem('businessId'));
     this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
     console.log('Current MY Business:', this.currentBusiness);
@@ -167,6 +167,7 @@ export class ShowInventoryComponent implements OnInit {
 
 
   getInventory() {
+
     this.isLoading = true;
     this.http.getAllData(`Inventory/GetAllWhereReadyToPublish/${this.businessId}`).subscribe(
       (res: any) => {
@@ -197,6 +198,8 @@ export class ShowInventoryComponent implements OnInit {
         }));
 
         this.tempInventory = [...this.inventory];
+        this.publishedMap.clear();
+        this.loadAllPublished(() => this.cdr.detectChanges());
         this.inventory = this.inventory.filter(inv => !inv.status?.includes('Sold'));
         this.isLoading = false;
         this.selectedFilter = 'All';
@@ -470,42 +473,35 @@ export class ShowInventoryComponent implements OnInit {
   }
   selectedDutyFilter: string = 'All';
 
-  filterDutyInventory(event: string) {
-    this.inventory = [...this.tempInventory];
-
-    const filterValue = event;
+  filterDutyInventory(filterValue: string) {
     this.selectedDutyFilter = filterValue;
-    if (filterValue === 'needUpdates') {
-      this.inventory = this.inventory.filter(inv => !inv.category == null ||
-        inv.itemCondition == null || inv.sitePrice?.replace(/\$/g, '') != inv.item?.basePrice);
-    } else if (filterValue === 'published') {
-      this.inventory = this.inventory.filter(inv => inv.status?.includes('Published'));
-    }
-    else if (filterValue === 'unpublished') {
-      this.inventory = this.inventory.filter(inv => inv.status == null && inv.isProccessedInInventory);
-    }
-    else if (filterValue === 'needScrape') {
-      this.inventory = this.inventory.filter(inv => !inv.isProccessedInInventory);
-    }
-    else if (filterValue === 'Sold') {
-      this.inventory = this.inventory.filter(inv => inv.status === 'Sold');
-    }
-    else if (filterValue === 'parcialSold') {
-      this.inventory = this.inventory.filter(inv => inv.status?.includes('Partially Sold'));
-    }
-    else if (filterValue === 'unpublishedOnMarketPlace') {
-      this.inventory = this.inventory.filter(inv => inv.isProccessedInInventory && !inv.isPublishedOnMarketPlace);
+
+    if (filterValue.startsWith('unpublished-')) {
+      const platformId = Number(filterValue.split('-')[1]);
+
+      const apply = () => {
+        this.inventory = this.tempInventory.filter(inv =>
+          !inv.status?.includes('Sold') &&
+          !this.publishedMap.get(inv.inventory_id!)?.has(platformId)
+        );
+        this.cdr.detectChanges();
+      };
+
+      if (this.publishedMap.size) {
+        apply(); // البيانات محمّلة من قبل
+      } else {
+        this.isLoading = true;
+        this.loadAllPublished(() => {
+          this.isLoading = false;
+          apply();
+        });
+      }
     }
     else {
-      this.inventory = [];
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true
-      });
+      this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
       this.getInventory();
-      this.cdr.detectChanges();
     }
+
     this.cdr.detectChanges();
   }
 
@@ -1059,7 +1055,10 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
         product.status = "Auto Published"
         this.PublishingByEbay = false;
+        this.refreshPublished(product.inventory_id);
         console.error(res);
+        this.cdr.detectChanges();
+
       },
       error: (err) => {
         this.PublishingByEbay = false;
@@ -1067,6 +1066,7 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
         this.cdr.detectChanges();
         alert('Error republishing product: ' + err.message);
+
         console.error(err);
       }
     });
@@ -1437,6 +1437,7 @@ export class ShowInventoryComponent implements OnInit {
         this.toastVisible.set(true);
         this.inventory.find(inv => inv.inventory_id == this.selctedInvId)!.isPublishedOnMarketPlace = res.status;
         this.showMarketPlacePopup = false
+        this.refreshPublished(this.selctedInvId);
         this.cdr.detectChanges();
       },
       (err) => {
@@ -1757,6 +1758,25 @@ export class ShowInventoryComponent implements OnInit {
     });
   }
 
+  publishedMap = new Map<number, Set<number>>();
+
+  loadAllPublished(done: () => void) {
+    const invs = this.tempInventory.filter(inv => inv.inventory_id);
+    if (!invs.length) { done(); return; }
+
+    forkJoin(
+      invs.map(inv =>
+        this.http.getAllData(`Inventory/PublishedPlatforms/${inv.inventory_id}`).pipe(
+          map((ids: any) => ({ id: inv.inventory_id!, ids: (ids ?? []) as number[] })),
+          catchError(() => of({ id: inv.inventory_id!, ids: [] as number[] }))
+        )
+      )
+    ).subscribe(results => {
+      this.publishedMap = new Map(results.map(r => [r.id, new Set(r.ids)]));
+      done();
+    });
+  }
+
   /** يفتح نافذة اختيار المنصة لهذا المنتج */
   openPlatformPicker(inv: InventoryModel) {
     this.pickerInventory = inv;
@@ -1809,6 +1829,26 @@ export class ShowInventoryComponent implements OnInit {
     if (name.includes('ebay')) return 'ebay';
     if (name.includes('market') || name.includes('facebook')) return 'marketplace';
     return 'other';
+  }
+
+  /** هل المنتج منشور على هالمنصة؟ */
+  isPublishedOn(inv: InventoryModel, platformId: number): boolean {
+    return this.publishedMap.get(inv.inventory_id!)?.has(platformId) ?? false;
+  }
+
+  /** فتح نافذة النشر للمنصة مباشرة بدون نافذة الاختيار */
+  publishOn(inv: InventoryModel, platform: { platform_id: number; description: string }) {
+    this.pickerInventory = inv;
+    this.choosePlatform(platform);
+  }
+
+  /** تحديث حالة منتج واحد بعد النشر */
+  refreshPublished(invId?: number) {
+    if (!invId) return;
+    this.http.getAllData(`Inventory/PublishedPlatforms/${invId}`).subscribe((ids: any) => {
+      this.publishedMap.set(invId, new Set<number>(ids ?? []));
+      this.cdr.detectChanges();
+    });
   }
 }
 

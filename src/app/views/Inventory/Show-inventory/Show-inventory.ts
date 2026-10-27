@@ -556,32 +556,31 @@ export class ShowInventoryComponent implements OnInit {
   }
   selectedDutyFilter: string = 'All';
 
-  filterDutyInventory(event: string) {
-    this.inventory = [...this.tempInventory];
-
-    const filterValue = event;
+  filterDutyInventory(filterValue: string) {
     this.selectedDutyFilter = filterValue;
-    if (filterValue === 'All') {
-      this.inventory = []
-      this.getInventory()
-    } else if (filterValue === 'Under proccess') {
-      this.inventory = []
-      this.getUnderProccessInventory()
+    const all = [...this.tempInventory];
+
+    switch (filterValue) {
+      case 'NoUPC':
+        // بدون UPC
+        this.inventory = all.filter(inv => !inv.item?.upc?.trim());
+        break;
+
+      case 'NoScrape':
+        // ما انعمله scrape (ما فيه صور)
+        this.inventory = all.filter(inv => !inv.item?.isScraped);
+        break;
+
+      case 'NoBIO':
+        // ناقصه معلومات (نفس شرط الـ BIO الأحمر)
+        this.inventory = all.filter(inv => this.missingFields(inv).length > 0);
+        break;
+
+      default: // All
+        this.inventory = all;
+        this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
     }
-    else if (filterValue === 'Complated') {
-      this.inventory = []
-      this.GetAllWhereReadyToPublish()
-    }
-    else {
-      this.inventory = [];
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true
-      });
-      this.getInventory();
-      this.cdr.detectChanges();
-    }
+
     this.cdr.detectChanges();
   }
 
@@ -620,7 +619,23 @@ export class ShowInventoryComponent implements OnInit {
   descriptionToEdit: string = '';
   currentItemId?: number
 
-  ShowEditModal(itemId?: number, inventoryId?: number, categoryId?: number, sizeId?: number, sku?: string, upc?: string, price?: string, platformId?: number, title?: string, description?: string, qty?: number, brand?: string, isproccessed?: boolean, conditionId?: number, basePrice?: number) {
+  missingFields(type: any): string[] {
+    const m: string[] = [];
+    if (!type.item?.categoryId) m.push('Category');
+    if (!type.item?.itemDescription?.trim()) m.push('Title');
+    if (!type.item?.itemDetails?.trim() || type.item?.itemDetails?.trim() === ';') m.push('Description');
+    if (type.item?.basePrice == null) m.push('Item Price');
+    if (type.itemCondition?.itemConditionId == null) m.push('Condition');
+    if (type.item?.carBrandId == null) m.push('Brand');
+    return m;
+  }
+
+  ShowEditModal(itemId?: number, inventoryId?: number, categoryId?: number,
+    sizeId?: number, sku?: string,
+    upc?: string, price?: string, platformId?: number,
+    title?: string, description?: string, qty?: number,
+    brand?: string, isproccessed?: boolean,
+    conditionId?: number, basePrice?: number) {
     this.currentInventoryId = inventoryId;
     this.currentItemId = itemId
     this.SizeId = sizeId || null;
@@ -635,7 +650,7 @@ export class ShowInventoryComponent implements OnInit {
     this.BrandToEdit = brand || null;
     this.proccessedInInv = isproccessed || false
     this.title = title || ''
-    this.descriptionToEdit = description || ';'
+    this.descriptionToEdit = description || ''
     this.showEditModal = true;
     console.log(this.CategoryId)
   }
@@ -1876,44 +1891,125 @@ export class ShowInventoryComponent implements OnInit {
   currentScrapedImageIndex = 0;
   showFullDescription = false;
 
-  startScraping() {
-    this.scrapedProduct = null;
-    this.currentScrapedImageIndex = 0;
-    this.showFullDescription = false;
-
-    if (this.selectedPlatform?.description !== 'Home Depot') return;
-
+  startScraping(platform: string) {
     const term = encodeURIComponent((this.UpcForScrape ?? '').toString().trim());
     if (!term) {
       alert('Please enter a UPC first');
       return;
     }
+    if (this.selectedPlatform?.description == 'eBay') {
+      this.scrapedProduct = null;
+      this.currentScrapedImageIndex = 0;
+      this.showFullDescription = false;
 
-    this.isScraping = true;
+      const raw = localStorage.getItem('ebayToken');
+      const parsed = raw ? JSON.parse(raw) : null;
+      const ebayToken = parsed && Date.now() < parsed.expiry ? parsed.value : null;
 
-    this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${term}`).subscribe({
-      next: (res: any) => {
-        console.log('Scraped product from Home Depot:', res);
+      if (!ebayToken) {
+        alert('You must log in to eBay first');
+        return;
+      }
 
-        // الرد الآن هو المنتج نفسه مباشرة (وليس res.products)
-        this.scrapedProduct = res?.id ? this.normalizeProduct(res) : null;
-        if (!this.scrapedProduct) {
-          alert('No product found for this UPC');
-        }
+      this.isScraping = true;
+      this.http.getAllData(`Ebay/search-ebay-product/${ebayToken}/${term}`).subscribe({
+        next: (res: any) => {
+          console.log('Scraped product from eBay:', res);
+          this.scrapedProduct = res?.itemId ? this.normalizeEbayProduct(res) : null;
+          if (!this.scrapedProduct) {
+            alert('No product found for this UPC');
+          }
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error scraping from eBay:', err);
+          alert(err?.error?.message || 'Error scraping from eBay');
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return;
+    }
 
-        this.showScrapDetailsBool = true;
-        this.isScraping = false;
-        this.cdr.detectChanges();
+    this.scrapedProduct = null;
+    this.currentScrapedImageIndex = 0;
+    this.showFullDescription = false;
+
+    if (this.selectedPlatform?.description == 'Home Depot') {
+      this.isScraping = true;
+
+      this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${term}`).subscribe({
+        next: (res: any) => {
+          console.log('Scraped product from Home Depot:', res);
+
+          // الرد الآن هو المنتج نفسه مباشرة (وليس res.products)
+          this.scrapedProduct = res?.id ? this.normalizeProduct(res) : null;
+          if (!this.scrapedProduct) {
+            alert('No product found for this UPC');
+          }
+
+          this.showScrapDetailsBool = true;
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error scraping from Home Depot:', err);
+          const message = err?.error?.message || 'Error scraping from Home Depot';
+          const details = err?.error?.details ? '\n' + err.error.details : '';
+          alert(message + details);
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return
+    }
+  }
+
+  /** تحويل ريسبونس eBay لنفس شكل Home Depot */
+  private normalizeEbayProduct(p: any) {
+    const specs: any[] = p.specifications ?? [];
+
+    return {
+      ...p,
+      item_id: p.itemId?.split('|')[1] ?? p.itemId ?? null,   // v1|356345242348|0 → 356345242348
+      name: p.title ?? '',
+      description: p.description ?? '',
+      model_number: p.mpn ?? p.model ?? null,
+      upc: p.upc ?? this.UpcForScrape ?? null,
+      sku: p.sku ?? null,
+      url: p.itemWebUrl ?? null,
+      min_order_qty: null,
+      saves_count: null,
+
+      avg_rating: null,
+      review_count: 0,
+
+      pricing: {
+        current_price: p.price != null ? Number(p.price) : null,
       },
-      error: (err) => {
-        console.error('Error scraping from Home Depot:', err);
-        const message = err?.error?.message || 'Error scraping from Home Depot';
-        const details = err?.error?.details ? '\n' + err.error.details : '';
-        alert(message + details);
-        this.isScraping = false;
-        this.cdr.detectChanges();
-      },
-    });
+
+      images: (p.images ?? []).filter((x: any) => typeof x === 'string' && x),
+      brandName: p.brand ?? '',
+      brandUrl: null,
+
+      highlights: [
+        p.condition ? `Condition: ${p.condition}` : null,
+        p.store ? `Seller: ${p.store}` : null,
+      ].filter(Boolean),
+
+      breadcrumbs: [],
+
+      specifications: specs.length ? [{
+        group: 'Item Specifics',
+        attributes: specs.map((s: any) => ({
+          label: s.label ?? s.name ?? s.key ?? '',
+          detail: s.detail ?? s.value ?? (Array.isArray(s.values) ? s.values.join(', ') : ''),
+        })),
+      }] : [],
+
+      availability: null,
+    };
   }
 
   /** توحيد شكل البيانات حتى يكون الـ template بسيطاً وآمناً */
