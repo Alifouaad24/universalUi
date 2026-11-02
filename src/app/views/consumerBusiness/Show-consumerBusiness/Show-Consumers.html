@@ -30,7 +30,7 @@
         <tr *ngFor="let type of suppliers; index as i">
           <td>{{ i + 1 }}</td>
           <td>{{ type.consumerBusiness.business_name }}</td>
-          <td>{{ type.service.description }}</td>
+          <td>{{ type.service?.description }}</td>
           <!-- <td>
               <div>
                 <img *ngIf="type.platform.logoUrl" [src]="type.platform.logoUrl" alt="Platform Logo"

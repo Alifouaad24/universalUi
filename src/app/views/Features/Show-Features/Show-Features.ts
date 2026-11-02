@@ -414,4 +414,30 @@ export class ShowFeaturesComponent implements OnInit {
 
     return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   }
+
+  // ===================== بوبب التعليقات غير المقروءة =====================
+  showCommentsModal = false;
+  commentsOrder?: GlobalOrder;
+
+  openCommentsModal(order: GlobalOrder) {
+    this.commentsOrder = order;
+    this.showCommentsModal = true;
+  }
+
+  closeCommentsModal() {
+    const order = this.commentsOrder;
+    if (!order) return;               // حتى ما ينطلب الـ API مرتين
+    this.commentsOrder = undefined;
+    this.showCommentsModal = false;
+
+    this.makeAllCommentsRead(order.globalOrderId);
+
+    // تحديث محلي حتى يختفي عدّاد "Un Read Comments" فوراً
+    order.comments?.forEach((c: any) => c.isRead = true);
+    this.cdr.detectChanges();
+  }
+
+  onCommentsModalChange(visible: boolean) {
+    if (!visible) this.closeCommentsModal();
+  }
 }

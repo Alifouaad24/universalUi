@@ -125,6 +125,7 @@ export class ShowInventoryComponent implements OnInit {
   BrandToEdit: string = ''
   proccessedInInv: boolean = false
   EbayTitle?: string
+  lastPublishDate: string | null = null;
   selectedNewImages: { file: File; previewUrl: string }[] = [];
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
@@ -963,6 +964,8 @@ export class ShowInventoryComponent implements OnInit {
 
   ShowDetailsModal(inventory: InventoryModel) {
     this.selectedImagesToEbay = [];
+
+
     this.EbayTitle = inventory.item?.carBrand?.carBrandName + ' ' + inventory.item.itemDescription + ' ' + inventory.item.model
     this.selectedType = inventory;
     this.DetailsModalVisible = true;
@@ -1430,10 +1433,11 @@ export class ShowInventoryComponent implements OnInit {
       id: this.selctedInvId,
       url: this.MarketPlaceOfferUrl
     }
-    this.http.putData(`Inventory/SetPublishOnMarketPlase`, payLoad).subscribe(
+    this.http.putData(`Inventory/SetPublishOnMarketPlase/${this.selctedInvId}`, payLoad).subscribe(
       (res: any) => {
+        console.log(res)
         this.isChangeStatus = false;
-        this.toastMessage.set('Inventory item successfully deleted.');
+        this.toastMessage.set('Inventory item successfully published on marketplace.');
         this.toastVisible.set(true);
         this.inventory.find(inv => inv.inventory_id == this.selctedInvId)!.isPublishedOnMarketPlace = res.status;
         this.showMarketPlacePopup = false
@@ -1442,7 +1446,7 @@ export class ShowInventoryComponent implements OnInit {
       },
       (err) => {
         this.isChangeStatus = false;
-        this.toastMessage.set('Error deleting inventory item.');
+        this.toastMessage.set('Error publishing inventory item on marketplace.');
         this.toastVisible.set(true);
         this.cdr.detectChanges();
       }
@@ -1602,9 +1606,14 @@ export class ShowInventoryComponent implements OnInit {
   }
 
   selectItemFromDb(item: any) {
+    console.log('selectItemFromDb called, basePrice =', item.basePrice);
+
     this.selectedItem = item;
-    this.searchText = item.name;
+    this.searchText = item.description ?? item.sku ?? '';
+    this.price = Number(item.basePrice);
     this.items = [];
+
+    this.cdr.detectChanges();
   }
 
 
@@ -1740,7 +1749,7 @@ export class ShowInventoryComponent implements OnInit {
   loadingSellingPlatforms = false;
   showPlatformPicker = false;
   pickerInventory?: InventoryModel;
-  publishedPlatformIds = new Set<number>();
+  publishedPlatformIds = new Map<number, string | null>();
   loadingPublished = false;
 
   getSellingPlatforms() {
@@ -1758,7 +1767,22 @@ export class ShowInventoryComponent implements OnInit {
     });
   }
 
-  publishedMap = new Map<number, Set<number>>();
+  publishedMap = new Map<number, Map<number, string | null>>();
+
+  private toPublishedMap(res: any): Map<number, string | null> {
+    return new Map<number, string | null>(
+      (res ?? []).map((x: any) =>
+        typeof x === 'number'
+          ? [x, null]
+          : [x.platformId ?? x.platform_id, x.publishedOn ?? x.PublishedOn ?? null]
+      )
+    );
+  }
+
+  publishedDate(inv: InventoryModel, platformId: number): string | null {
+    return this.publishedMap.get(inv.inventory_id!)?.get(platformId) ?? null;
+  }
+
 
   loadAllPublished(done: () => void) {
     const invs = this.tempInventory.filter(inv => inv.inventory_id);
@@ -1767,28 +1791,26 @@ export class ShowInventoryComponent implements OnInit {
     forkJoin(
       invs.map(inv =>
         this.http.getAllData(`Inventory/PublishedPlatforms/${inv.inventory_id}`).pipe(
-          map((ids: any) => ({ id: inv.inventory_id!, ids: (ids ?? []) as number[] })),
-          catchError(() => of({ id: inv.inventory_id!, ids: [] as number[] }))
+          map((res: any) => ({ id: inv.inventory_id!, platforms: this.toPublishedMap(res) })),
+          catchError(() => of({ id: inv.inventory_id!, platforms: new Map<number, string | null>() }))
         )
       )
     ).subscribe(results => {
-      this.publishedMap = new Map(results.map(r => [r.id, new Set(r.ids)]));
-      done();
+      this.publishedMap = new Map(results.map(r => [r.id, r.platforms])); done();
     });
   }
+
 
   /** يفتح نافذة اختيار المنصة لهذا المنتج */
   openPlatformPicker(inv: InventoryModel) {
     this.pickerInventory = inv;
-    this.publishedPlatformIds = new Set();
-    this.showPlatformPicker = true;
+    this.publishedPlatformIds = new Map(); this.showPlatformPicker = true;
 
     if (!inv.inventory_id) return;
     this.loadingPublished = true;
     this.http.getAllData(`Inventory/PublishedPlatforms/${inv.inventory_id}`).subscribe({
       next: (ids: any) => {
-        this.publishedPlatformIds = new Set<number>(ids ?? []);
-        this.loadingPublished = false;
+        this.publishedPlatformIds = this.toPublishedMap(ids); this.loadingPublished = false;
         this.cdr.detectChanges();
       },
       error: () => {
@@ -1803,6 +1825,7 @@ export class ShowInventoryComponent implements OnInit {
     const inv = this.pickerInventory;
     if (!inv) return;
 
+    this.lastPublishDate = this.publishedMap.get(inv.inventory_id!)?.get(platform.platform_id) ?? null;
     this.showPlatformPicker = false;
 
     // ننتظر انتهاء حركة إغلاق النافذة الأولى قبل فتح الثانية
@@ -1846,11 +1869,16 @@ export class ShowInventoryComponent implements OnInit {
   refreshPublished(invId?: number) {
     if (!invId) return;
     this.http.getAllData(`Inventory/PublishedPlatforms/${invId}`).subscribe((ids: any) => {
-      this.publishedMap.set(invId, new Set<number>(ids ?? []));
-      this.cdr.detectChanges();
+      this.publishedMap.set(invId, this.toPublishedMap(ids)); this.cdr.detectChanges();
     });
   }
+
+
 }
+
+
+
+
 
 
 

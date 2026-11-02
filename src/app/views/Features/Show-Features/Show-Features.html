@@ -197,7 +197,7 @@
                     </span>
                   </div>
                 </div>
-                <div *ngIf="getUnReadComments(order.comments) > 0">
+                <div *ngIf="getUnReadComments(order.comments) > 0" role="button" (click)="openCommentsModal(order)">
                   <small class="text-muted">Un Read Comments</small>
                   <div>
                     <span class="badge bg-danger">
@@ -234,27 +234,27 @@
               </div>
             </div>
 
-          <!-- Right Side (Buttons) -->
-          <div class="col-lg-3 text-end">
-            <button class="btn btn-primary me-2" (click)="openEditModal(order)">
-              <c-icon name="cil-pencil"></c-icon>
-            </button>
-            <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
-              <c-icon name="cil-trash"></c-icon>
-            </button>
-            <button *ngIf="order.orderStatus?.statusEn === 'Done'" class="btn btn-info"
-              (click)="SetStatusClosed(order.globalOrderId)">
-              <c-icon name="cilCheck"></c-icon>
-            </button>
-            <button *ngIf="order.orderStatus?.statusEn === 'In progress'" class="btn btn-warning"
-              (click)="SetStatusCompleted(order.globalOrderId)">
-              <c-icon name="cilCheck"></c-icon>
-            </button>
+            <!-- Right Side (Buttons) -->
+            <div class="col-lg-3 text-end">
+              <button class="btn btn-primary me-2" (click)="openEditModal(order)">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-danger me-2" (click)="confirmDelete(order)">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+              <button *ngIf="order.orderStatus?.statusEn === 'Done'" class="btn btn-info"
+                (click)="SetStatusClosed(order.globalOrderId)">
+                <c-icon name="cilCheck"></c-icon>
+              </button>
+              <button *ngIf="order.orderStatus?.statusEn === 'In progress'" class="btn btn-warning"
+                (click)="SetStatusCompleted(order.globalOrderId)">
+                <c-icon name="cilCheck"></c-icon>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   </div>
 
   <!-- Empty State -->
@@ -425,5 +425,49 @@
       <i class="fas fa-save me-2"></i>
       Save Changes
     </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Un Read Comments Popup -->
+<c-modal [visible]="showCommentsModal" (visibleChange)="onCommentsModalChange($event)" size="lg" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle class="mb-0">
+      <i class="fas fa-comments me-2"></i>
+      Comments · task #{{ commentsOrder?.globalOrderId }}
+    </h5>
+    <button cButtonClose (click)="closeCommentsModal()"></button>
+  </c-modal-header>
+
+  <c-modal-body style="max-height: 60vh; overflow-y: auto;">
+    <div *ngFor="let c of commentsOrder?.comments" class="position-relative ps-4 mb-4"
+      style="border-left: 2px solid #28ba90;">
+      <div class="position-absolute top-0 start-0 bg-primary rounded-circle" style="width:12px;height:12px;"></div>
+      <div class="card border-start border-4 border-primary">
+        <div class="card-body py-2">
+          <div class="d-flex gap-2 p-2 mt-2 rounded-4"
+            [ngClass]="{'border border-2 border-danger': !c.isRead && myName != c.addedBy}">
+            <div
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+              style="width:40px;height:40px;">
+              {{ c.addedBy?.charAt(0) | uppercase }}
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-bold small">{{ c.addedBy }}</div>
+              <div class="rounded-4 px-3 py-2 mt-1 shadow-sm">{{ c.commentContent }}</div>
+              <div class="text-muted small mt-1">{{ c.addedOn | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!commentsOrder?.comments?.length" class="text-center text-muted py-4">
+      <i class="fas fa-comment-slash fa-2x mb-2"></i>
+      <div>No comments available</div>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="closeCommentsModal()">Close</button>
   </c-modal-footer>
 </c-modal>

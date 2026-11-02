@@ -576,6 +576,11 @@ export class ShowInventoryComponent implements OnInit {
         this.inventory = all.filter(inv => this.missingFields(inv).length > 0);
         break;
 
+      case 'Completed':
+        // ناقصه معلومات (نفس شرط الـ BIO الأحمر)
+        this.inventory = all.filter(inv => inv.Product_name?.trim() && inv.item?.itemDescription?.trim() && inv.item?.itemDetails?.trim() && inv.item?.basePrice != null && inv.itemCondition?.itemConditionId != null && inv.item?.carBrandId != null);
+        break;
+
       default: // All
         this.inventory = all;
         this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
@@ -1702,6 +1707,7 @@ export class ShowInventoryComponent implements OnInit {
   selectItemFromDb(item: any) {
     this.selectedItem = item;
     this.searchText = item.name;
+    this.price = item.basePrice;
     this.items = [];
   }
 
@@ -2326,7 +2332,36 @@ export class ShowInventoryComponent implements OnInit {
     this.openModal(current.imageUrl);
   }
 
+  
+  CopyUpc(upc: string | undefined) {
+    if (upc) {
+      navigator.clipboard.writeText(upc)
+      this.toastMessage.set('Upc copied successfuly')
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
 
+    } else {
+      this.toastMessage.set('Item has no Upc')
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+    }
+  }
+
+  filteredInventory = [...this.inventory];
+
+  filterInventoryBySearch() {
+    if (!this.searchText.trim()) {
+
+      this.inventory = [...this.tempInventory];
+      return;
+    }
+    this.inventory = this.inventory.filter(item =>
+      item.item.sku?.toLowerCase().includes(this.searchText.toLowerCase()) ||
+      item.item.upc?.toLowerCase().includes(this.searchText.toLowerCase()) ||
+      item.item.title?.toLowerCase().includes(this.searchText.toLowerCase()) ||
+      item.item.description?.toLowerCase().includes(this.searchText.toLowerCase())
+    );
+  }
 }
 
 // {

@@ -37,27 +37,7 @@
         </div>
       </div>
       <!-- RIGHT -->
-      <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0">
-        <!-- eBay link -->
-        <div>
-          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production" target="_blank"
-            class="text-decoration-none fw-semibold text-primary">
-            🔗 Go to eBay
-          </a>
-        </div>
-        <!-- Login -->
-        <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
-          <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;"
-            [ngClass]="{ 'd-none': isAuthInEbay }" />
-          <button class="btn btn-sm" [ngClass]="{ 'btn-danger': !isAuthInEbay, 'btn-success': isAuthInEbay }"
-            (click)="LogInToEbayDiredty(token.value, token)">
-            {{ loginingInToEbay ? 'Logging in...' : isAuthInEbay ? 'Authorized' : 'Login to eBay' }}
-          </button>
-          <button class="btn btn-info btn-sm" (click)="GetSoldItems()">
-            {{ isLoading11 ? 'Retrieving...' : 'Get sold items' }}
-          </button>
-        </div>
-      </div>
+
     </div>
 
   </div>
@@ -80,7 +60,6 @@
           <th style="width: 8%;">Price</th>
           <th style="width: 8%;">Qty In Store</th>
           <!-- <th style="width: 8%;">Published Qty</th> -->
-          <th style="width: 5%;">Folder</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -111,8 +90,6 @@
           <td class="text-danger">{{ type?.item.basePrice }}{{ type?.item.basePrice ? '$' : '' }}</td>
           <td>{{ type?.sitePrice }}</td>
           <td>{{ type.qty }}</td>
-          <!-- <td>{{ type.publishedQty }}</td> -->
-          <td>{{ type.folderImages }}</td>
           <td>
             <ng-container *ngIf="inventory.length">
               <button class="btn btn-sm btn-warning me-1"
@@ -129,11 +106,14 @@
                 Go to album
               </a> -->
 
-              <button *ngFor="let p of sellingPlatforms" type="button" class="btn btn-sm me-1 mb-1"
-                [ngClass]="isPublishedOn(type, p.platform_id) ? 'btn-success' : 'btn-primary'"
-                [title]="(isPublishedOn(type, p.platform_id) ? 'Published on ' : 'Publish on ') + p.description"
-                (click)="publishOn(type, p)">
+              <button *ngFor="let p of sellingPlatforms" type="button" class="btn btn-sm me-1 mb-1 lh-sm"
+                [ngClass]="isPublishedOn(type, p.platform_id) ? 'btn-success' : 'btn-primary'" [title]="isPublishedOn(type, p.platform_id)
+    ? 'Published on ' + p.description + (publishedDate(type, p.platform_id) ? ' · ' + (publishedDate(type, p.platform_id) | date:'mediumDate':'UTC') : '')
+    : 'Publish on ' + p.description" (click)="publishOn(type, p)">
                 {{ p.description }}
+                <small *ngIf="publishedDate(type, p.platform_id) as d" class="d-block opacity-75">
+                  {{ d | date:'d MMM yyyy':'UTC' }}
+                </small>
               </button>
               <!-- <button *ngIf="!type.isProccessedInInventory" class="btn btn-sm btn-warning me-1"
                 (click)="ShowScrape(type.item?.itemId, type.inventory_id, type.platform?.description ?? '')"
@@ -647,9 +627,92 @@
 </c-modal>
 
 <!-- Details Modal -->
+
 <c-modal [(visible)]="DetailsModalVisible" size="lg" alignment="center">
-  <c-modal-header>
+  <!-- <c-modal-header>
     <button color="secondary" style="cursor: pointer;" (click)="DetailsModalVisible = false">X</button>
+    <div *ngIf="currentBusinessName.includes('Duty')" class="col-md-6 text-md-end mt-3 mt-md-0">
+        <div>
+          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production" target="_blank"
+            class="text-decoration-none fw-semibold text-primary">
+            🔗 Go to eBay
+          </a>
+        </div>
+        <div class="d-flex justify-content-md-end justify-content-start align-items-center gap-2 mt-2">
+          <input #token class="form-control form-control-sm" placeholder="Enter Token" style="max-width: 200px;"
+            [ngClass]="{ 'd-none': isAuthInEbay }" />
+          <button class="btn btn-sm" [ngClass]="{ 'btn-danger': !isAuthInEbay, 'btn-success': isAuthInEbay }"
+            (click)="LogInToEbayDiredty(token.value, token)">
+            {{ loginingInToEbay ? 'Logging in...' : isAuthInEbay ? 'Authorized' : 'Login to eBay' }}
+          </button>
+          <button class="btn btn-info btn-sm" (click)="GetSoldItems()">
+            {{ isLoading11 ? 'Retrieving...' : 'Get sold items' }}
+          </button>
+        </div>
+      </div>
+  </c-modal-header> -->
+  <c-modal-header class="bg-body-tertiary border-bottom">
+    <div class="row w-100 g-2 align-items-center m-0">
+
+      <!-- العنوان + حالة الربط -->
+      <div class="col d-flex flex-column gap-1">
+  <div class="d-flex align-items-center gap-2">
+    <h5 class="modal-title mb-0 fw-semibold">Details</h5>
+    <span *ngIf="currentBusinessName?.includes('Duty')"
+      class="badge rounded-pill d-inline-flex align-items-center gap-1"
+      [ngClass]="isAuthInEbay ? 'text-bg-success' : 'text-bg-light border text-secondary'">
+      <span class="d-inline-block p-1 rounded-circle" [ngClass]="isAuthInEbay ? 'bg-white' : 'bg-secondary'"></span>
+      {{ isAuthInEbay ? 'eBay connected' : 'eBay not connected' }}
+    </span>
+  </div>
+  <small class="text-muted">
+    <ng-container *ngIf="lastPublishDate; else notPublished">
+      Last published on eBay: <strong>{{ lastPublishDate | date:'mediumDate':'UTC' }}</strong>
+    </ng-container>
+    <ng-template #notPublished>Not published on eBay yet</ng-template>
+  </small>
+</div>
+
+      <!-- زر الإغلاق -->
+      <div class="col-auto order-md-last">
+        <button type="button" class="btn-close" aria-label="Close" (click)="DetailsModalVisible = false"></button>
+      </div>
+
+      <!-- أدوات eBay -->
+      <div *ngIf="currentBusinessName?.includes('Duty')" class="col-12 col-md-auto">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+
+          <a href="https://developer.ebay.com/my/api_test_tool?index=0&env=production" target="_blank" rel="noopener"
+            class="btn btn-sm btn-outline-primary text-nowrap">
+            Go to eBay ↗
+          </a>
+
+          <!-- إدخال التوكن (قبل تسجيل الدخول) -->
+          <div class="input-group input-group-sm w-auto" [ngClass]="{ 'd-none': isAuthInEbay }">
+            <span class="input-group-text bg-white">🔑</span>
+            <input #token type="password" class="form-control" placeholder="Enter eBay token" autocomplete="off"
+              (keyup.enter)="LogInToEbayDiredty(token.value, token)" />
+            <button type="button" class="btn btn-primary text-nowrap" [disabled]="loginingInToEbay"
+              (click)="LogInToEbayDiredty(token.value, token)">
+              <span *ngIf="loginingInToEbay" class="spinner-border spinner-border-sm me-1"></span>
+              {{ loginingInToEbay ? 'Logging in…' : 'Login' }}
+            </button>
+          </div>
+
+          <!-- بعد تسجيل الدخول -->
+          <button *ngIf="isAuthInEbay" type="button" class="btn btn-sm btn-success text-nowrap"
+            (click)="LogInToEbayDiredty(token.value, token)">
+            ✓ Authorized
+          </button>
+
+          <!-- <button type="button" class="btn btn-sm btn-dark text-nowrap" [disabled]="isLoading11"
+            (click)="GetSoldItems()">
+            <span *ngIf="isLoading11" class="spinner-border spinner-border-sm me-1"></span>
+            {{ isLoading11 ? 'Retrieving…' : 'Get sold items' }}
+          </button> -->
+        </div>
+      </div>
+    </div>
   </c-modal-header>
   <c-modal-body class="text-center">
     <div class="container mt-3">
@@ -899,51 +962,203 @@
 </div>
 
 
-<div *ngIf="showMarketPlacePopup" class="modal fade show d-block" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow border-0 rounded-4">
-      <!-- Header -->
-      <div class="modal-header bg-primary text-white">
-        <div>
-          <h5 class="modal-title mb-0">
-            <i class="bi bi-shop me-2"></i>
-            Publish To Marketplace
-          </h5>
-          <small class="opacity-75">
-            Add Marketplace URL
-          </small>
-        </div>
-        <button type="button" class="btn-close btn-close-white" (click)="showMarketPlacePopup = false">
-        </button>
-      </div>
+<ng-container *ngIf="showMarketPlacePopup">
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content shadow border-0 rounded-4">
 
-      <!-- Body -->
-      <div class="modal-body p-4">
-        <label class="form-label fw-semibold">
-          Marketplace URL
-        </label>
-        <div class="input-group">
-          <span class="input-group-text">
-            <i class="bi bi-link-45deg"></i>
-          </span>
-          <input class="form-control" placeholder="https://facebook.com/marketplace/..."
-            [(ngModel)]="MarketPlaceOfferUrl">
+        <!-- Header -->
+        <div class="modal-header bg-primary text-white">
+          <div>
+            <h5 class="modal-title mb-0">
+              <i class="bi bi-shop me-2"></i>
+              Publish To Marketplace
+            </h5>
+            <small class="opacity-75">
+              <ng-container *ngIf="lastPublishDate; else mpNotPublished">
+                Last published on Marketplace: <strong>{{ lastPublishDate | date:'mediumDate':'UTC' }}</strong>
+              </ng-container>
+              <ng-template #mpNotPublished>Not published on Marketplace yet</ng-template>
+            </small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="showMarketPlacePopup = false"></button>
         </div>
-      </div>
 
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button class="btn btn-outline-secondary" (click)="showMarketPlacePopup = false">
-          Close
-        </button>
-        <button class="btn btn-success px-4" (click)="SetAsPublishedInMarketPlace()">
-          <i class="bi bi-check-circle me-2"></i>
-          {{isChangeStatus ? 'Saving...' : 'Save'}}
-        </button>
+        <!-- Body -->
+        <div class="modal-body p-4">
+          <ng-container *ngIf="pickerInventory as inv">
+
+            <!-- تفاصيل المنتج -->
+            <div class="row g-3 text-center mb-4">
+
+              <div class="col-12 col-sm-6 col-md-4" *ngIf="inv.item?.sku">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">SKU</small>
+                  <strong>{{ inv.item?.sku }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4" *ngIf="inv.item?.upc">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">UPC</small>
+                  <strong>{{ inv.item?.upc }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4" *ngIf="inv.size?.description">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Size</small>
+                  <strong>{{ inv.size?.description }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2" [ngClass]="{ 'border-danger': !inv.itemCondition?.description }">
+                  <small class="text-muted">Condition</small>
+                  <strong>{{ inv.itemCondition?.description || '-' }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Platform</small>
+                  <strong>{{ inv.platform?.description || '-' }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Brand</small>
+                  <strong>{{ inv.item?.carBrand?.carBrandName || '-' }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Model</small>
+                  <strong>{{ inv.item?.model || '-' }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2" [ngClass]="{ 'border-danger': !inv.item?.category?.name }">
+                  <small class="text-muted">Category</small>
+                  <strong>{{ inv.item?.category?.name || '-' }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Qty In Store</small>
+                  <strong>{{ inv.qty ?? 0 }}</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4" *ngIf="inv.item?.basePrice !== null">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Base Price</small>
+                  <strong class="text-danger">{{ inv.item?.basePrice ?? 0 }}$</strong>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4" *ngIf="inv.sitePrice">
+                <div class="card shadow-sm p-2">
+                  <small class="text-muted">Sale Price</small>
+                  <strong class="text-success">{{ inv.sitePrice }}</strong>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <div class="col-12" *ngIf="inv.Product_name || inv.item?.itemDescription">
+                <div class="card shadow-sm p-3 text-start">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Title</small>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="copyText(inv.Product_name || inv.item?.itemDescription)">
+                      <i class="fas fa-copy me-1"></i>
+                      Copy
+                    </button>
+                  </div>
+                  <p class="mb-0 mt-2">{{ inv.Product_name || inv.item?.itemDescription }}</p>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="col-12" *ngIf="inv.product_description">
+                <div class="card shadow-sm p-3 text-start">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Description</small>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="copyText(inv.product_description)">
+                      <i class="fas fa-copy me-1"></i>
+                      Copy
+                    </button>
+                  </div>
+                  <p class="mb-0 mt-2">{{ inv.product_description }}</p>
+                </div>
+              </div>
+
+              <!-- Images -->
+                            <!-- Images -->
+              <div class="col-12" *ngIf="inv.item?.images?.length">
+                <div class="card shadow-sm p-3">
+                  <small class="text-muted">Images</small>
+                  <div class="row mt-2">
+                    <div class="col-2" *ngFor="let image of inv.item.images">
+                      <div class="position-relative m-1" (click)="toggleImage(image)" style="cursor: pointer;">
+                        <img height="100" width="80" [src]="image.imageUrl" class="img-fluid rounded"
+                          [class.border]="isSelected(image)" [class.border-danger]="isSelected(image)"
+                          [class.border-3]="isSelected(image)">
+                        <span *ngIf="isSelected(image)" class="position-absolute top-0 start-0 badge bg-danger">
+                          {{ getImageIndex(image) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <br />
+                  <div *ngIf="selectedImagesToEbay.length > 0" class="d-flex justify-content-end">
+                    <button class="btn btn-warning" (click)="downloadAllImages()">
+                      <i class="bi bi-download me-1"></i>
+                      Download Images
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+
+          <!-- رابط ماركت بليس -->
+          <label class="form-label fw-semibold">
+            Marketplace URL
+          </label>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="bi bi-link-45deg"></i>
+            </span>
+            <input class="form-control" placeholder="https://facebook.com/marketplace/..."
+              [(ngModel)]="MarketPlaceOfferUrl">
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" (click)="showMarketPlacePopup = false">
+            Close
+          </button>
+          <button class="btn btn-success px-4" [disabled]="isChangeStatus || !MarketPlaceOfferUrl"
+            (click)="SetAsPublishedInMarketPlace()">
+            <span *ngIf="isChangeStatus" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!isChangeStatus" class="bi bi-check-circle me-2"></i>
+            {{ isChangeStatus ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
-</div>
+  <div class="modal-backdrop fade show"></div>
+</ng-container>
 
 <!-- Images Gallery Modal -->
 <c-modal [(visible)]="imagesModalVisible" size="lg" alignment="center">
@@ -1026,8 +1241,13 @@
 
         <span *ngIf="loadingPublished" class="spinner-border spinner-border-sm text-secondary"></span>
         <ng-container *ngIf="!loadingPublished">
-          <span *ngIf="publishedPlatformIds.has(p.platform_id)" class="badge bg-success">Published</span>
-          <span *ngIf="!publishedPlatformIds.has(p.platform_id)" class="badge bg-secondary-subtle text-secondary">
+          <span *ngIf="publishedPlatformIds.has(p.platform_id)" class="badge bg-success">
+            Published
+            <ng-container *ngIf="publishedPlatformIds.get(p.platform_id) as d">
+              · {{ d | date:'mediumDate':'UTC' }}
+            </ng-container>
+          </span> <span *ngIf="!publishedPlatformIds.has(p.platform_id)"
+            class="badge bg-secondary-subtle text-secondary">
             Not published
           </span>
         </ng-container>

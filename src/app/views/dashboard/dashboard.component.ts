@@ -132,7 +132,7 @@ export class DashboardComponent implements OnInit {
       this.businessName = this.currentBusiness.business_name
       if (this.businessName == 'The Geist ') {
         this.getTheGeistOrders()
-        this.getComplaintTypes();
+        // this.getComplaintTypes();
         this.getCauses();
         this.getServices();
         this.getComlaints()
@@ -149,37 +149,37 @@ export class DashboardComponent implements OnInit {
 
   getTheGeistOrders() {
     this.http.getAllData('Orders/40').subscribe((res: any) => {
+      console.log('Orders:', res);
       this.orders = res;
       this.groupOrdersByCustomer();
     });
   }
 
-  private groupOrdersByCustomer() {
-    const map = new Map<number, CustomerGroup>();
+ private groupOrdersByCustomer() {
+  const map = new Map<string, CustomerGroup>();
 
-    for (const order of this.orders) {
-      const customer = order.customer;
-      const customerId = customer?.globalCustomerId ?? order.globalCustomerId;
-      if (!customerId) continue;
+  for (const order of this.orders) {
+    const assigneeId = order.assigneeId;
+    if (!assigneeId) continue;
 
-      if (!map.has(customerId)) {
-        map.set(customerId, {
-          customerId,
-          customerName: customer?.customerName ?? 'بدون اسم',
-          customerImage: customer?.customerImage ?? 'assets/images/avatars/default.png',
-          customerMobile: customer?.customerMobile ?? '',
-          ordersCount: 0,
-          orders: [],
-        });
-      }
-
-      const group = map.get(customerId)!;
-      group.ordersCount++;
-      group.orders.push(order);
+    if (!map.has(assigneeId)) {
+      map.set(assigneeId, {
+        customerId: assigneeId,
+        customerName: order.assigneeName ?? 'بدون اسم',
+        customerImage: 'assets/images/avatars/default.png',
+        customerMobile: order.assigneePhone ?? '',
+        ordersCount: 0,
+        orders: [],
+      });
     }
 
-    this.groupedCustomers = Array.from(map.values());
+    const group = map.get(assigneeId)!;
+    group.ordersCount++;
+    group.orders.push(order);
   }
+
+  this.groupedCustomers = Array.from(map.values());
+}
 
   openCustomerOrders(customer: CustomerGroup) {
     this.selectedCustomer = customer;
@@ -242,11 +242,11 @@ export class DashboardComponent implements OnInit {
 
 
 
-  getComplaintTypes() {
-    this.http.getAllData('ComplaintTypes').subscribe((res: any) => {
-      this.complaintTypes = res;
-    });
-  }
+  // getComplaintTypes() {
+  //   this.http.getAllData('ComplaintTypes').subscribe((res: any) => {
+  //     this.complaintTypes = res;
+  //   });
+  // }
 
   getCauses() {
     this.http.getAllData('Cause').subscribe((res: any) => {
