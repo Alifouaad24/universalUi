@@ -107,6 +107,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/InventoryToPublish/routes').then((m) => m.routes)
       },
       {
+        path: 'web-hosting',
+        loadChildren: () => import('./views/WebHosting/routes').then((m) => m.routes)
+      },
+      {
         path: 'inventory-list',
         loadChildren: () => import('./views/ComplatedInventory/routes').then((m) => m.routes)
       },

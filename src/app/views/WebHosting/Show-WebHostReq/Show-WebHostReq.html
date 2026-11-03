@@ -1,0 +1,111 @@
+<div *ngIf="selectedBusinessId != 13" class="m-2 p-2">
+  <button class="btn btn-primary" routerLink="./add-requestWebHosting">
+    Add
+  </button>
+</div>
+<div class="card">
+  <div *ngIf="selectedBusinessId == 13" class="card-header">
+    Hosts
+  </div>
+  <div *ngIf="selectedBusinessId != 13" class="card-header">
+    My Hosts
+  </div>
+  <div class="card-body">
+    <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 150px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div *ngIf="!isLoading && message" class="alert alert-danger">{{ message }}</div>
+    <table *ngIf="requstes.length > 0" class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Domain</th>
+          <th>Status</th>
+          <th *ngIf="selectedBusinessId == 13">Requester</th>
+          <!-- <th>Actions</th> -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let type of requstes; index as i">
+          <td>{{ i + 1 }}</td>
+          <td>{{ type.name }}</td>
+          <td>{{ type.domain }}</td>
+          <td *ngIf="selectedBusinessId != 13"> {{ type.orderStatus?.statusEn }}</td>
+          <td *ngIf="selectedBusinessId == 13">
+            <c-dropdown>
+              <button cButton cDropdownToggle size="m" [color]="
+                    type.orderStatus?.statusEn === 'In progress' ? 'warning' :
+                    type.orderStatus?.statusEn === 'Done' ? 'success' :
+                    type.orderStatus?.statusEn === 'Canceled' ? 'danger' : 'secondary'
+                  " variant="outline">
+                {{ type.orderStatus?.statusEn || 'Select Status' }}
+              </button>
+              <ul cDropdownMenu>
+                <li>
+                  <button cDropdownItem (click)="changeStatus(type, 12, 'In progress')">
+                    <c-badge color="warning" class="me-2">&nbsp;</c-badge>
+                    On Progress
+                  </button>
+                </li>
+                <li>
+                  <button cDropdownItem (click)="changeStatus(type, 13, 'Done')">
+                    <c-badge color="success" class="me-2">&nbsp;</c-badge>
+                    Done
+                  </button>
+                </li>
+                <li>
+                  <button cDropdownItem (click)="changeStatus(type, 30, 'Canceled')">
+                    <c-badge color="danger" class="me-2">&nbsp;</c-badge>
+                    Reject
+                  </button>
+                </li>
+              </ul>
+            </c-dropdown>
+
+          </td>
+          <td *ngIf="selectedBusinessId == 13">{{ type.assignerName }}</td>
+          <!-- <td>
+            <ng-container *ngIf="requstes.length">
+              <button class="btn btn-sm btn-primary me-1" [routerLink]="['./add-edit-Category']" [queryParams]="{ Category: type | json}">
+                <c-icon name="cil-pencil"></c-icon>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="confirmDelete(type)">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+            </ng-container>
+          </td> -->
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<c-modal [(visible)]="showDeleteModal" [size]="'sm'">
+  <c-modal-header>Confirm Delete</c-modal-header>
+  <c-modal-body>
+    Are you sure you want to delete {{ selectedType?.name }}?
+  </c-modal-body>
+  <c-modal-footer>
+    <button class="btn btn-secondary" (click)="showDeleteModal = false">Cancel</button>
+    <button class="btn btn-danger" (click)="deleteBusinessType(selectedType)">Delete</button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- Toaster -->
+<c-toaster placement="top-end" class="p-3">
+  <c-toast (timer)="onTimerChange($event)" (visibleChange)="onVisibleChange($event)" [visible]="toastVisible()"
+    [autohide]="autoHideToast()" [delay]="3000">
+    <c-toast-header>
+      Delete!
+    </c-toast-header>
+    <c-toast-body>
+      <p>{{ toastMessage() }}</p>
+      <c-progress thin [value]="percentage()" />
+    </c-toast-body>
+  </c-toast>
+</c-toaster>
