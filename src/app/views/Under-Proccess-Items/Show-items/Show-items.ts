@@ -1161,4 +1161,15 @@ export class ShowItemsComponent implements OnInit {
       (this.currentScrapedImageIndex - 1 + images.length) % images.length;
   }
 
+    deleteImage(image: any) {
+    if (!image) return;
+    this.http.putData(`Item/DeleteImages`, {imagesIds: [image.itemImageId]}).subscribe(res =>{
+      console.log(res)
+      this.selectedItem!.images = this.selectedItem?.images.filter((img: any) => img.itemImageId !== image.itemImageId);
+      this.toastMessage.set('Image deleted successfully from the item.');
+      this.toastVisible.set(true);
+      this.cdr.detectChanges();
+    })
+  }
+
 }

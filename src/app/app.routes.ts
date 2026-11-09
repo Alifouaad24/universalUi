@@ -111,6 +111,10 @@ export const routes: Routes = [
         loadChildren: () => import('./views/WebHosting/routes').then((m) => m.routes)
       },
       {
+        path: 'shipping-taaref',
+        loadChildren: () => import('./views/shipping taarefs/routes').then((m) => m.routes)
+      },
+      {
         path: 'inventory-list',
         loadChildren: () => import('./views/ComplatedInventory/routes').then((m) => m.routes)
       },

@@ -318,6 +318,7 @@ export class ShowInventoryComponent implements OnInit {
   fullFkuToScrapeByAinAlfhd?: string;
   currentInventoryId?: number;
   fullUPCToScrapeByAinAlfhd?: string
+
   ShowScrape(itemId?: number, inventoryId?: number, platform?: string) {
     this.platformToScrape = platform
     console.log(platform);
@@ -577,8 +578,7 @@ export class ShowInventoryComponent implements OnInit {
         break;
 
       case 'Completed':
-        // ناقصه معلومات (نفس شرط الـ BIO الأحمر)
-        this.inventory = all.filter(inv => inv.Product_name?.trim() && inv.item?.itemDescription?.trim() && inv.item?.itemDetails?.trim() && inv.item?.basePrice != null && inv.itemCondition?.itemConditionId != null && inv.item?.carBrandId != null);
+        this.inventory = all.filter(inv => inv.item?.itemDescription?.trim() && inv.item?.itemDetails?.trim() && inv.item?.basePrice != null && inv.itemCondition?.itemConditionId != null && inv.item?.carBrandId != null);
         break;
 
       default: // All
@@ -1946,6 +1946,35 @@ export class ShowInventoryComponent implements OnInit {
       this.isScraping = true;
 
       this.http.getAllData(`AutoScraper/HomeDepotSearch?searchTerm=${term}`).subscribe({
+        next: (res: any) => {
+          console.log('Scraped product from Home Depot:', res);
+
+          // الرد الآن هو المنتج نفسه مباشرة (وليس res.products)
+          this.scrapedProduct = res?.id ? this.normalizeProduct(res) : null;
+          if (!this.scrapedProduct) {
+            alert('No product found for this UPC');
+          }
+
+          this.showScrapDetailsBool = true;
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error scraping from Home Depot:', err);
+          const message = err?.error?.message || 'Error scraping from Home Depot';
+          const details = err?.error?.details ? '\n' + err.error.details : '';
+          alert(message + details);
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return
+    }
+
+    if (this.selectedPlatform?.description == 'fergusonhome') {
+      this.isScraping = true;
+
+      this.http.getAllData(`AutoScraper/ScrapeByFergusonhomeHtml?searchTerm=${term}`).subscribe({
         next: (res: any) => {
           console.log('Scraped product from Home Depot:', res);
 

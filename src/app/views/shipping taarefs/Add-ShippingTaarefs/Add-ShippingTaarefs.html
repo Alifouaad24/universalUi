@@ -1,0 +1,76 @@
+<div class="card">
+  <div class="card-header">
+    Add Shipping Tariffs
+  </div>
+
+  <div class="card-body">
+
+    <div class="row">
+
+      <!-- Businesses -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Business</label>
+        <select class="form-select" [(ngModel)]="model.business_id">
+          <option [ngValue]="null">Select Business</option>
+          <option *ngFor="let country of businesses" [ngValue]="country.business_id">
+            {{ country.business_name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Countries -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Country</label>
+        <select class="form-select" [(ngModel)]="model.countryId">
+          <option [ngValue]="null">Select Country</option>
+          <option *ngFor="let country of countries" [ngValue]="country.countryId">
+            {{ country.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Platforms -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Platform</label>
+        <select class="form-select" [(ngModel)]="model.platform_id">
+          <option [ngValue]="null">Select Platform</option>
+          <option *ngFor="let platform of platforms" [ngValue]="platform.platform_id">
+            {{ platform.description }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Shipping Types -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Shipping Type</label>
+        <select class="form-select" [(ngModel)]="model.shippingTypeId">
+          <option [ngValue]="null">Select Shipping Type</option>
+          <option *ngFor="let shipping of shippingTypes" [ngValue]="shipping.shippingTypeId">
+            {{ shipping.description }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Tariffs -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Tariff</label>
+        <select class="form-select" [(ngModel)]="model.taarefId">
+          <option [ngValue]="null">Select Tariff</option>
+          <option *ngFor="let tariff of tariffs" [ngValue]="tariff.taarefId">
+            {{ tariff.description }}
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <button [disabled]="loading" class="btn btn-primary" (click)="addShippingTaaref()">
+      Add
+    </button>
+
+    <div *ngIf="message" class="mt-3 alert alert-info">
+      {{ message }}
+    </div>
+
+  </div>
+</div>

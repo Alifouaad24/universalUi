@@ -140,21 +140,16 @@
 
 
 <c-modal [(visible)]="isItemModalVisible" size="lg" alignment="center">
-
   <c-modal-header>
     <h5 cModalTitle>
       #{{ selectedItem?.itemId }} |
       {{ selectedItem?.upc | titlecase }}
     </h5>
   </c-modal-header>
-
   <c-modal-body *ngIf="selectedItem">
-
     <div class="row g-3">
-
       <!-- ==================== Images ==================== -->
       <div class="col-md-5 text-center">
-
         <!-- Main Image -->
         <img [src]="selectedImageUrl || 'assets/no-image.png'" class="img-fluid rounded"
           [alt]="selectedItem.upc || 'Item image'" style="
@@ -162,33 +157,36 @@
             width: 100%;
             object-fit: contain;
           " />
-
         <!-- Thumbnails -->
         <div class="d-flex flex-wrap justify-content-center gap-2 mt-3"
           *ngIf="selectedItem.images && selectedItem.images.length > 1">
 
-          <img *ngFor="let img of selectedItem.images" [src]="img.imageUrl" [alt]="selectedItem.upc || 'Item image'"
-            class="rounded" [ngClass]="{
-              'border': true,
-              'border-primary': selectedImageUrl === img.imageUrl,
-              'border-secondary': selectedImageUrl !== img.imageUrl
-            }" style="
-              width: 60px;
-              height: 60px;
-              object-fit: cover;
-              cursor: pointer;
-            " (click)="selectedImageUrl = img.imageUrl" />
+          <div *ngFor="let img of selectedItem.images" class="position-relative">
+            <img [src]="img.imageUrl" [alt]="selectedItem.upc || 'Item image'" class="rounded" [ngClass]="{
+        'border': true,
+        'border-primary': selectedImageUrl === img.imageUrl,
+        'border-secondary': selectedImageUrl !== img.imageUrl
+      }" style="
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        cursor: pointer;
+      " (click)="selectedImageUrl = img.imageUrl" />
+
+            <!-- زر الحذف -->
+            <button type="button"
+              class="btn btn-danger btn-sm rounded-circle position-absolute top-0 start-100 translate-middle p-0 d-flex align-items-center justify-content-center"
+              style="width: 20px; height: 20px; font-size: 11px; line-height: 1;" title="Delete image"
+              (click)="deleteImage(img); $event.stopPropagation()">
+              ✕
+            </button>
+          </div>
 
         </div>
-
       </div>
-
-
       <!-- ==================== Item Information ==================== -->
       <div class="col-md-7">
-
         <ul class="list-group list-group-flush">
-
           <!-- SKU -->
           <li class="list-group-item d-flex justify-content-between align-items-center"
             [class.border]="!selectedItem.sku" [class.border-danger]="!selectedItem.sku"
@@ -201,8 +199,6 @@
               {{ selectedItem.sku || 'N/A' }}
             </span>
           </li>
-
-
           <!-- UPC -->
           <li class="list-group-item d-flex justify-content-between align-items-center"
             [class.border]="!selectedItem.upc" [class.border-danger]="!selectedItem.upc"
@@ -210,13 +206,10 @@
             <span class="text-muted">
               UPC
             </span>
-
             <span>
               {{ selectedItem.upc || 'N/A' }}
             </span>
           </li>
-
-
           <!-- Price -->
           <li class="list-group-item d-flex justify-content-between align-items-center"
             [class.border]="selectedItem.basePrice == null" [class.border-danger]="selectedItem.basePrice == null"
@@ -224,7 +217,6 @@
             <span class="text-muted">
               Price
             </span>
-
             <span class="fw-bold text-primary">
               {{
               selectedItem.basePrice != null
@@ -233,8 +225,6 @@
               }}
             </span>
           </li>
-
-
           <!-- Category -->
           <li class="list-group-item d-flex justify-content-between align-items-center"
             [class.border]="!selectedItem.category" [class.border-danger]="!selectedItem.category"
@@ -244,53 +234,41 @@
             </span>
 
             <span>
-              {{ selectedItem.category.name || 'N/A' }}
+              {{ selectedItem.category?.name || 'N/A' }}
             </span>
           </li>
-
-
           <!-- Brand -->
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <span class="text-muted">
               Brand
             </span>
-
             <span>
-              {{ selectedItem.carBrand.carBrandName || 'N/A' }}
+              {{ selectedItem.carBrand?.carBrandName || 'N/A' }}
             </span>
           </li>
-
-
           <!-- Color -->
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <span class="text-muted">
               Color
             </span>
-
             <span>
               {{ selectedItem.color || 'N/A' }}
             </span>
           </li>
-
-
           <!-- Size -->
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <span class="text-muted">
               Size
             </span>
-
             <span>
               {{ selectedItem.size || 'N/A' }}
             </span>
           </li>
-
-
           <!-- Status -->
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <span class="text-muted">
               Status
             </span>
-
             <span class="badge" [ngClass]="
                 selectedItem.isActive
                   ? 'bg-success'
@@ -303,18 +281,13 @@
               }}
             </span>
           </li>
-
         </ul>
-
       </div>
-
     </div>
-
   </c-modal-body>
   <c-modal-footer>
     <!--  -->
-    <button cButton color="danger"
-      *ngIf="selectedItem?.isScraped == false"
+    <button cButton color="danger" *ngIf="selectedItem?.isScraped == false"
       (click)="openItemModalScrapeItemModal(selectedItem)">
       Scrape item
     </button>
@@ -435,199 +408,198 @@
               <!-- PRODUCT RESULT -->
               <!-- ========================= -->
               <div *ngIf="scrapedProduct">
-      <!-- Status + Breadcrumbs -->
-      <div class="border-bottom pb-3 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-success"><i class="fas fa-check me-1"></i>Scraped</span>
-          <span class="text-muted small">Product found successfully</span>
-        </div>
-        <nav *ngIf="scrapedProduct.breadcrumbs.length" class="small">
-          <ng-container *ngFor="let crumb of scrapedProduct.breadcrumbs; let last = last">
-            <a [href]="crumb.url" target="_blank" class="text-decoration-none">{{ crumb.label }}</a>
-            <i *ngIf="!last" class="fas fa-chevron-right mx-1 text-muted" style="font-size: 10px;"></i>
-          </ng-container>
-        </nav>
-      </div>
+                <!-- Status + Breadcrumbs -->
+                <div class="border-bottom pb-3 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Scraped</span>
+                    <span class="text-muted small">Product found successfully</span>
+                  </div>
+                  <nav *ngIf="scrapedProduct.breadcrumbs.length" class="small">
+                    <ng-container *ngFor="let crumb of scrapedProduct.breadcrumbs; let last = last">
+                      <a [href]="crumb.url" target="_blank" class="text-decoration-none">{{ crumb.label }}</a>
+                      <i *ngIf="!last" class="fas fa-chevron-right mx-1 text-muted" style="font-size: 10px;"></i>
+                    </ng-container>
+                  </nav>
+                </div>
 
-      <div class="row g-4">
-        <!-- ========================= -->
-        <!-- IMAGES -->
-        <!-- ========================= -->
-        <div class="col-12 col-lg-5">
-          <div class="border rounded-3 p-3 bg-light text-center position-relative">
-            <ng-container *ngIf="scrapedImages.length; else noImage">
-              <img [src]="scrapedImages[currentScrapedImageIndex]" [alt]="scrapedProduct.name"
-                   class="img-fluid" style="height: 320px; width: 100%; object-fit: contain;" />
+                <div class="row g-4">
+                  <!-- ========================= -->
+                  <!-- IMAGES -->
+                  <!-- ========================= -->
+                  <div class="col-12 col-lg-5">
+                    <div class="border rounded-3 p-3 bg-light text-center position-relative">
+                      <ng-container *ngIf="scrapedImages.length; else noImage">
+                        <img [src]="scrapedImages[currentScrapedImageIndex]" [alt]="scrapedProduct.name"
+                          class="img-fluid" style="height: 320px; width: 100%; object-fit: contain;" />
 
-              <ng-container *ngIf="scrapedImages.length > 1">
-                <button type="button"
-                        class="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
-                        style="width: 34px; height: 34px;" (click)="previousScrapedImage()">
-                  <i class="fas fa-chevron-left"></i>
-                </button>
-                <button type="button"
-                        class="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
-                        style="width: 34px; height: 34px;" (click)="nextScrapedImage()">
-                  <i class="fas fa-chevron-right"></i>
-                </button>
-              </ng-container>
+                        <ng-container *ngIf="scrapedImages.length > 1">
+                          <button type="button"
+                            class="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle"
+                            style="width: 34px; height: 34px;" (click)="previousScrapedImage()">
+                            <i class="fas fa-chevron-left"></i>
+                          </button>
+                          <button type="button"
+                            class="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle"
+                            style="width: 34px; height: 34px;" (click)="nextScrapedImage()">
+                            <i class="fas fa-chevron-right"></i>
+                          </button>
+                        </ng-container>
 
-              <div class="mt-2 small text-muted">
-                {{ currentScrapedImageIndex + 1 }} / {{ scrapedImages.length }}
-              </div>
-            </ng-container>
-            <ng-template #noImage>
-              <div class="text-muted py-5"><i class="fas fa-image fs-1 mb-2 d-block"></i>No images</div>
-            </ng-template>
-          </div>
+                        <div class="mt-2 small text-muted">
+                          {{ currentScrapedImageIndex + 1 }} / {{ scrapedImages.length }}
+                        </div>
+                      </ng-container>
+                      <ng-template #noImage>
+                        <div class="text-muted py-5"><i class="fas fa-image fs-1 mb-2 d-block"></i>No images</div>
+                      </ng-template>
+                    </div>
 
-          <!-- Thumbnails -->
-          <div *ngIf="scrapedImages.length > 1" class="d-flex gap-2 mt-2 overflow-auto pb-1">
-            <img *ngFor="let img of scrapedImages; let i = index"
-                 [src]="img" (click)="selectScrapedImage(i)"
-                 class="rounded border bg-white flex-shrink-0"
-                 [class.border-primary]="i === currentScrapedImageIndex"
-                 [class.border-2]="i === currentScrapedImageIndex"
-                 style="width: 60px; height: 60px; object-fit: contain; cursor: pointer;" />
-          </div>
-        </div>
+                    <!-- Thumbnails -->
+                    <div *ngIf="scrapedImages.length > 1" class="d-flex gap-2 mt-2 overflow-auto pb-1">
+                      <img *ngFor="let img of scrapedImages; let i = index" [src]="img" (click)="selectScrapedImage(i)"
+                        class="rounded border bg-white flex-shrink-0"
+                        [class.border-primary]="i === currentScrapedImageIndex"
+                        [class.border-2]="i === currentScrapedImageIndex"
+                        style="width: 60px; height: 60px; object-fit: contain; cursor: pointer;" />
+                    </div>
+                  </div>
 
-        <!-- ========================= -->
-        <!-- MAIN INFO -->
-        <!-- ========================= -->
-        <div class="col-12 col-lg-7">
-          <!-- Brand -->
-          <div *ngIf="scrapedProduct.brandName" class="mb-1">
-            <a *ngIf="scrapedProduct.brandUrl; else brandText" [href]="scrapedProduct.brandUrl" target="_blank"
-               class="fw-semibold text-uppercase small text-decoration-none">{{ scrapedProduct.brandName }}</a>
-            <ng-template #brandText>
-              <span class="fw-semibold text-uppercase small">{{ scrapedProduct.brandName }}</span>
-            </ng-template>
-          </div>
+                  <!-- ========================= -->
+                  <!-- MAIN INFO -->
+                  <!-- ========================= -->
+                  <div class="col-12 col-lg-7">
+                    <!-- Brand -->
+                    <div *ngIf="scrapedProduct.brandName" class="mb-1">
+                      <a *ngIf="scrapedProduct.brandUrl; else brandText" [href]="scrapedProduct.brandUrl"
+                        target="_blank" class="fw-semibold text-uppercase small text-decoration-none">{{
+                        scrapedProduct.brandName }}</a>
+                      <ng-template #brandText>
+                        <span class="fw-semibold text-uppercase small">{{ scrapedProduct.brandName }}</span>
+                      </ng-template>
+                    </div>
 
-          <!-- Name -->
-          <h5 class="fw-bold mb-2">{{ scrapedProduct.name }}</h5>
+                    <!-- Name -->
+                    <h5 class="fw-bold mb-2">{{ scrapedProduct.name }}</h5>
 
-          <!-- Rating -->
-          <div *ngIf="scrapedProduct.avg_rating" class="d-flex align-items-center gap-2 mb-3">
-            <span class="text-warning">
-              <i *ngFor="let s of [1, 2, 3, 4, 5]" class="me-1"
-                 [ngClass]="starType(s) === 'full' ? 'fas fa-star'
+                    <!-- Rating -->
+                    <div *ngIf="scrapedProduct.avg_rating" class="d-flex align-items-center gap-2 mb-3">
+                      <span class="text-warning">
+                        <i *ngFor="let s of [1, 2, 3, 4, 5]" class="me-1" [ngClass]="starType(s) === 'full' ? 'fas fa-star'
                           : starType(s) === 'half' ? 'fas fa-star-half-alt'
                           : 'far fa-star'"></i>
-            </span>
-            <span class="fw-semibold">{{ scrapedProduct.avg_rating | number: '1.1-1' }}</span>
-            <span class="text-muted small">({{ scrapedProduct.review_count || 0 }} reviews)</span>
-          </div>
+                      </span>
+                      <span class="fw-semibold">{{ scrapedProduct.avg_rating | number: '1.1-1' }}</span>
+                      <span class="text-muted small">({{ scrapedProduct.review_count || 0 }} reviews)</span>
+                    </div>
 
-          <!-- Price -->
-          <div class="fs-3 fw-bold text-success mb-3">
-            {{ scrapedProduct.pricing?.current_price != null ? ('$' + scrapedProduct.pricing.current_price) : '-' }}
-          </div>
+                    <!-- Price -->
+                    <div class="fs-3 fw-bold text-success mb-3">
+                      {{ scrapedProduct.pricing?.current_price != null ? ('$' + scrapedProduct.pricing.current_price) :
+                      '-' }}
+                    </div>
 
-          <!-- Identifiers -->
-          <div class="row g-2 mb-3">
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">Item ID</small>
-                <strong>{{ scrapedProduct.item_id || '-' }}</strong>
-              </div>
-            </div>
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">Model Number</small>
-                <strong>{{ scrapedProduct.model_number || '-' }}</strong>
-              </div>
-            </div>
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">UPC</small>
-                <strong>{{ scrapedProduct.upc || '-' }}</strong>
-              </div>
-            </div>
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">SKU</small>
-                <strong>{{ scrapedProduct.sku || '-' }}</strong>
-              </div>
-            </div>
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">Min Order Qty</small>
-                <strong>{{ scrapedProduct.min_order_qty || '-' }}</strong>
-              </div>
-            </div>
-            <div class="col-6 col-md-4">
-              <div class="border rounded p-2 h-100">
-                <small class="text-muted d-block">Saves</small>
-                <strong>{{ scrapedProduct.saves_count ?? '-' }}</strong>
-              </div>
-            </div>
-          </div>
+                    <!-- Identifiers -->
+                    <div class="row g-2 mb-3">
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">Item ID</small>
+                          <strong>{{ scrapedProduct.item_id || '-' }}</strong>
+                        </div>
+                      </div>
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">Model Number</small>
+                          <strong>{{ scrapedProduct.model_number || '-' }}</strong>
+                        </div>
+                      </div>
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">UPC</small>
+                          <strong>{{ scrapedProduct.upc || '-' }}</strong>
+                        </div>
+                      </div>
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">SKU</small>
+                          <strong>{{ scrapedProduct.sku || '-' }}</strong>
+                        </div>
+                      </div>
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">Min Order Qty</small>
+                          <strong>{{ scrapedProduct.min_order_qty || '-' }}</strong>
+                        </div>
+                      </div>
+                      <div class="col-6 col-md-4">
+                        <div class="border rounded p-2 h-100">
+                          <small class="text-muted d-block">Saves</small>
+                          <strong>{{ scrapedProduct.saves_count ?? '-' }}</strong>
+                        </div>
+                      </div>
+                    </div>
 
-          <!-- Highlights -->
-          <div *ngIf="scrapedProduct.highlights.length">
-            <h6 class="fw-bold mb-2">Highlights</h6>
-            <ul class="list-unstyled mb-0">
-              <li *ngFor="let h of scrapedProduct.highlights" class="d-flex gap-2 mb-1">
-                <i class="fas fa-check-circle text-success mt-1"></i>
-                <span>{{ h }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+                    <!-- Highlights -->
+                    <div *ngIf="scrapedProduct.highlights.length">
+                      <h6 class="fw-bold mb-2">Highlights</h6>
+                      <ul class="list-unstyled mb-0">
+                        <li *ngFor="let h of scrapedProduct.highlights" class="d-flex gap-2 mb-1">
+                          <i class="fas fa-check-circle text-success mt-1"></i>
+                          <span>{{ h }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
 
-      <!-- ========================= -->
-      <!-- DESCRIPTION -->
-      <!-- ========================= -->
-      <div *ngIf="scrapedProduct.description" class="mt-4">
-        <h6 class="fw-bold mb-2">Description</h6>
-        <p class="text-muted mb-1" style="white-space: pre-line;"
-           [style.display]="showFullDescription ? 'block' : '-webkit-box'"
-           [style.-webkit-line-clamp]="showFullDescription ? null : 4"
-           [style.-webkit-box-orient]="'vertical'"
-           [style.overflow]="'hidden'">
-          {{ scrapedProduct.description }}
-        </p>
-        <button type="button" class="btn btn-link btn-sm p-0" (click)="showFullDescription = !showFullDescription">
-          {{ showFullDescription ? 'Show less' : 'Show more' }}
-        </button>
-      </div>
+                <!-- ========================= -->
+                <!-- DESCRIPTION -->
+                <!-- ========================= -->
+                <div *ngIf="scrapedProduct.description" class="mt-4">
+                  <h6 class="fw-bold mb-2">Description</h6>
+                  <p class="text-muted mb-1" style="white-space: pre-line;"
+                    [style.display]="showFullDescription ? 'block' : '-webkit-box'"
+                    [style.-webkit-line-clamp]="showFullDescription ? null : 4" [style.-webkit-box-orient]="'vertical'"
+                    [style.overflow]="'hidden'">
+                    {{ scrapedProduct.description }}
+                  </p>
+                  <button type="button" class="btn btn-link btn-sm p-0"
+                    (click)="showFullDescription = !showFullDescription">
+                    {{ showFullDescription ? 'Show less' : 'Show more' }}
+                  </button>
+                </div>
 
-      <!-- ========================= -->
-      <!-- SPECIFICATIONS (incl. dimensions) -->
-      <!-- ========================= -->
-      <div *ngIf="scrapedProduct.specifications.length" class="mt-4">
-        <h6 class="fw-bold mb-2">Specifications</h6>
-        <div class="row g-3">
-          <div *ngFor="let group of scrapedProduct.specifications" class="col-12 col-md-6">
-            <div class="border rounded-3 h-100">
-              <div class="px-3 py-2 fw-semibold border-bottom rounded-top-3">
-                <i class="fas me-2 text-primary"
-                   [ngClass]="group.group === 'Dimensions' ? 'fa-ruler-combined'
+                <!-- ========================= -->
+                <!-- SPECIFICATIONS (incl. dimensions) -->
+                <!-- ========================= -->
+                <div *ngIf="scrapedProduct.specifications.length" class="mt-4">
+                  <h6 class="fw-bold mb-2">Specifications</h6>
+                  <div class="row g-3">
+                    <div *ngFor="let group of scrapedProduct.specifications" class="col-12 col-md-6">
+                      <div class="border rounded-3 h-100">
+                        <div class="px-3 py-2 fw-semibold border-bottom rounded-top-3">
+                          <i class="fas me-2 text-primary" [ngClass]="group.group === 'Dimensions' ? 'fa-ruler-combined'
                             : group.group?.includes('Warranty') ? 'fa-shield-alt'
                             : 'fa-list-ul'"></i>
-                {{ group.group }}
-              </div>
-              <table class="table table-sm mb-0">
-                <tbody>
-                  <tr *ngFor="let attr of group.attributes">
-                    <td class="text-muted ps-3" style="width: 50%;">{{ attr.label }}</td>
-                    <td class="fw-semibold">{{ attr.detail }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+                          {{ group.group }}
+                        </div>
+                        <table class="table table-sm mb-0">
+                          <tbody>
+                            <tr *ngFor="let attr of group.attributes">
+                              <td class="text-muted ps-3" style="width: 50%;">{{ attr.label }}</td>
+                              <td class="fw-semibold">{{ attr.detail }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-      <!-- ========================= -->
-      <!-- AVAILABILITY -->
-      <!-- ========================= -->
-      <div *ngIf="scrapedProduct.availability" class="mt-4">
-        <!-- <h6 class="fw-bold mb-2">
+                <!-- ========================= -->
+                <!-- AVAILABILITY -->
+                <!-- ========================= -->
+                <div *ngIf="scrapedProduct.availability" class="mt-4">
+                  <!-- <h6 class="fw-bold mb-2">
           Availability
           <span *ngIf="scrapedProduct.availability.store_name" class="text-muted fw-normal small ms-2">
             <i class="fas fa-map-marker-alt me-1"></i>
@@ -635,7 +607,7 @@
             ({{ scrapedProduct.availability.store_stock ?? 0 }} in store)
           </span>
         </h6> -->
-        <!-- <div class="table-responsive">
+                  <!-- <div class="table-responsive">
           <table class="table table-bordered table-sm align-middle mb-0">
             <thead class="table-light">
               <tr>
@@ -663,17 +635,17 @@
             </tbody>
           </table>
         </div> -->
-      </div>
+                </div>
 
-      <!-- ========================= -->
-      <!-- PRODUCT URL -->
-      <!-- ========================= -->
-      <div class="mt-4">
-        <a [href]="scrapedProduct.url" target="_blank" class="btn btn-outline-primary w-100">
-          <i class="fas fa-external-link-alt me-2"></i>View Product on Home Depot
-        </a>
-      </div>
-    </div>
+                <!-- ========================= -->
+                <!-- PRODUCT URL -->
+                <!-- ========================= -->
+                <div class="mt-4">
+                  <a [href]="scrapedProduct.url" target="_blank" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-external-link-alt me-2"></i>View Product on Home Depot
+                  </a>
+                </div>
+              </div>
 
               <div class="d-flex justify-content-end gap-2 mt-4" *ngIf="scrapedProduct">
                 <button type="button" class="btn btn-secondary" (click)="showScrapDetailsBool = false">

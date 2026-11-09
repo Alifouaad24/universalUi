@@ -222,6 +222,22 @@
                     </span>
                   </div>
                 </div>
+                <div *ngIf="order?.createdDate">
+                  <small class="text-muted">Created At</small>
+                  <div>
+                    <span class="badge bg-success">
+                      {{ order?.createdDate | date:'yyyy-MM-dd' }}
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="order?.business?.business_name">
+                  <small class="text-muted">Business</small>
+                  <div>
+                    <span class="badge bg-secundary">
+                      {{ order?.business.business_name }}
+                    </span>
+                  </div>
+                </div>
 
                 <div *ngIf="order?.startTaskProgressdDate">
                   <small class="text-muted">Active Duration</small>

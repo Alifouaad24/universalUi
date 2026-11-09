@@ -27,7 +27,7 @@ import {
   ToastHeaderComponent,
   BadgeModule,
   ButtonModule,
-  DropdownModule,  
+  DropdownModule,
 } from '@coreui/angular'
 import { HttpConnectService } from '../../../Services/http-connect.service';
 import { BusinessType } from '../../../Models/Business/BusinessType';
@@ -49,7 +49,7 @@ import { Country } from '../../../Models/CountryModel';
     ButtonDirective,
     ProgressComponent,
     ToasterComponent,
-    ToastComponent,DropdownModule, ButtonModule, BadgeModule,
+    ToastComponent, DropdownModule, ButtonModule, BadgeModule,
     ToastHeaderComponent,
 
     ToastBodyComponent]
@@ -60,7 +60,7 @@ export class ShowCategoriesComponent implements OnInit {
   isLoading: boolean = false;
   message?: string
   showDeleteModal: boolean = false;
-  selectedType?: Country;
+  selectedType?: any;
   ///// for toastr ////////
   position = 'top-end';
   toastVisible = signal(false);
@@ -68,6 +68,7 @@ export class ShowCategoriesComponent implements OnInit {
   percentage = signal(0);
   autoHideToast = signal(true);
   selectedBusinessId?: number | null
+  showManageModal: boolean = false;
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
@@ -76,8 +77,6 @@ export class ShowCategoriesComponent implements OnInit {
     this.selectedBusinessId = localStorage.getItem('businessId') ? Number(localStorage.getItem('businessId')) : null;
     this.getAllMyRequestHosting()
   }
-
-
 
   getAllMyRequestHosting() {
     this.isLoading = true;
@@ -100,22 +99,31 @@ export class ShowCategoriesComponent implements OnInit {
     );
   }
 
-  confirmDelete(type: Country) {
+
+
+  showManageModall(type: any) {
     this.selectedType = type;
-    this.showDeleteModal = true;
+    this.showManageModal = true;
   }
 
-  deleteBusinessType(type?: any) {
-    // if (!type) return;
-    // this.http.deleteData(`Category/${type.category_id}`,).subscribe(() => {
-    //   this.Categories = this.Categories.filter(t => t.category_id !== type.category_id);
-    //   this.showDeleteModal = false;
-    //   this.toastMessage.set(`${type.name} deleted successfully`);
-    //   this.toastVisible.set(true);
-    // },(error) =>{
-    //   this.toastMessage.set(`An error occured during delete (${type.name})`);
-    //   this.toastVisible.set(true);
-    // });
+  SaveHostData() {
+
+    var payload = {
+      "domain": this.selectedType.domain,
+      "name": this.selectedType.name,
+      "port": this.selectedType.port,
+      "business_id": this.selectedType.business_id
+    }
+
+    console.log(payload)
+    this.http.putData(`Orders/${this.selectedType.globalOrderId}`, payload).subscribe(() => {
+      this.showDeleteModal = false;
+      this.toastMessage.set(`${this.selectedType.name} updated successfully`);
+      this.toastVisible.set(true);
+    }, (error) => {
+      this.toastMessage.set(`An error occured during update (${this.selectedType.name})`);
+      this.toastVisible.set(true);
+    });
   }
 
   onVisibleChange(visible: boolean) {
