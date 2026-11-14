@@ -1,55 +1,125 @@
-<div class="container my-4">
-  <a cButton color="primary" variant="outline" routerLink="../add-edit-business">
-    Add Business
-  </a>
+<div class="d-flex justify-content-between align-items-center">
+  <div *ngIf="viewType === 'Groups'" class="mb-4">
+    <a cButton color="warning" variant="outline" (click)="openAddGroupModal()">
+      Add Group
+    </a>
+  </div>
+  <div class="mb-4" *ngIf="isAdmin()">
+    <a cButton color="primary" variant="outline" routerLink="../add-edit-business">
+      Add Business
+    </a>
+  </div>
 </div>
 
 
 <c-card>
   <c-card-header>
-    <strong>Businesses List</strong>
+    <div class="d-flex justify-content-between align-items-center">
+
+      <strong>
+        {{ viewType === 'Businesses' ? 'Businesses List' : 'Groups List' }}
+      </strong>
+
+      <div class="d-flex align-items-center gap-2">
+
+        <select class="form-control" [(ngModel)]="viewType" (change)="changeView()" style="width: 180px;">
+
+          <option value="Businesses">Businesses</option>
+          <option value="Groups">Groups</option>
+
+        </select>
+
+        <select *ngIf="isAdmin() && viewType === 'Businesses'" class="form-control"
+          [(ngModel)]="filterAppearBusinessesType" (change)="filterBusinesses()" style="width: 180px;">
+
+          <option value="All">All</option>
+          <option value="MyBusinesses">My Businesses</option>
+
+        </select>
+
+      </div>
+
+    </div>
   </c-card-header>
 
   <c-card-body>
-    <table cTable striped hover responsive>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Country</th>
-          <th>Status</th>
-          <th>Whatsapp</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+    <div *ngIf="viewType === 'Businesses'">
 
-      <tbody>
-        <tr *ngFor="let bus of Businesses; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ bus.business_name }}</td>
-          <td>{{ bus.country?.name }}</td>
-          <td>
-            <c-badge color="success" *ngIf="bus.is_active">Active</c-badge>
-            <c-badge color="secondary" *ngIf="!bus.is_active">Un active</c-badge>
-          </td>
-          <td>{{ bus.business_whatsapp }}</td>
-          <td>
-            <button cButton color="primary" size="sm" [routerLink]="['../add-edit-business']"
-              [queryParams]="{ bus: bus | json}">
-              <c-icon name="cilApplications"></c-icon>
-            </button>
-            <button cButton color="danger" size="sm" (click)="toggleLiveDemo(bus.business_id)" class="ms-2">
-              <c-icon name="cil-trash"></c-icon>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <table cTable striped hover responsive>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Status</th>
+            <th>Whatsapp</th>
+            <th *ngIf="isAdmin()">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let bus of Businesses; index as i">
+            <td>{{ i + 1 }}</td>
+            <td>{{ bus.business_name }}</td>
+            <td>{{ bus.country?.name }}</td>
+            <td>
+              <c-badge color="success" *ngIf="bus.is_active">Active</c-badge>
+              <c-badge color="secondary" *ngIf="!bus.is_active">Un active</c-badge>
+            </td>
+            <td>{{ bus.business_whatsapp }}</td>
+            <td *ngIf="isAdmin()">
+              <button cButton color="primary" size="sm" [routerLink]="['../add-edit-business']"
+                [queryParams]="{ bus: bus | json}">
+                <c-icon name="cilApplications"></c-icon>
+              </button>
+              <button cButton color="danger" size="sm" (click)="toggleLiveDemo(bus.business_id)" class="ms-2">
+                <c-icon name="cil-trash"></c-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <c-card *ngIf="viewType === 'Groups'">
+
+      <c-card-header>
+        <strong>Groups List</strong>
+      </c-card-header>
+
+      <c-card-body>
+
+        <table cTable striped hover responsive>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Group Name</th>
+              <th>Businesses Count</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let group of Groups; index as i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ group.groupName }}</td>
+              <td>
+                <c-badge color="info">
+                  {{ group.businesses?.length || 0 }}
+                </c-badge>
+              </td>
+              <td>{{ group.createdAt | date:'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="Groups.length === 0">
+              <td colspan="4" class="text-center">
+                No Groups Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </c-card-body>
+
+    </c-card>
   </c-card-body>
 </c-card>
-
-
-
 
 
 <c-modal id="liveDemoModal" [visible]="visible" (visibleChange)="handleLiveDemoChange($event)">
@@ -63,11 +133,53 @@
       Close
     </button>
     <button cButton color="danger" (click)="delete()" [disabled]="isDeleting">
-
       <c-spinner *ngIf="isDeleting" size="sm" class="me-2">
       </c-spinner>
       <span *ngIf="!isDeleting">Delete</span>
       <span *ngIf="isDeleting"></span>
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+
+<c-modal [visible]="groupModalVisible" (visibleChange)="groupModalVisible = $event">
+  <c-modal-header>
+    <h5 cModalTitle>Add Group</h5>
+    <button cButtonClose (click)="closeAddGroupModal()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <div class="mb-3">
+      <label class="form-label">Group Name</label>
+      <input type="text" class="form-control" [(ngModel)]="groupName" placeholder="Enter group name">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Select Businesses</label>
+      <select class="form-control" multiple [(ngModel)]="selectedBusinessIds" style="min-height: 180px;">
+        <option *ngFor="let bus of MyBusinesses" [ngValue]="bus.business_id">
+          {{ bus.business_name }}
+        </option>
+      </select>
+      <small class="text-body-secondary">
+        You can select multiple businesses using Ctrl (Windows) or Cmd (Mac).
+      </small>
+    </div>
+    <div *ngIf="selectedBusinessIds.length > 0" class="mt-3">
+      <strong>Selected Businesses ({{ selectedBusinessIds.length }}):</strong>
+      <div class="mt-2">
+        <c-badge color="info" class="me-1 mb-1" *ngFor="let id of selectedBusinessIds">
+          {{ getBusinessName(id) }}
+        </c-badge>
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="closeAddGroupModal()">
+      Back
+    </button>
+    <button cButton color="primary" (click)="saveGroup()" [disabled]="isSavingGroup">
+      <c-spinner *ngIf="isSavingGroup" size="sm" class="me-2">
+      </c-spinner>
+      {{ isSavingGroup ? 'Saving...' : 'Save' }}
     </button>
   </c-modal-footer>
 </c-modal>

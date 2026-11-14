@@ -39,8 +39,16 @@ export const routes: Routes = [
         loadChildren: () => import('./views/consumerBusiness/routes').then((m) => m.routes)
       },
       {
+        path: 'multimedia',
+        loadChildren: () => import('./views/Multimedia/routes').then((m) => m.routes)
+      },
+      {
         path: 'roles',
         loadChildren: () => import('./views/Roles/routes').then((m) => m.routes)
+      },
+            {
+        path: 'shipping-lists',
+        loadChildren: () => import('./views/Shipping-Lists/routes').then((m) => m.routes)
       },
       {
         path: 'finantial-items',

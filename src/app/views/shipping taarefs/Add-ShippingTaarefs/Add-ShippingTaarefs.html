@@ -1,76 +1,334 @@
-<div class="card">
-  <div class="card-header">
-    Add Shipping Tariffs
-  </div>
 
-  <div class="card-body">
+<c-row>
+  <c-col xs="12">
+    <c-card class="mb-4">
 
-    <div class="row">
+      <c-card-header>
+        <strong>
+          {{ idForEdit ? 'Edit Tariff' : 'Add New Tariff' }}
+        </strong>
+      </c-card-header>
 
-      <!-- Businesses -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Business</label>
-        <select class="form-select" [(ngModel)]="model.business_id">
-          <option [ngValue]="null">Select Business</option>
-          <option *ngFor="let country of businesses" [ngValue]="country.business_id">
-            {{ country.business_name }}
-          </option>
-        </select>
-      </div>
+      <c-card-body>
 
-      <!-- Countries -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Country</label>
-        <select class="form-select" [(ngModel)]="model.countryId">
-          <option [ngValue]="null">Select Country</option>
-          <option *ngFor="let country of countries" [ngValue]="country.countryId">
-            {{ country.name }}
-          </option>
-        </select>
-      </div>
+        <form (ngSubmit)="saveTariff()" #tariffForm="ngForm">
 
-      <!-- Platforms -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Platform</label>
-        <select class="form-select" [(ngModel)]="model.platform_id">
-          <option [ngValue]="null">Select Platform</option>
-          <option *ngFor="let platform of platforms" [ngValue]="platform.platform_id">
-            {{ platform.description }}
-          </option>
-        </select>
-      </div>
+          <!-- Main Tariff Information -->
+          <h5 class="mb-3">Tariff Information</h5>
 
-      <!-- Shipping Types -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Shipping Type</label>
-        <select class="form-select" [(ngModel)]="model.shippingTypeId">
-          <option [ngValue]="null">Select Shipping Type</option>
-          <option *ngFor="let shipping of shippingTypes" [ngValue]="shipping.shippingTypeId">
-            {{ shipping.description }}
-          </option>
-        </select>
-      </div>
+          <c-row>
 
-      <!-- Tariffs -->
-      <div class="col-md-6 mb-3">
-        <label class="form-label">Tariff</label>
-        <select class="form-select" [(ngModel)]="model.taarefId">
-          <option [ngValue]="null">Select Tariff</option>
-          <option *ngFor="let tariff of tariffs" [ngValue]="tariff.taarefId">
-            {{ tariff.description }}
-          </option>
-        </select>
-      </div>
+            <!-- Platform -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                Platform <span class="text-danger">*</span>
+              </label>
 
-    </div>
+              <select
+                class="form-select"
+                name="platform_id"
+                [(ngModel)]="tariff.platform_id"
+                required>
 
-    <button [disabled]="loading" class="btn btn-primary" (click)="addShippingTaaref()">
-      Add
-    </button>
+                <option [ngValue]="null" disabled>
+                  Select Platform
+                </option>
 
-    <div *ngIf="message" class="mt-3 alert alert-info">
-      {{ message }}
-    </div>
+                <option
+                  *ngFor="let platform of platforms"
+                  [ngValue]="platform.platform_id">
+                  {{ platform.description }}
+                </option>
 
-  </div>
-</div>
+              </select>
+            </c-col>
+
+            <!-- Tariff Type -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                Tariff Type <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="tariffType"
+                [(ngModel)]="tariff.tariffType"
+                [disabled]="!!idForEdit"
+                required>
+
+                <option [ngValue]="null" disabled>
+                  Select Tariff Type
+                </option>
+
+                <option [ngValue]="tariffTypes.service">
+                  Service
+                </option>
+
+                <option [ngValue]="tariffTypes.product">
+                  Product
+                </option>
+
+              </select>
+            </c-col>
+
+            <!-- Active -->
+            <c-col md="12" class="mb-3">
+              <div class="form-check form-switch">
+
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="tariffActive"
+                  name="isActive"
+                  [(ngModel)]="tariff.isActive">
+
+                <label
+                  class="form-check-label"
+                  for="tariffActive">
+                  Active
+                </label>
+
+              </div>
+            </c-col>
+
+          </c-row>
+
+          <hr class="my-4">
+
+          <!-- Single Tariff Detail -->
+          <h5 class="mb-3">Tariff Detail</h5>
+
+          <c-row>
+
+            <!-- Service -->
+            <c-col
+              md="6"
+              class="mb-3"
+              *ngIf="isServiceTariff">
+
+              <label class="form-label">
+                Service <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="service_id"
+                [(ngModel)]="detail.service_id"
+                [required]="isServiceTariff">
+
+                <option [ngValue]="null" disabled>
+                  Select Service
+                </option>
+
+                <option
+                  *ngFor="let service of services"
+                  [ngValue]="service.service_id">
+                  {{ service.description }}
+                </option>
+
+              </select>
+
+            </c-col>
+
+            <!-- Shipping List -->
+            <c-col
+              md="6"
+              class="mb-3"
+              *ngIf="isServiceTariff">
+
+              <label class="form-label">
+                Shipping List <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="shippingListId"
+                [(ngModel)]="detail.shippingListId"
+                [required]="isServiceTariff">
+
+                <option [ngValue]="null" disabled>
+                  Select Shipping List
+                </option>
+
+                <option
+                  *ngFor="let shipping of shippingLists"
+                  [ngValue]="shipping.shippingListId ?? shipping.id">
+                  {{ shipping.description || shipping.id }}
+                </option>
+
+              </select>
+
+            </c-col>
+
+            <!-- Product -->
+            <c-col
+              md="6"
+              class="mb-3"
+              *ngIf="isProductTariff">
+
+              <label class="form-label">
+                Product <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="itemId"
+                [(ngModel)]="detail.itemId"
+                [required]="isProductTariff">
+
+                <option [ngValue]="null" disabled>
+                  Select Product
+                </option>
+
+                <option
+                  *ngFor="let item of items"
+                  [ngValue]="item.itemId ?? item.id">
+                  {{ item.description || item.name }}
+                </option>
+
+              </select>
+
+            </c-col>
+
+            <!-- Currency -->
+            <c-col md="6" class="mb-3">
+
+              <label class="form-label">
+                Currency <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="currencyId"
+                [(ngModel)]="detail.currencyId"
+                required>
+
+                <option [ngValue]="null" disabled>
+                  Select Currency
+                </option>
+
+                <option
+                  *ngFor="let currency of currencies"
+                  [ngValue]="currency.currencyId ?? currency.id">
+                  {{ currency.code }}
+                </option>
+
+              </select>
+
+            </c-col>
+
+            <!-- Unit -->
+            <c-col md="6" class="mb-3">
+
+              <label class="form-label">
+                Unit <span class="text-danger">*</span>
+              </label>
+
+              <select
+                class="form-select"
+                name="unitId"
+                [(ngModel)]="detail.unitId"
+                required>
+
+                <option [ngValue]="null" disabled>
+                  Select Unit
+                </option>
+
+                <option
+                  *ngFor="let unit of units"
+                  [ngValue]="unit.unitId ?? unit.id">
+                  {{ unit.description || unit.name }}
+                </option>
+
+              </select>
+
+            </c-col>
+
+            <!-- Price -->
+            <c-col md="6" class="mb-3">
+
+              <label class="form-label">
+                Price <span class="text-danger">*</span>
+              </label>
+
+              <input
+                type="number"
+                class="form-control"
+                name="price"
+                [(ngModel)]="detail.price"
+                min="0"
+                step="0.01"
+                placeholder="Enter Price"
+                required>
+
+            </c-col>
+
+            <!-- Detail Active -->
+            <c-col md="6" class="mb-3">
+
+              <label class="form-label d-block">
+                Status
+              </label>
+
+              <div class="form-check form-switch mt-2">
+
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="detailActive"
+                  name="detailIsActive"
+                  [(ngModel)]="detail.isActive">
+
+                <label
+                  class="form-check-label"
+                  for="detailActive">
+                  Active
+                </label>
+
+              </div>
+
+            </c-col>
+
+          </c-row>
+
+          <!-- Error Message -->
+          <div
+            *ngIf="message"
+            class="alert alert-danger mt-3">
+            {{ message }}
+          </div>
+
+          <!-- Buttons -->
+          <div class="d-flex justify-content-end gap-2 mt-4">
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              routerLink="/Home/tariffs"
+              [disabled]="loading">
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="loading || tariffForm.invalid">
+
+              <span
+                *ngIf="loading"
+                class="spinner-border spinner-border-sm me-1">
+              </span>
+
+              {{ idForEdit ? 'Update Tariff' : 'Save Tariff' }}
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </c-card-body>
+
+    </c-card>
+  </c-col>
+</c-row>

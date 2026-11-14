@@ -14,14 +14,14 @@ export const routes: Routes = [
       },
       {
         path: '',
-        loadComponent: () => import('./Show-ShippingTaarefs/Show-ShippingTaarefs').then(m => m.ShowCountriesComponent),
+        loadComponent: () => import('./Show-ShippingTaarefs/Show-ShippingTaarefs').then(m => m.ShowTariffsComponent),
         data: {
           title: 'Show'
         }
       },
       {
         path: 'add',
-        loadComponent: () => import('./Add-ShippingTaarefs/Add-ShippingTaarefs').then(m => m.AddEditCountryComponent),
+        loadComponent: () => import('./Add-ShippingTaarefs/Add-ShippingTaarefs').then(m => m.AddEditTariffComponent),
         data: {
           title: 'Add/Edit'
         }

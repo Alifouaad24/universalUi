@@ -1,0 +1,98 @@
+<c-row>
+  <c-col xs="12">
+    <c-card class="mb-4">
+      <c-card-header>
+        <strong>
+          {{ idForEdit ? 'Edit Shipping List' : 'Add New Shipping List' }}
+        </strong>
+      </c-card-header>
+      <c-card-body>
+        <form (ngSubmit)="saveShippingList()" #shippingForm="ngForm">
+          <c-row>
+            <!-- From Country -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                From Country <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" name="fromCountryId" [(ngModel)]="shippingList.fromCountryId" required>
+                <option [ngValue]="null" disabled>
+                  Select From Country
+                </option>
+                <option *ngFor="let country of countries" [ngValue]="country.countryId">
+                  {{ country.name }}
+                </option>
+              </select>
+            </c-col>
+            <!-- To Country -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                To Country <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" name="toCountryId" [(ngModel)]="shippingList.toCountryId" required>
+                <option [ngValue]="null" disabled>
+                  Select To Country
+                </option>
+                <option *ngFor="let country of countries" [ngValue]="country.countryId">
+                  {{ country.name }}
+                </option>
+              </select>
+            </c-col>
+            <!-- Currency -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                Currency <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" name="currencyId" [(ngModel)]="shippingList.currencyId" required>
+                <option [ngValue]="null" disabled>
+                  Select Currency
+                </option>
+                <option *ngFor="let currency of currencies" [ngValue]="currency.currencyId">
+                  {{ currency.code }}
+                </option>
+              </select>
+            </c-col>
+            <!-- Shipping Type -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                Shipping Type <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" name="shippingTypeId" [(ngModel)]="shippingList.shippingTypeId" required>
+                <option [ngValue]="null" disabled>
+                  Select Shipping Type
+                </option>
+                <option *ngFor="let type of shippingTypes" [ngValue]="type.shippingTypeId">
+                  {{ type.description }}
+                </option>
+              </select>
+            </c-col>
+            <!-- Active -->
+            <c-col md="12" class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="isActive" name="isActive"
+                  [(ngModel)]="shippingList.isActive">
+                <label class="form-check-label" for="isActive">
+                  Active
+                </label>
+              </div>
+            </c-col>
+          </c-row>
+          <!-- Message -->
+          <div *ngIf="message" class="alert alert-danger">
+            {{ message }}
+          </div>
+          <!-- Buttons -->
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-secondary" routerLink="/Home/shipping-lists" [disabled]="loading">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading || shippingForm.invalid">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-1">
+              </span>
+              {{ idForEdit ? 'Update' : 'Save' }}
+            </button>
+          </div>
+        </form>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>
