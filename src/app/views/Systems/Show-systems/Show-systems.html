@@ -19,6 +19,7 @@
         <tr>
           <th>#</th>
           <th>Name</th>
+          <th>Group</th>
           <th>Type</th>
           <th>Actions</th>
         </tr>
@@ -27,6 +28,7 @@
         <tr *ngFor="let type of systems; index as i">
           <td>{{ i + 1 }}</td>
           <td>{{ type.globalSystemName }}</td>
+          <td>{{ type.businessGroup?.groupName }}</td>
           <td>{{ type.globalSystemType }}</td>
           <td>
             <ng-container *ngIf="systems.length">

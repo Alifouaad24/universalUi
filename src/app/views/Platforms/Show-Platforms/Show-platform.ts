@@ -51,7 +51,7 @@ import { PlatformModel } from '../../../Models/PlatformModel';
     ToasterComponent,
     ToastComponent,
     ToastHeaderComponent,
-    
+
     ToastBodyComponent]
 })
 export class ShowplatformsComponent implements OnInit {
@@ -61,13 +61,14 @@ export class ShowplatformsComponent implements OnInit {
   isLoading: boolean = false;
   showDeleteModal: boolean = false;
   selectedType?: PlatformModel;
+  currentplatformId?: number
   ///// for toastr ////////
   position = 'top-end';
-  toastVisible = signal(false); 
-  toastMessage = signal(''); 
+  toastVisible = signal(false);
+  toastMessage = signal('');
   percentage = signal(0);
   autoHideToast = signal(true);
-
+  savingData = false
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -83,7 +84,11 @@ export class ShowplatformsComponent implements OnInit {
         this.PlatformModel = (res as any[]).map(item => new PlatformModel({
           platform_id: item.platform_id,
           description: item.description,
-          businessPlatforms: item.businessPlatforms
+          businessPlatforms: item.businessPlatforms,
+          post: item.post,
+          chat: item.chat,
+          account: item.account,
+          ads: item.ads
         }));
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -108,7 +113,7 @@ export class ShowplatformsComponent implements OnInit {
       this.showDeleteModal = false;
       this.toastMessage.set(`${type.description} deleted successfully`);
       this.toastVisible.set(true);
-    },(error) =>{
+    }, (error) => {
       this.toastMessage.set(`An error occured during delete (${type.description})`);
       this.toastVisible.set(true);
     });
@@ -125,10 +130,77 @@ export class ShowplatformsComponent implements OnInit {
   }
 
   getCurrentBusinessLink(platform: any): { forScraping: boolean; forSelling: boolean } | undefined {
-  const currentBusinessId = Number(localStorage.getItem('businessId'));
-  return platform.businessPlatforms?.find(
-    (bp: any) => bp.business_id === currentBusinessId
-  );
-}
+    const currentBusinessId = Number(localStorage.getItem('businessId'));
+    return platform.businessPlatforms?.find(
+      (bp: any) => bp.business_id === currentBusinessId
+    );
+  }
+
+  showAccountModal = false
+  hasAccount = false
+  accountData: { accountEmail?: string; userName?: string } = {}
+
+  ShowAccount(platformId: number) {
+    this.currentplatformId = platformId
+    this.http.getAllData(`Platform?platfId=${platformId}`).subscribe({
+      next: (res: any) => {
+        if (res) {
+          this.hasAccount = true
+          this.accountData = {
+            accountEmail: res.account,
+            userName: res.username
+          }
+        }
+        this.showAccountModal = true
+        this.cdr.detectChanges()
+      },
+      error: err => console.error(err)
+    })
+  }
+
+  closeAccountModal() {
+    this.showAccountModal = false
+  }
+
+  saveAccountDate() {
+    this.savingData = true
+    var payload = {
+      email: this.accountData.accountEmail,
+      userName: this.accountData.userName
+    }
+
+    console.log(payload)
+
+    if (this.hasAccount) {
+      this.http.putData(`Platform/UpdateUserAccount/${this.currentplatformId}`, payload).subscribe(res => {
+        this.showAccountModal = false
+        this.toastMessage.set(`Account Updated successfully`);
+        this.toastVisible.set(true);
+        this.savingData = false
+        this.cdr.detectChanges()
+
+      },(error) => {
+        this.showAccountModal = false
+        this.toastMessage.set(`Error Accoured during update data`);
+        this.toastVisible.set(true);
+        this.savingData = false
+        this.cdr.detectChanges()
+      })
+    } else {
+      this.http.posteData(`Platform/AddUserAccount/${this.currentplatformId}`, payload).subscribe(res => {
+        this.showAccountModal = false
+        this.toastMessage.set(`Account added successfully`);
+        this.toastVisible.set(true);
+        this.savingData = false
+        this.cdr.detectChanges()
+      },(error) => {
+        this.showAccountModal = false
+        this.toastMessage.set(`Error Accoured during add data`);
+        this.toastVisible.set(true);
+        this.savingData = false
+        this.cdr.detectChanges()
+      })
+    }
+  }
 
 }

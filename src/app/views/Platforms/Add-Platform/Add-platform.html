@@ -11,10 +11,73 @@
       <input type="text" class="form-control" id="name" [(ngModel)]="name" placeholder="Enter platform name">
     </div>
 
+
+
+
+
+
+    <!-- Platform Features -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold mb-2">Features</label>
+      <div class="d-flex flex-wrap gap-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="chat"
+                 style="cursor: pointer;" [(ngModel)]="chat" name="chat">
+          <label class="form-check-label" for="chat">Chat</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="ads"
+                 style="cursor: pointer;" [(ngModel)]="ads" name="ads">
+          <label class="form-check-label" for="ads">Ads</label>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="post"
+                 style="cursor: pointer;" [(ngModel)]="post" name="post">
+          <label class="form-check-label" for="post">Post</label>
+        </div>
+        <!-- <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="account"
+                 style="cursor: pointer;" [(ngModel)]="account" name="account">
+          <label class="form-check-label" for="account">Account</label>
+        </div> -->
+      </div>
+    </div>
+
+    <!-- Account Details -->
+    <!-- <div class="mb-4" *ngIf="account">
+      <label class="form-label fw-semibold mb-2">Account Details</label>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="accountEmail" class="form-label small text-muted">Email</label>
+          <input type="email" class="form-control" id="accountEmail" name="accountEmail"
+                 [(ngModel)]="accountEmail" placeholder="Enter account email">
+        </div>
+        <div class="col-md-6">
+          <label for="userName" class="form-label small text-muted">Username</label>
+          <input type="text" class="form-control" id="userName" name="userName"
+                 [(ngModel)]="userName" placeholder="Enter username">
+        </div>
+      </div>
+    </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     <!-- Business Linking -->
     <div class="mb-4">
       <label class="form-label fw-semibold mb-2">Linked Businesses</label>
-
       <div *ngIf="!Businesses?.length" class="text-muted small">
         Loading businesses...
       </div>

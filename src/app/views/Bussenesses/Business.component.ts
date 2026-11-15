@@ -17,6 +17,7 @@ import { BusinessModel } from '../../Models/Business/BusinessModel';
 
 export class BusinessGroupModel {
   businessGroupId: number = 0;
+  businessGroupBusinesses: any
   groupName: string = '';
   userId: string = '';
   createdAt: any;
@@ -182,7 +183,7 @@ export class BusinessComponent implements OnInit {
       return;
     }
 
-    const userId = localStorage.getItem('UserId');
+    const userId = localStorage.getItem('userId');
 
     if (!userId) {
       alert('User not found');
@@ -195,8 +196,10 @@ export class BusinessComponent implements OnInit {
       businessesIds: [...new Set(this.selectedBusinessIds)]
     };
 
+    console.log(model)
+
     this.isSavingGroup = true;
-    this.http.posteData('BusinessGroup/addNewGroup', model)
+    this.http.posteData('Business/addNewGroup', model)
       .subscribe({
         next: (res) => {
           this.isSavingGroup = false;
@@ -242,9 +245,10 @@ export class BusinessComponent implements OnInit {
     if (this.viewType === 'Businesses') {
       this.filterBusinesses();
     } else {
-      const userId = localStorage.getItem('UserId');
+      const userId = localStorage.getItem('userId');
       if (userId) {
         this.getUserGroups(userId);
+        this.cdr.detectChanges();
       }
     }
   }

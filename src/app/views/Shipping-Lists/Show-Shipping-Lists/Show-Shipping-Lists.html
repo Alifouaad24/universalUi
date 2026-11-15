@@ -1,5 +1,5 @@
 <div class="m-2 p-2">
-  <button class="btn btn-primary" routerLink="./add-edit-shipping-list">
+  <button class="btn btn-primary" routerLink="./add-edit-shipping-list" [queryParams]="{shippTypeId: shippTypeId}">
     Add Shipping List
   </button>
 </div>
@@ -30,7 +30,6 @@
             <th>#</th>
             <th>From Country</th>
             <th>To Country</th>
-            <th>Currency</th>
             <th>Shipping Type</th>
             <th>Status</th>
             <th>Actions</th>
@@ -47,9 +46,6 @@
             </td>
             <td>
               {{ type.toCountry?.name || '-' }}
-            </td>
-            <td>
-              {{ type.currency?.code || '-' }}
             </td>
             <td>
               {{ type.shippingType?.name || '-' }}

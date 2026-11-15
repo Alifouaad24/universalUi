@@ -16,6 +16,12 @@
       <label for="url" class="form-label">Url</label>
       <input type="text" class="form-control" id="url" [(ngModel)]="url" placeholder="Enter system url">
     </div>
+    <div class="mb-3">
+      <label for="url" class="form-label">Group</label>
+      <select class="form-control" id="url" [(ngModel)]="groupId">
+        <option *ngFor="let one of groups" [value]="one.businessGroupId">{{ one.groupName }}</option>
+      </select>
+    </div>
     <button [disabled]="loading" class="btn btn-primary" (click)="addSystem()">
       {{isUpdate ? 'Update' : 'Add'}} System
     </button>

@@ -53,23 +53,20 @@ export class AddEditShippingListComponent implements OnInit {
   shippingList: ShippingListModel = {
     fromCountryId: undefined,
     toCountryId: undefined,
-    currencyId: undefined,
     shippingTypeId: undefined,
     isActive: true
   };
 
   countries: any[] = [];
-  currencies: any[] = [];
   shippingTypes: any[] = [];
 
   message: string = '';
   loading: boolean = false;
   idForEdit?: string | number;
-
+  shippTypeId?: number
   // ضع مسارات الـ API الفعلية هنا
   private readonly api = {
     countries: 'Country',
-    currencies: 'Currency',
     shippingTypes: 'ShippingTypes',
     getShippingList: 'YOUR_GET_SHIPPING_LIST_API',
     createShippingList: 'ShippingList',
@@ -83,8 +80,11 @@ export class AddEditShippingListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe((param) => {
+      this.shippTypeId = param['shippTypeId']
+      console.log(this.shippTypeId)
+    })
     this.loadCountries();
-    this.loadCurrencies();
     this.loadShippingTypes();
 
     // في حال التعديل
@@ -127,23 +127,14 @@ export class AddEditShippingListComponent implements OnInit {
     });
   }
 
-  // جلب العملات
-  loadCurrencies(): void {
-    this.http.getAllData(this.api.currencies).subscribe({
-      next: (res: any) => {
-        this.currencies = res;
-      },
-      error: (error: any) => {
-        console.error('Error loading currencies:', error);
-      }
-    });
-  }
+
 
   // جلب أنواع الشحن
   loadShippingTypes(): void {
     this.http.getAllData(this.api.shippingTypes).subscribe({
       next: (res: any) => {
         this.shippingTypes = res;
+        this.shippingList.shippingTypeId = this.shippTypeId
       },
       error: (error: any) => {
         console.error('Error loading shipping types:', error);

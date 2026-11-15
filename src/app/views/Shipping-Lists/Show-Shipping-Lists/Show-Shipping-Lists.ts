@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import {
   ButtonDirective,
   ButtonGroupComponent,
@@ -75,7 +75,7 @@ export class ShowShippingListComponent implements OnInit {
 
   showDeleteModal = false;
   selectedType: any;
-
+  shippTypeId?: number
   // Toaster
   position = 'top-end';
   toastVisible = signal(false);
@@ -85,10 +85,16 @@ export class ShowShippingListComponent implements OnInit {
 
   constructor(
     private http: HttpConnectService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe((param) => {
+      this.shippTypeId = param['shippingTypeId']
+      console.log(this.shippTypeId)
+    })
+    
     this.getAllShippingLists();
   }
 
@@ -96,7 +102,7 @@ export class ShowShippingListComponent implements OnInit {
     this.isLoading = true;
     this.message = '';
 
-    this.http.getAllData('ShippingList').subscribe(
+    this.http.getAllData(`ShippingList/${this.shippTypeId}`).subscribe(
       (res: any) => {
         console.log(res)
         this.ShippingLists = res;

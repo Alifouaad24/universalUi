@@ -656,22 +656,23 @@
 
       <!-- العنوان + حالة الربط -->
       <div class="col d-flex flex-column gap-1">
-  <div class="d-flex align-items-center gap-2">
-    <h5 class="modal-title mb-0 fw-semibold">Details</h5>
-    <span *ngIf="currentBusinessName?.includes('Duty')"
-      class="badge rounded-pill d-inline-flex align-items-center gap-1"
-      [ngClass]="isAuthInEbay ? 'text-bg-success' : 'text-bg-light border text-secondary'">
-      <span class="d-inline-block p-1 rounded-circle" [ngClass]="isAuthInEbay ? 'bg-white' : 'bg-secondary'"></span>
-      {{ isAuthInEbay ? 'eBay connected' : 'eBay not connected' }}
-    </span>
-  </div>
-  <small class="text-muted">
-    <ng-container *ngIf="lastPublishDate; else notPublished">
-      Last published on eBay: <strong>{{ lastPublishDate | date:'mediumDate':'UTC' }}</strong>
-    </ng-container>
-    <ng-template #notPublished>Not published on eBay yet</ng-template>
-  </small>
-</div>
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="modal-title mb-0 fw-semibold">Details</h5>
+          <span *ngIf="currentBusinessName?.includes('Duty')"
+            class="badge rounded-pill d-inline-flex align-items-center gap-1"
+            [ngClass]="isAuthInEbay ? 'text-bg-success' : 'text-bg-light border text-secondary'">
+            <span class="d-inline-block p-1 rounded-circle"
+              [ngClass]="isAuthInEbay ? 'bg-white' : 'bg-secondary'"></span>
+            {{ isAuthInEbay ? 'eBay connected' : 'eBay not connected' }}
+          </span>
+        </div>
+        <small class="text-muted">
+          <ng-container *ngIf="lastPublishDate; else notPublished">
+            Last published on eBay: <strong>{{ lastPublishDate | date:'mediumDate':'UTC' }}</strong>
+          </ng-container>
+          <ng-template #notPublished>Not published on eBay yet</ng-template>
+        </small>
+      </div>
 
       <!-- زر الإغلاق -->
       <div class="col-auto order-md-last">
@@ -1099,7 +1100,7 @@
               </div>
 
               <!-- Images -->
-                            <!-- Images -->
+              <!-- Images -->
               <div class="col-12" *ngIf="inv.item?.images?.length">
                 <div class="card shadow-sm p-3">
                   <small class="text-muted">Images</small>

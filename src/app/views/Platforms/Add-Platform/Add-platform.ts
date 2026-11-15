@@ -33,7 +33,13 @@ export class AddEditplatformComponent implements OnInit {
   id?: number;
 
   isUpdate: boolean = false;
-
+  chat: boolean = false
+  ads: boolean = false
+  account: boolean = false
+  post: boolean = false
+  accountEmail?: string
+  userName?: string
+  userId?: string
   selectedBusinesses: PlatformBusSelection[] = [];
 
   constructor(
@@ -45,7 +51,7 @@ export class AddEditplatformComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAllBusiness();
-
+    this.userId = localStorage.getItem('userId') ?? ''
     this.route.queryParamMap.subscribe(params => {
       const platform = JSON.parse(params.get('platform') || 'null');
       console.log(platform);
@@ -126,9 +132,15 @@ export class AddEditplatformComponent implements OnInit {
       return;
     }
 
-    // ⚠️ الاسم تغيّر من "name" إلى "Description" ليطابق PlatformDto بالباك إند
     const payLoad = {
       Description: this.name,
+      chat: this.chat,
+      post: this.post,
+      ads: this.ads,
+      userId: this.userId,
+      account: this.account,
+      acountEnail: this.accountEmail,
+      userName: this.userName,
       PlatformBus: this.selectedBusinesses.map(s => ({
         businessId: s.businessId,
         isForScrape: s.isForScrape,
@@ -136,6 +148,7 @@ export class AddEditplatformComponent implements OnInit {
       })),
     };
 
+    console.log(payLoad)
     this.isUpdate
       ? this.http.putData(`Platform/${this.id}`, payLoad).subscribe(res => {
         this.router.navigate(['Home/platforms']);

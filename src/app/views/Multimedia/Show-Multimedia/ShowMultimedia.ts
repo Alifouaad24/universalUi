@@ -59,7 +59,7 @@ export class ShowMultimediaComponent implements OnInit, OnDestroy {
   constructor(private http: HttpConnectService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.businessId = this.route.snapshot.queryParamMap.get('businessId') ?? '';
+    this.businessId = localStorage.getItem('businessId') ?? '';
     this.getFiles();
   }
 

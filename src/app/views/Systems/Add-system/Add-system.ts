@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { ButtonDirective, CardBodyComponent, CardComponent, CardHeaderComponent, ColComponent, RowComponent } from '@coreui/angular';
@@ -25,10 +25,12 @@ export class AddEditSystemComponent implements OnInit {
   id: number = 0;
   loading: boolean = false;
   isUpdate = false;
-
-  constructor(private http: HttpConnectService, private router: Router, private route: ActivatedRoute) { }
+  groups: any[] = []
+  groupId?: number;
+  constructor(private http: HttpConnectService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.getAllGroups()
     this.route.queryParamMap.subscribe(params => {
       const system = JSON.parse(params.get('system') || 'null');
       console.log(system)
@@ -39,6 +41,15 @@ export class AddEditSystemComponent implements OnInit {
         this.url = system.globalSystemUrl;
         this.isUpdate = true;
       }
+    })
+  }
+
+  getAllGroups(){
+    var userId = localStorage.getItem('userId')
+    this.http.getAllData(`Business/GetUserGroups/${userId}`).subscribe((res: any) => {
+      console.log(res)
+      this.groups = res
+      this.cdr.detectChanges()
     })
   }
 
@@ -66,6 +77,7 @@ export class AddEditSystemComponent implements OnInit {
       "name": this.name,
       "type": this.type,
       "url": this.url,
+      "groupId": this.groupId
     }
 
     this.isUpdate ? this.http.putData(`GlobalSystem/${this.id}`, payLoad).subscribe(res => {

@@ -37,20 +37,6 @@
                 </option>
               </select>
             </c-col>
-            <!-- Currency -->
-            <c-col md="6" class="mb-3">
-              <label class="form-label">
-                Currency <span class="text-danger">*</span>
-              </label>
-              <select class="form-select" name="currencyId" [(ngModel)]="shippingList.currencyId" required>
-                <option [ngValue]="null" disabled>
-                  Select Currency
-                </option>
-                <option *ngFor="let currency of currencies" [ngValue]="currency.currencyId">
-                  {{ currency.code }}
-                </option>
-              </select>
-            </c-col>
             <!-- Shipping Type -->
             <c-col md="6" class="mb-3">
               <label class="form-label">

@@ -3,6 +3,7 @@ export class SystemModel {
     globalSystemName?: string;
     globalSystemType?: any;
     globalSystemUrl?: string;
+    businessGroup?: any
 
 
     constructor(init?: Partial<SystemModel>) {

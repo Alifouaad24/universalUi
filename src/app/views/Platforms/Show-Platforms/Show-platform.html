@@ -21,6 +21,10 @@
           <th>Name</th>
           <th>For Scrape?</th>
           <th>For Sale?</th>
+          <th>Chat</th>
+          <th>Post</th>
+          <th>Ads</th>
+          <th>Account</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -34,10 +38,31 @@
             </span>
           </td>
           <td>
-            <span class="badge" [ngClass]="getCurrentBusinessLink(type)?.forSelling ? 'bg-primary' : 'bg-secondary'">
+            <span class="badge" [ngClass]="getCurrentBusinessLink(type)?.forSelling ? 'bg-success' : 'bg-secondary'">
               {{ getCurrentBusinessLink(type)?.forSelling ? 'Yes' : 'No' }}
             </span>
           </td>
+          <td>
+            <span class="badge" [ngClass]="type.chat ? 'bg-primary' : 'bg-secondary'">
+              {{ type.chat ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="type.post ? 'bg-primary' : 'bg-secondary'">
+              {{ type.post ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="type.ads ? 'bg-primary' : 'bg-secondary'">
+              {{ type.ads ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td (click)="ShowAccount(type.platform_id)">
+            <span class="badge" [ngClass]="type.account ? 'bg-primary' : 'bg-secondary'">
+              {{ type.account ? 'Yes' : 'No' }}
+            </span>
+          </td>
+
           <td>
             <ng-container *ngIf="PlatformModel.length">
               <a class="btn btn-sm btn-primary me-1" [routerLink]="['../add-edit-platform']"
@@ -80,3 +105,32 @@
     </c-toast-body>
   </c-toast>
 </c-toaster>
+
+<ng-container *ngIf="showAccountModal">
+  <div class="modal fade show d-block" tabindex="-1" (click)="closeAccountModal()">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Account Details</h5>
+          <button type="button" class="btn-close" (click)="closeAccountModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small text-muted">Email</label>
+            <input type="text" class="form-control"  [(ngModel)]="accountData.accountEmail" [value]="accountData.accountEmail || ''" >
+          </div>
+          <div>
+            <label class="form-label small text-muted">Username</label>
+            <input type="text" class="form-control" [(ngModel)]="accountData.userName" [value]="accountData.userName || ''" >
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="saveAccountDate()">{{savingData ? 'Proccessing' :
+            hasAccount ? 'Update' : 'Add' }}</button>
+          <button type="button" class="btn btn-secondary" (click)="closeAccountModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+</ng-container>

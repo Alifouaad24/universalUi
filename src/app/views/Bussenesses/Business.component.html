@@ -93,7 +93,7 @@
             <tr>
               <th>#</th>
               <th>Group Name</th>
-              <th>Businesses Count</th>
+              <th>Businesses</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -102,8 +102,8 @@
               <td>{{ i + 1 }}</td>
               <td>{{ group.groupName }}</td>
               <td>
-                <c-badge color="info">
-                  {{ group.businesses?.length || 0 }}
+                <c-badge *ngFor="let item of group.businessGroupBusinesses" color="info" class="me-1 mb-1">
+                  {{ item.business?.business_name }}
                 </c-badge>
               </td>
               <td>{{ group.createdAt | date:'mediumDate' }}</td>
