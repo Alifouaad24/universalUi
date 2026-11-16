@@ -177,9 +177,15 @@ export class ShowplatformsComponent implements OnInit {
         this.toastMessage.set(`Account Updated successfully`);
         this.toastVisible.set(true);
         this.savingData = false
-        this.cdr.detectChanges()
+        const platform = this.PlatformModel.find(
+          el => el.platform_id == this.currentplatformId
+        );
 
-      },(error) => {
+        if (platform) {
+          platform.account = true;
+        } this.cdr.detectChanges()
+
+      }, (error) => {
         this.showAccountModal = false
         this.toastMessage.set(`Error Accoured during update data`);
         this.toastVisible.set(true);
@@ -193,7 +199,7 @@ export class ShowplatformsComponent implements OnInit {
         this.toastVisible.set(true);
         this.savingData = false
         this.cdr.detectChanges()
-      },(error) => {
+      }, (error) => {
         this.showAccountModal = false
         this.toastMessage.set(`Error Accoured during add data`);
         this.toastVisible.set(true);

@@ -1873,6 +1873,19 @@ export class ShowInventoryComponent implements OnInit {
     });
   }
 
+  ShowDecreaseModals(invId: number){
+    this.showDecreaseModal = true
+    this.currentInventoryId = invId
+  }
+
+  qtyToDec = 0
+  showDecreaseModal = false
+
+  DecreaseInv() {
+    this.http.getAllData(`Inventory/DecreaseInputQty/${this.currentInventoryId}/${this.qtyToDec}`).subscribe((ids: any) => {
+    });
+  }
+
 
 }
 

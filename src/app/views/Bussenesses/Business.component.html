@@ -95,6 +95,7 @@
               <th>Group Name</th>
               <th>Businesses</th>
               <th>Created At</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -107,6 +108,14 @@
                 </c-badge>
               </td>
               <td>{{ group.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" (click)="openEditGroupModal(group)">
+                  <c-icon name="cil-pencil"></c-icon>
+                </button>
+                <button class="btn btn-sm btn-danger me-1" (click)="openDeleteGroupModal(group.businessGroupId)">
+                  <c-icon name="cil-trash"></c-icon>
+                </button>
+              </td>
             </tr>
             <tr *ngIf="Groups.length === 0">
               <td colspan="4" class="text-center">
@@ -144,7 +153,7 @@
 
 <c-modal [visible]="groupModalVisible" (visibleChange)="groupModalVisible = $event">
   <c-modal-header>
-    <h5 cModalTitle>Add Group</h5>
+    <h5 cModalTitle>{{ isEditMode ? 'Edit Group' : 'Add Group' }}</h5>
     <button cButtonClose (click)="closeAddGroupModal()"></button>
   </c-modal-header>
   <c-modal-body>
@@ -177,9 +186,26 @@
       Back
     </button>
     <button cButton color="primary" (click)="saveGroup()" [disabled]="isSavingGroup">
-      <c-spinner *ngIf="isSavingGroup" size="sm" class="me-2">
-      </c-spinner>
-      {{ isSavingGroup ? 'Saving...' : 'Save' }}
+      <c-spinner *ngIf="isSavingGroup" size="sm" class="me-2"></c-spinner>
+      {{ isSavingGroup ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- مودال تأكيد حذف الكروب -->
+<c-modal [visible]="deleteGroupModalVisible" (visibleChange)="deleteGroupModalVisible = $event">
+  <c-modal-header>
+    <h5 cModalTitle>Delete Group</h5>
+    <button cButtonClose (click)="closeDeleteGroupModal()"></button>
+  </c-modal-header>
+  <c-modal-body>Are you sure you want to delete this group?</c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="closeDeleteGroupModal()">
+      Close
+    </button>
+    <button cButton color="danger" (click)="deleteGroup()" [disabled]="isDeletingGroup">
+      <c-spinner *ngIf="isDeletingGroup" size="sm" class="me-2"></c-spinner>
+      <span>{{ isDeletingGroup ? 'Deleting...' : 'Delete' }}</span>
     </button>
   </c-modal-footer>
 </c-modal>

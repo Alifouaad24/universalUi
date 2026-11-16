@@ -1,0 +1,153 @@
+<section class="container py-4" dir="rtl" style="max-width: 760px;">
+
+  <!-- ===== العنوان + زر الرجوع ===== -->
+  <header class="d-flex align-items-center gap-3 mb-4">
+    <button type="button"
+            class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+            style="width: 44px; height: 44px;"
+            title="رجوع لتسعير السلة" (click)="back()">
+      <of-icon name="arrow-right" />
+    </button>
+    <div>
+      <h1 class="h3 fw-bold mb-1">بيانات الطلب</h1>
+      <p class="text-secondary mb-0">اختر الزبون وحدد سعر الصرف</p>
+    </div>
+  </header>
+
+  <!-- ===== الزبون ===== -->
+  <div class="card border-0 shadow-sm rounded-4 mb-3">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3"
+              style="width: 40px; height: 40px;">
+          <of-icon name="user" />
+        </span>
+        <h2 class="h5 fw-semibold mb-0">الزبون</h2>
+      </div>
+
+      @if (store.customer(); as c) {
+        <!-- بطاقة الزبون المختار -->
+        <div class="d-flex align-items-center gap-3 rounded-4 p-3">
+          <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white fw-bold flex-shrink-0"
+                style="width: 48px; height: 48px; font-size: 20px;">
+            {{ initial() }}
+          </span>
+
+          <div class="flex-grow-1 min-w-0">
+            <strong class="d-block">{{ c.customerName }}</strong>
+            @if (c.customerMobile) {
+              <span class="d-inline-flex align-items-center gap-1 text-secondary small me-2">
+                <of-icon name="phone" [size]="14" /><bdi dir="ltr">{{ c.customerMobile }}</bdi>
+              </span>
+            }
+            @if (address()) {
+              <span class="d-inline-flex align-items-center gap-1 text-secondary small">
+                <of-icon name="pin" [size]="14" />{{ address() }}
+              </span>
+            }
+          </div>
+
+          <button type="button"
+                  class="btn btn-sm btn-light border rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                  style="width: 36px; height: 36px;"
+                  title="تغيير الزبون" (click)="removeCustomer()">
+            <of-icon name="x" [size]="20" />
+          </button>
+        </div>
+      } @else {
+        <!-- حقل البحث -->
+        <div class="input-group input-group-lg">
+          <span class="input-group-text"><of-icon name="search" [size]="18" /></span>
+          <input type="tel" inputmode="tel" autocomplete="off" class="form-control"
+                 placeholder="ابحث برقم هاتف الزبون"
+                 [value]="store.phoneQuery()"
+                 (input)="onPhoneInput($any($event.target).value)" />
+          @if (searching() || loadingCustomer()) {
+            <span class="input-group-text">
+              <span class="spinner-border spinner-border-sm text-secondary"></span>
+            </span>
+          }
+        </div>
+
+        <!-- اقتراحات -->
+        @if (suggestions().length) {
+          <div class="list-group mt-2 shadow-sm rounded-4 overflow-hidden">
+            @for (name of suggestions(); track $index) {
+              <button type="button"
+                      class="list-group-item list-group-item-action d-flex align-items-center gap-2"
+                      (click)="selectCustomer(name)">
+                <of-icon name="user" [size]="18" class="text-secondary" />
+                <span class="flex-grow-1 text-end">{{ name }}</span>
+                <of-icon name="plus" [size]="18" class="text-primary" />
+              </button>
+            }
+          </div>
+        }
+
+        <!-- غير موجود -->
+        @if (notFound()) {
+          <div class="text-center bg-light rounded-4 py-4 px-3 mt-2">
+            <of-icon name="search" [size]="28" class="text-secondary" />
+            <p class="text-secondary mb-3 mt-2">الزبون غير موجود بالنظام</p>
+            <button type="button" class="btn btn-dark rounded-pill px-4 d-inline-flex align-items-center gap-2"
+                    (click)="openAddCustomer()">
+              <of-icon name="user-plus" [size]="18" /> إضافة زبون
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- ===== سعر الصرف ===== -->
+  <div class="card border-0 shadow-sm rounded-4 mb-3">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3"
+              style="width: 40px; height: 40px;">
+          <of-icon name="coins" />
+        </span>
+        <h2 class="h5 fw-semibold mb-0">تفاصيل الطلب</h2>
+      </div>
+
+      <label class="form-label fw-semibold" for="of-rate">سعر الصرف (دينار لكل 1$)</label>
+      <div class="input-group input-group-lg">
+        <span class="input-group-text"><of-icon name="coins" [size]="18" /></span>
+        <input id="of-rate" type="text" inputmode="decimal" dir="ltr" autocomplete="off"
+               class="form-control"
+               [value]="store.exchangeRateText()"
+               (input)="onRateInput($any($event.target))" />
+        <span class="input-group-text bg-white text-secondary">د.ع</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== شريط الإجمالي الثابت ===== -->
+  <div class="position-fixed bottom-0 start-0 end-0 border-top shadow-lg" style="z-index: 1030;" dir="rtl">
+    <div class="container py-3 d-flex align-items-center gap-3 flex-wrap" style="max-width: 760px;">
+      <div class="d-flex align-items-center gap-4 flex-grow-1">
+        <div>
+          <div class="text-secondary small mb-1">الإجمالي ($)</div>
+          <div class="fw-bold fs-5" dir="ltr">${{ money(store.productsTotal()) }}</div>
+        </div>
+        <div class="border-start ps-4">
+          <div class="text-secondary small mb-1">بالدينار</div>
+          <div class="fw-bold" dir="ltr">{{ money(store.productsTotalIqd()) }} د.ع</div>
+        </div>
+        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2 ms-auto">
+          {{ store.totalUnits() }} قطعة
+        </span>
+      </div>
+
+      <button type="button"
+              class="btn btn-dark btn-lg rounded-pill px-4 d-flex align-items-center gap-2 w-100 w-md-auto justify-content-center"
+              (click)="goToReview()">
+        مراجعة الطلب
+        <of-icon name="arrow-left" [size]="18" />
+      </button>
+    </div>
+  </div>
+
+  <!-- فراغ حتى لا يغطّي الشريط الثابت آخر محتوى -->
+  <div style="height: 120px;"></div>
+</section>

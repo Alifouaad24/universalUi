@@ -1,0 +1,128 @@
+<section class="container py-4" dir="rtl" style="max-width: 760px;">
+
+  <!-- ===== العنوان + زر الرجوع ===== -->
+  <header class="d-flex align-items-center gap-3 mb-4">
+    <button type="button"
+            class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+            style="width: 44px; height: 44px;"
+            title="رجوع لبيانات الطلب" [disabled]="busy()" (click)="back()">
+      <of-icon name="arrow-right" />
+    </button>
+    <div>
+      <h1 class="h3 fw-bold mb-1">مراجعة الطلب</h1>
+      <p class="text-secondary mb-0">تأكد من البيانات ثم احفظ الطلب أو أرسله</p>
+    </div>
+  </header>
+
+  <!-- ===== الزبونة ===== -->
+  @if (store.customer(); as c) {
+    <div class="card border-0 shadow-sm rounded-4 mb-3">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3"
+                style="width: 40px; height: 40px;">
+            <of-icon name="user" />
+          </span>
+          <h2 class="h5 fw-semibold mb-0">الزبونة</h2>
+        </div>
+
+        <strong class="d-block fs-5 mb-2">{{ c.customerName }}</strong>
+
+        @if (c.customerMobile) {
+          <span class="d-inline-flex align-items-center gap-1 text-secondary me-3">
+            <of-icon name="phone" [size]="14" />
+            <bdi dir="ltr">{{ c.customerMobile }}</bdi>
+          </span>
+        }
+
+        <span class="d-inline-flex align-items-center gap-1"
+              [class.text-danger]="!address()"
+              [class.text-secondary]="address()">
+          <of-icon name="pin" [size]="14" />
+          {{ address() || 'لا يوجد عنوان' }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- ===== الحساب ===== -->
+  <div class="card border-0 shadow-sm rounded-4 mb-3">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3"
+              style="width: 40px; height: 40px;">
+          <of-icon name="receipt" />
+        </span>
+        <h2 class="h5 fw-semibold mb-0">الحساب</h2>
+      </div>
+
+      <!-- صفوف الحساب -->
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+          <span class="text-secondary">عدد القطع</span>
+          <b>{{ store.totalUnits() }}</b>
+        </li>
+        <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+          <span class="text-secondary">السعر بالدولار</span>
+          <b dir="ltr">${{ money(store.productsTotal()) }}</b>
+        </li>
+        <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+          <span class="text-secondary">سعر الصرف</span>
+          <b>{{ money(store.exchangeRate()) }} د.ع</b>
+        </li>
+        <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+          <span class="text-secondary">السعر بالدينار</span>
+          <b>{{ money(store.productsTotalIqd()) }} د.ع</b>
+        </li>
+      </ul>
+
+      <!-- رسوم التوصيل -->
+      <label class="form-label fw-semibold mt-3" for="of-delivery">رسوم التوصيل</label>
+      <div class="input-group input-group-lg">
+        <span class="input-group-text "><of-icon name="truck" [size]="18" /></span>
+        <input id="of-delivery" type="text" inputmode="numeric" dir="ltr" autocomplete="off"
+               class="form-control"
+               [value]="store.deliveryFeeText()"
+               [disabled]="busy()"
+               (input)="onDeliveryInput($any($event.target))" />
+        <span class="input-group-text bg-white text-secondary">د.ع</span>
+      </div>
+
+      <!-- المبلغ الإجمالي -->
+      <div class="d-flex justify-content-between align-items-center mt-3 p-3 rounded-4 bg-primary bg-opacity-10">
+        <span class="fw-semibold">المبلغ الإجمالي</span>
+        <strong class="fs-4 text-primary">{{ money(store.grandTotalIqd()) }} د.ع</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== شريط الأزرار الثابت ===== -->
+  <div class="position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-lg" style="z-index: 1030;" dir="rtl">
+    <div class="container py-3 d-flex gap-2" style="max-width: 760px;">
+      <button type="button"
+              class="btn btn-outline-dark btn-lg rounded-pill flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+              [disabled]="busy()" (click)="save(cfg.statusSavedId)">
+        @if (savingStatusId() === cfg.statusSavedId) {
+          <span class="spinner-border spinner-border-sm"></span>
+        } @else {
+          <of-icon name="save" />
+        }
+        حفظ
+      </button>
+
+      <button type="button"
+              class="btn btn-dark btn-lg rounded-pill flex-grow-1 d-flex align-items-center justify-content-center gap-2"
+              [disabled]="busy()" (click)="save(cfg.statusSentId)">
+        @if (savingStatusId() === cfg.statusSentId) {
+          <span class="spinner-border spinner-border-sm text-light"></span>
+        } @else {
+          <of-icon name="send" />
+        }
+        إرسال
+      </button>
+    </div>
+  </div>
+
+  <!-- فراغ حتى لا يغطّي الشريط الثابت آخر محتوى -->
+  <div style="height: 100px;"></div>
+</section>

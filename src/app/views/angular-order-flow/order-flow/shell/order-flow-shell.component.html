@@ -1,0 +1,29 @@
+<div class="of-root" dir="rtl">
+  <div class="of-container">
+    <!-- مؤشر الخطوات -->
+    <ol class="of-steps" aria-label="مراحل إنشاء الطلب">
+      @for (label of steps; track label; let i = $index) {
+        <li class="of-steps__item"
+            [class.is-active]="step() === i + 1"
+            [class.is-done]="step() > i + 1">
+          <span class="of-steps__dot">
+            @if (step() > i + 1) { <of-icon name="check" [size]="14" [stroke]="3" /> } @else { {{ i + 1 }} }
+          </span>
+          <span class="of-steps__label">{{ label }}</span>
+        </li>
+      }
+    </ol>
+
+    <router-outlet />
+  </div>
+
+  <!-- التنبيهات -->
+  <div class="of-toasts" aria-live="polite">
+    @for (t of toast.toasts(); track t.id) {
+      <div class="of-toast of-toast--{{ t.kind }}" role="status" (click)="toast.dismiss(t.id)">
+        <of-icon [name]="toastIcon(t.kind)" [size]="18" />
+        <span>{{ t.text }}</span>
+      </div>
+    }
+  </div>
+</div>

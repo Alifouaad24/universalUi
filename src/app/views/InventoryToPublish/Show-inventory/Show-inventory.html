@@ -101,6 +101,9 @@
               <button class="btn btn-sm btn-danger me-1" (click)="DeleteInventoryItem(type.inventory_id)">
                 <c-icon name="cil-trash"></c-icon>
               </button>
+              <button class="btn btn-sm btn-info me-1" (click)="ShowDecreaseModals(type.inventory_id!)">
+                <c-icon name="cil-cart"></c-icon>
+              </button>
               <!-- <a class="btn btn-sm btn-primary me-1" [routerLink]="['/Home/album']"
                 [queryParams]="{ folderSelected: type.folderImages }">
                 Go to album
@@ -108,8 +111,8 @@
 
               <button *ngFor="let p of sellingPlatforms" type="button" class="btn btn-sm me-1 mb-1 lh-sm"
                 [ngClass]="isPublishedOn(type, p.platform_id) ? 'btn-success' : 'btn-primary'" [title]="isPublishedOn(type, p.platform_id)
-    ? 'Published on ' + p.description + (publishedDate(type, p.platform_id) ? ' · ' + (publishedDate(type, p.platform_id) | date:'mediumDate':'UTC') : '')
-    : 'Publish on ' + p.description" (click)="publishOn(type, p)">
+                  ? 'Published on ' + p.description + (publishedDate(type, p.platform_id) ? ' · ' + (publishedDate(type, p.platform_id) | date:'mediumDate':'UTC') : '')
+                  : 'Publish on ' + p.description" (click)="publishOn(type, p)">
                 {{ p.description }}
                 <small *ngIf="publishedDate(type, p.platform_id) as d" class="d-block opacity-75">
                   {{ d | date:'d MMM yyyy':'UTC' }}
@@ -1258,6 +1261,68 @@
     </div>
   </c-modal-body>
 </c-modal>
+
+
+
+
+
+<!-- ================= Set Inv Sold ================= -->
+<c-modal [(visible)]="showDecreaseModal" alignment="center" backdrop="static">
+  <c-modal-header class="border-bottom-0 pb-0">
+    <div>
+      <h5 cModalTitle class="fw-bold mb-1">
+        <i class="cil-minus-circle text-warning me-2"></i>
+        Decrease Sold Quantity
+      </h5>
+      <small class="text-body-secondary">
+        Update inventory sold quantity
+      </small>
+    </div>
+    <button cButtonClose (click)="showDecreaseModal = false"></button>
+  </c-modal-header>
+  <c-modal-body class="pt-4">
+    <div class="rounded-3 p-3 mb-4">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+          <i class="cil-cart text-warning fs-3"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-1">Sold Inventory</h6>
+          <small class="text-body-secondary">
+            Enter the quantity you want to decrease.
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">
+        Sold Quantity
+        <span class="text-danger">*</span>
+      </label>
+      <div class="input-group input-group-lg">
+        <span class="input-group-text">
+          <i class="cil-minus-circle text-secondary"></i>
+        </span>
+        <input type="number" class="form-control" placeholder="Enter sold quantity" [(ngModel)]="qtyToDec" min="1"
+          step="1" />
+      </div>
+      <small class="text-body-secondary mt-2 d-block">
+        Enter the number of items to decrease from sold quantity.
+      </small>
+    </div>
+  </c-modal-body>
+  <c-modal-footer class="border-top-0 pt-0">
+    <button cButton color="light" class="px-4" (click)="showDecreaseModal = false">
+      Cancel
+    </button>
+    <button cButton color="success" class="px-4 text-white" (click)="DecreaseInv()"
+      [disabled]="!qtyToDec || qtyToDec <= 0">
+      <i class="cil-check me-2"></i>
+      Save Changes
+    </button>
+  </c-modal-footer>
+</c-modal>
+
 
 
 <!-- Add new inv manual -->

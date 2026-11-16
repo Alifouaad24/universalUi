@@ -1,0 +1,19 @@
+<div class="of-bar">
+  <div class="of-bar__inner">
+    <div class="of-bar__totals">
+      <span class="of-bar__caption">{{ caption() }}</span>
+      @for (v of [usd()]; track v) {
+        <strong class="of-bar__usd of-pop" dir="ltr">${{ money(v) }}</strong>
+      }
+      <span class="of-bar__iqd">{{ money(iqd()) }} د.ع</span>
+    </div>
+
+    @if (actionLabel(); as label) {
+      <button type="button" class="of-btn of-btn--primary of-btn--lg of-bar__action"
+              [disabled]="disabled()" (click)="action.emit()">
+        <span>{{ label }}</span>
+        <of-icon [name]="actionIcon()" />
+      </button>
+    }
+  </div>
+</div>

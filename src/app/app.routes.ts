@@ -4,13 +4,17 @@ import { AuthGuard } from './auth.guard';
 import { ShippingMasterLandingComponent } from './views/Shipping-master/landing.component';
 import { ShippingMasterAddOrderComponent } from './views/Shipping-master/add-order.component';
 import { ShippingMasterOrdersHistoryComponent } from './views/Shipping-master/orders-history.component';
+import { SettingsComponent } from './views/settings/settings.component';
+import { BasketPricingComponent } from './views/angular-order-flow/order-flow/pages/basket-pricing/basket-pricing.component';
+import { CreateOrderComponent } from './views/angular-order-flow/order-flow/pages/create-order/create-order.component';
+import { OrderReviewComponent } from './views/angular-order-flow/order-flow/pages/order-review/order-review.component';
 
 export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./views/main-page/main-page.component').then(m => m.ApxLandingComponent),
   },
-   {
+  {
     path: 'login',
     loadComponent: () => import('./views/pages/login/login.component').then(m => m.LoginComponent),
   },
@@ -42,11 +46,12 @@ export const routes: Routes = [
         path: 'multimedia',
         loadChildren: () => import('./views/Multimedia/routes').then((m) => m.routes)
       },
+
       {
         path: 'roles',
         loadChildren: () => import('./views/Roles/routes').then((m) => m.routes)
       },
-            {
+      {
         path: 'shipping-lists',
         loadChildren: () => import('./views/Shipping-Lists/routes').then((m) => m.routes)
       },
@@ -158,6 +163,12 @@ export const routes: Routes = [
         path: 'services',
         loadChildren: () => import('./views/Services/routes').then((m) => m.routes)
       },
+
+
+      {
+        path: 'settings',
+        component: SettingsComponent
+      },
       {
         path: 'activities',
         loadChildren: () => import('./views/Activities/routes').then((m) => m.routes)
@@ -245,5 +256,18 @@ export const routes: Routes = [
   { path: 'shipping-master/add', component: ShippingMasterAddOrderComponent },
   { path: 'shipping-master/orders', component: ShippingMasterOrdersHistoryComponent },
 
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'dashboard' },
+
+  {
+    path: 'cart-pricing',
+    component: BasketPricingComponent
+  },
+  {
+    path: 'create-order',
+    component: CreateOrderComponent
+  },
+  {
+    path: 'review-order',
+    component: OrderReviewComponent
+  },
 ];

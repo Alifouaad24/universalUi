@@ -153,7 +153,11 @@ export class BusinessComponent implements OnInit {
 
   isSavingGroup = false;
 
+
+
   openAddGroupModal() {
+    this.isEditMode = false;           // وضع إضافة
+    this.editingGroupId = 0;
     this.groupName = '';
     this.selectedBusinessIds = [];
     this.groupModalVisible = true;
@@ -169,10 +173,61 @@ export class BusinessComponent implements OnInit {
     )?.business_name || '';
   }
 
-  
+
+
+  // saveGroup() {
+
+  //   if (!this.groupName.trim()) {
+  //     alert('Please enter Group Name');
+  //     return;
+  //   }
+
+  //   if (this.selectedBusinessIds.length === 0) {
+  //     alert('Please select at least one Business');
+  //     return;
+  //   }
+
+  //   const userId = localStorage.getItem('userId');
+
+  //   if (!userId) {
+  //     alert('User not found');
+  //     return;
+  //   }
+
+  //   const model = {
+  //     name: this.groupName.trim(),
+  //     userId: userId,
+  //     businessesIds: [...new Set(this.selectedBusinessIds)]
+  //   };
+
+  //   console.log(model)
+
+  //   this.isSavingGroup = true;
+  //   this.http.posteData('Business/addNewGroup', model)
+  //     .subscribe({
+  //       next: (res) => {
+  //         this.isSavingGroup = false;
+  //         this.groupModalVisible = false;
+  //         this.groupName = '';
+  //         this.selectedBusinessIds = [];
+  //         this.getUserGroups(userId);
+  //         this.viewType = 'Groups';
+  //         this.cdr.detectChanges();
+  //       },
+
+  //       error: (error) => {
+  //         console.error('Error creating group:', error);
+  //         this.isSavingGroup = false;
+  //         alert('Failed to create group');
+  //         this.cdr.detectChanges();
+
+  //       }
+
+  //     });
+
+  // }
 
   saveGroup() {
-
     if (!this.groupName.trim()) {
       alert('Please enter Group Name');
       return;
@@ -184,43 +239,49 @@ export class BusinessComponent implements OnInit {
     }
 
     const userId = localStorage.getItem('userId');
-
     if (!userId) {
       alert('User not found');
       return;
     }
 
-    const model = {
+    this.isSavingGroup = true;
+
+    // تحديد الرابط والبيانات حسب الوضع
+    const isEdit = this.isEditMode;
+    const model: any = {
       name: this.groupName.trim(),
       userId: userId,
       businessesIds: [...new Set(this.selectedBusinessIds)]
     };
 
-    console.log(model)
+    // في حالة التعديل نضيف id الكروب
+    if (isEdit) {
+      model.businessGroupId = this.editingGroupId;
+    }
 
-    this.isSavingGroup = true;
-    this.http.posteData('Business/addNewGroup', model)
-      .subscribe({
-        next: (res) => {
-          this.isSavingGroup = false;
-          this.groupModalVisible = false;
-          this.groupName = '';
-          this.selectedBusinessIds = [];
-          this.getUserGroups(userId);
-          this.viewType = 'Groups';
-          this.cdr.detectChanges();
-        },
+    const request = isEdit
+      ? this.http.posteData(`Business/editGroup/${this.editingGroupId}`, model)      // ← عدّل اسم الـ endpoint حسب الـ API عندك
+      : this.http.posteData('Business/addNewGroup', model);
 
-        error: (error) => {
-          console.error('Error creating group:', error);
-          this.isSavingGroup = false;
-          alert('Failed to create group');
-          this.cdr.detectChanges();
-
-        }
-
-      });
-
+    request.subscribe({
+      next: (res) => {
+        this.isSavingGroup = false;
+        this.groupModalVisible = false;
+        this.isEditMode = false;
+        this.editingGroupId = 0;
+        this.groupName = '';
+        this.selectedBusinessIds = [];
+        this.getUserGroups(userId);
+        this.viewType = 'Groups';
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error saving group:', error);
+        this.isSavingGroup = false;
+        alert(isEdit ? 'Failed to update group' : 'Failed to create group');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   Groups: BusinessGroupModel[] = [];
@@ -251,6 +312,67 @@ export class BusinessComponent implements OnInit {
         this.cdr.detectChanges();
       }
     }
+  }
+
+  ////////////// update delete group /////////////
+
+
+  // ===== متغيّرات التعديل والحذف للكروب =====
+  isEditMode = false;                    // هل المودال بوضع تعديل؟
+  editingGroupId: number = 0;            // id الكروب الجاري تعديله
+  groupToDeleteId: number = 0;           // id الكروب المراد حذفه
+  deleteGroupModalVisible = false;       // مودال تأكيد حذف الكروب
+  isDeletingGroup = false;
+
+  // فتح نفس المودال معبّأ ببيانات الكروب للتعديل
+  openEditGroupModal(group: BusinessGroupModel) {
+    this.isEditMode = true;            // وضع تعديل
+    this.editingGroupId = group.businessGroupId;
+    this.groupName = group.groupName;
+
+    // جلب معرّفات الشركات الموجودة بالكروب
+    this.selectedBusinessIds = (group.businessGroupBusinesses || [])
+      .map((item: any) => item.business?.business_id ?? item.business_id)
+      .filter((id: any) => id != null);
+
+    this.groupModalVisible = true;
+  }
+
+
+  // فتح مودال تأكيد حذف الكروب
+  openDeleteGroupModal(groupId: number) {
+    this.groupToDeleteId = groupId;
+    this.deleteGroupModalVisible = true;
+  }
+
+  closeDeleteGroupModal() {
+    this.deleteGroupModalVisible = false;
+    this.groupToDeleteId = 0;
+  }
+
+  // تنفيذ حذف الكروب
+  deleteGroup() {
+    if (this.isDeletingGroup || !this.groupToDeleteId) return;
+
+    this.isDeletingGroup = true;
+    this.http.deleteData(`Business/deleteGroup/${this.groupToDeleteId}`)   // ← عدّل الـ endpoint حسب الـ API
+      .subscribe({
+        next: (res) => {
+          this.Groups = this.Groups.filter(
+            g => g.businessGroupId !== this.groupToDeleteId
+          );
+          this.isDeletingGroup = false;
+          this.closeDeleteGroupModal();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error deleting group:', error);
+          this.isDeletingGroup = false;
+          this.closeDeleteGroupModal();
+          alert('Failed to delete group');
+          this.cdr.detectChanges();
+        }
+      });
   }
 
 }

@@ -72,8 +72,13 @@ export class AddEditplatformComponent implements OnInit {
   }
 
   getAllBusiness() {
+    var currentBusinessId = Number(localStorage.getItem('businessId'))
     this.http.getAllData('Business').subscribe((res: any) => {
       this.Businesses = res;
+      if (currentBusinessId != 13) {
+        this.Businesses = this.Businesses.filter(el => el.business_id == currentBusinessId)
+      }
+      this.selectedBusinesses.push({ businessId: currentBusinessId, isForScrape: false, isForSell: false })
       this.cdr.detectChanges();
     });
   }

@@ -1,0 +1,68 @@
+<div class="settings-page">
+  <header class="page-header">
+    <h1>الإعدادات</h1>
+    <p>إدارة إعدادات النظام والتفضيلات</p>
+  </header>
+
+  <!-- ============ قسم المنتجات ============ -->
+  <section class="settings-section">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <div class="section-titles">
+        <h2>المنتجات</h2>
+        <p>إعدادات تعريف وإدارة المنتجات</p>
+      </div>
+    </div>
+
+    <div class="section-body">
+      <!-- صف إعداد واحد -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <label>نوع مفتاح المنتج (Product Key)</label>
+          <span class="setting-desc">اختر كيف يتم تعريف المنتجات في النظام</span>
+        </div>
+
+        <div class="setting-control">
+          <div class="options">
+            <label class="option">
+              <input
+                type="radio"
+                name="productKey"
+                value="UPC"
+                [(ngModel)]="productKeyType"
+              />
+              <span class="option-title">UPC</span>
+              <small>Universal Product Code</small>
+            </label>
+
+            <label class="option">
+              <input
+                type="radio"
+                name="productKey"
+                value="SKU"
+                [(ngModel)]="productKeyType"
+              />
+              <span class="option-title">SKU</span>
+              <small>Stock Keeping Unit</small>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- تذييل القسم: زر الحفظ + رسالة النجاح -->
+    <div class="section-footer">
+      @if (savedMessages['products']) {
+        <span class="saved-message">{{ savedMessages['products'] }}</span>
+      }
+      <button class="save-btn" (click)="saveProductSettings()">حفظ</button>
+    </div>
+  </section>
+
+  <!--
+    ============ لإضافة قسم جديد ============
+    انسخ <section class="settings-section"> ... </section>
+    وغيّر الأيقونة والعنوان والإعدادات،
+    واستخدم زر حفظ ينادي دالة القسم الجديد.
+  -->
+</div>

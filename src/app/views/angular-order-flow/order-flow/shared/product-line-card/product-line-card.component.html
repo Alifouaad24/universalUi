@@ -1,0 +1,58 @@
+<article class="plc">
+  <!-- الصورة -->
+  <button type="button" class="plc__thumb" [disabled]="!image() || imageFailed()"
+          (click)="zoomed.set(true)" aria-label="تكبير الصورة">
+    @if (image() && !imageFailed()) {
+      <img [src]="image()" [alt]="name()" loading="lazy" referrerpolicy="no-referrer"
+           (error)="imageFailed.set(true)" />
+    } @else {
+      <of-icon name="image" [size]="26" />
+    }
+    @if (discount() > 0) {
+      <span class="plc__discount" dir="ltr">-{{ discount() }}%</span>
+    }
+  </button>
+
+  <!-- التفاصيل -->
+  <div class="plc__body">
+    <div class="plc__head">
+      @if (link()) {
+        <a class="plc__name" [href]="link()" target="_blank" rel="noopener noreferrer" [title]="name()">{{ name() }}</a>
+      } @else {
+        <p class="plc__name" [title]="name()">{{ name() }}</p>
+      }
+      <button type="button" class="plc__remove" title="حذف المنتج" (click)="remove.emit()">
+        <of-icon name="x" [size]="16" />
+      </button>
+    </div>
+
+    @if (color() || size()) {
+      <div class="plc__chips">
+        @if (color()) {
+          <span class="of-chip"><span class="of-chip__key">اللون</span>{{ color() }}</span>
+        }
+        @if (size()) {
+          <span class="of-chip"><span class="of-chip__key">المقاس</span><bdi>{{ size() }}</bdi></span>
+        }
+      </div>
+    }
+
+    @if (extras().length) {
+      <p class="plc__extras">{{ extras().join(' • ') }}</p>
+    }
+
+    @if (retail(); as r) {
+      <p class="plc__retail">
+        السعر قبل الخصم <s dir="ltr">${{ money(r) }}</s>
+      </p>
+    }
+  </div>
+</article>
+
+<!-- عارض الصورة -->
+@if (zoomed() && image()) {
+  <div class="plc-lightbox" (click)="zoomed.set(false)" role="dialog" aria-modal="true">
+    <button type="button" class="plc-lightbox__close" aria-label="إغلاق"><of-icon name="x" [size]="22" /></button>
+    <img [src]="image()" [alt]="name()" referrerpolicy="no-referrer" (click)="$event.stopPropagation()" />
+  </div>
+}
