@@ -92,12 +92,12 @@ export class AddEditTariffComponent implements OnInit {
   private readonly api = {
     platforms: 'Platform',
     services: 'Service',
-    shippingLists: 'ShippingList',
+    shippingLists: `ShippingList`,
     items: 'Item',
     currencies: 'Currency',
     units: 'Unit',
 
-    tariffs: 'ShippingTaaref',
+    tariffs: `ShippingTaaref`,
 
     tariffDetails: 'ShippingTaaref/AddTariffDetails',
 
@@ -108,11 +108,12 @@ export class AddEditTariffComponent implements OnInit {
     private http: HttpConnectService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
 
     this.businessId = Number(localStorage.getItem('businessId'));
+    console.log(this.businessId)
 
     this.loadPlatforms();
     this.loadServices();
@@ -199,21 +200,17 @@ export class AddEditTariffComponent implements OnInit {
   }
 
   loadShippingLists(): void {
-
     this.http.getAllData<any[]>(
-      this.api.shippingLists
+      `${this.api.shippingLists}/${this.businessId}`   // ← businessId صار موجود
     ).subscribe({
-
       next: res => {
+        console.log(res)
         this.shippingLists = res || [];
       },
-
       error: error => {
         console.error('Failed to load shipping lists:', error);
       }
-
     });
-
   }
 
   loadItems(): void {

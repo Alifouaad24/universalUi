@@ -51,3 +51,24 @@ export interface AddOrderRequest {
   /** رسوم التوصيل — اسم الحقل هكذا بنسخة Flutter */
   required: number;
 }
+
+/**
+ * خيار تعريفة شحن واحد (سطر TariffDetails داخل Taaref) — مثل TariffOption بنسخة Flutter.
+ * مثال العرض: China → USA (Air)  ·  5 USD
+ */
+export interface TariffOption {
+  tariffDetailsId: number;
+  taarefId: number | null;
+  from: string;
+  to: string;
+  service: string;
+  unit: string | null;
+  /** السعر المضاف على كل قطعة */
+  price: number;
+  currency: string;
+  /** China → USA */
+  route: string;
+  /** China → USA (Air) */
+  label: string;
+  mode: 'air' | 'sea' | 'land';
+}

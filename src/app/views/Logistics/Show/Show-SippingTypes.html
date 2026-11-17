@@ -18,7 +18,7 @@
       <div *ngFor="let type of GlobalShippingTypes" class="col-md-4 mb-3">
         <div class="card h-100 shadow-sm cursor-pointer" routerLink="../shipping-lists" [queryParams]="{ shippingTypeId: type.shippingTypeId }">
           <div class="card-body">
-            <h5 class="card-title">{{ type.name }} Shipping</h5>
+            <h5 class="card-title">{{ type.name }}</h5>
             <!-- <div class="d-flex justify-content-end gap-2 mt-3">
               <button class="btn btn-sm btn-primary" [routerLink]="['./add-edit-finantial']"
                 [queryParams]="{ finantial: type | json }">

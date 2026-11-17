@@ -3,8 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map, timeout } from 'rxjs';
 
 import { ORDER_FLOW_CONFIG } from '../order-flow.config';
-import { AddOrderRequest, Customer, ProductLine } from '../order-flow.models';
-import { customerFromJson, productFromCartItem, productFromRaw } from '../order-flow.utils';
+import { AddOrderRequest, Customer, ProductLine, TariffOption } from '../order-flow.models';
+import { customerFromJson, productFromCartItem, productFromRaw, tariffsFromTaarefs } from '../order-flow.utils';
 
 /** كل اتصالات الـ API الخاصة بإنشاء الطلب. */
 @Injectable({ providedIn: 'root' })
@@ -100,6 +100,18 @@ export class OrderApiService {
           return customerFromJson(c);
         }),
       );
+  }
+
+  // ---------------------------------------------------------------
+  // GET ShippingTaaref/GetAllTaarefs/{businessId}
+  // تعريفات الشحن — كل TariffDetails فعّال يصبح خيارًا مستقلًا
+  // ---------------------------------------------------------------
+  getTariffs(businessId: number): Observable<TariffOption[]> {
+    return this.http
+      .get<unknown>(this.url(`ShippingTaaref/GetAllTaarefs/${businessId}`), {
+        headers: this.headers,
+      })
+      .pipe(map(tariffsFromTaarefs));
   }
 
   // ---------------------------------------------------------------

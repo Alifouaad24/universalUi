@@ -79,6 +79,7 @@ export class ShippingTypesComponent implements OnInit {
     this.isLoading = true;
     this.http.getAllData('GlobalShippingTypes').subscribe(
       (res: any) => {
+      console.log(res)
         this.GlobalShippingTypes = (res as any[]).map(item => new GlobalShippingTypesModel({
           shippingTypeId: item.shippingTypeId,
           name: item.name,

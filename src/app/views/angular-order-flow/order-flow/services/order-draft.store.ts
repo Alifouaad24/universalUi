@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { ORDER_FLOW_CONFIG } from '../order-flow.config';
-import { AddOrderRequest, Customer, OrderContext, ProductLine } from '../order-flow.models';
+import { AddOrderRequest, Customer, OrderContext, ProductLine, TariffOption } from '../order-flow.models';
 import {
   addressText,
   filterDecimal,
@@ -37,14 +37,34 @@ export class OrderDraftStore {
   readonly deliveryFeeText = signal('0');
   readonly deliveryFee = signal(0);
 
+  // ---------- تعريفات الشحن ----------
+  readonly tariffs = signal<TariffOption[]>([]);
+  readonly tariffsLoading = signal(false);
+  readonly selectedTariff = signal<TariffOption | null>(null);
+
   // ==========================================================
   // المجاميع
   // ==========================================================
   readonly totalUnits = computed(() => this.products().reduce((s, p) => s + p.count, 0));
 
-  readonly productsTotal = computed(() =>
+  /** سعر الشحن المضاف على كل قطعة (من التعريفة المختارة) */
+  readonly shippingPerUnit = computed(() => this.selectedTariff()?.price ?? 0);
+
+  /** مجموع أسعار المنتجات بدون الشحن */
+  readonly productsBaseTotal = computed(() =>
     this.products().reduce((s, p) => s + (p.price ?? 0) * p.count, 0),
   );
+
+  /** مجموع الشحن = سعر التعريفة × عدد القطع */
+  readonly shippingTotal = computed(() => this.shippingPerUnit() * this.totalUnits());
+
+  /** الإجمالي بالدولار = (سعر القطعة + الشحن) × العدد */
+  readonly productsTotal = computed(() => this.productsBaseTotal() + this.shippingTotal());
+
+  /** إجمالي سطر منتج مع الشحن */
+  lineTotal(p: ProductLine): number {
+    return ((p.price ?? 0) + this.shippingPerUnit()) * p.count;
+  }
 
   /** السعر بالدينار مقرّبًا لأقرب ألف */
   readonly productsTotalIqd = computed(
@@ -72,6 +92,7 @@ export class OrderDraftStore {
     this.exchangeRate.set(this.cfg.defaultExchangeRate);
     this.deliveryFeeText.set('0');
     this.deliveryFee.set(0);
+    this.selectedTariff.set(null);
   }
 
   // ==========================================================
@@ -131,6 +152,23 @@ export class OrderDraftStore {
   }
 
   // ==========================================================
+  // تعريفات الشحن
+  // ==========================================================
+  setTariffs(list: TariffOption[]): void {
+    this.tariffs.set(list);
+    // إذا التعريفة المختارة اختفت بعد إعادة التحميل نلغي اختيارها
+    const sel = this.selectedTariff();
+    if (sel && !list.some((t) => t.tariffDetailsId === sel.tariffDetailsId)) {
+      this.selectedTariff.set(null);
+    }
+  }
+
+  /** اختيار التعريفة: سعرها يُضاف على كل قطعة ويُعاد حساب الإجمالي */
+  selectTariff(t: TariffOption | null): void {
+    this.selectedTariff.set(t);
+  }
+
+  // ==========================================================
   // التحقق
   // ==========================================================
   /** قبل الانتقال من تسعير السلة إلى بيانات الطلب */
@@ -178,6 +216,7 @@ export class OrderDraftStore {
     const c = this.customer()!;
     const address = addressText(c);
     const link = this.cartLink().trim();
+    const tariff = this.selectedTariff();
     return [
       'طلب جديد',
       '',
@@ -186,6 +225,9 @@ export class OrderDraftStore {
       `العنوان: ${address || '-'}`,
       '',
       `عدد القطع: ${this.totalUnits()}`,
+      ...(tariff
+        ? [`الشحن: ${tariff.label} — ${plainNumber(tariff.price)} ${tariff.currency} للقطعة`]
+        : []),
       `السعر بالدولار: ${plainNumber(this.productsTotal())}$`,
       `السعر بالدينار: ${iqd(this.productsTotalIqd())} د.ع`,
       `رسوم التوصيل: ${iqd(this.deliveryFee())} د.ع`,

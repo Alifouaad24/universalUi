@@ -45,11 +45,38 @@
     </div>
   }
 
+  <!-- ===== تعريفة الشحن ===== -->
+  <div class="card border-0 shadow-sm rounded-4 mb-3" style="overflow: visible;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-3"
+              style="width: 40px; height: 40px;">
+          <of-icon name="globe" />
+        </span>
+        <h2 class="h5 fw-semibold mb-0">تعريفة الشحن</h2>
+      </div>
+
+      <of-tariff-select
+        [items]="store.tariffs()"
+        [selected]="store.selectedTariff()"
+        [loading]="store.tariffsLoading()"
+        [disabled]="busy()"
+        (selectedChange)="store.selectTariff($event)"
+        (retry)="loadTariffs()" />
+
+      @if (store.selectedTariff(); as t) {
+        <small class="d-block text-secondary mt-2">
+          يُضاف <bdi dir="ltr">{{ money(t.price) }} {{ t.currency }}</bdi> على كل قطعة
+        </small>
+      }
+    </div>
+  </div>
+
   <!-- ===== الحساب ===== -->
   <div class="card border-0 shadow-sm rounded-4 mb-3">
     <div class="card-body p-4">
       <div class="d-flex align-items-center gap-2 mb-3">
-        <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3"
+        <span class="d-inline-flex align-items-center justify-content-center text-primary rounded-3"
               style="width: 40px; height: 40px;">
           <of-icon name="receipt" />
         </span>
@@ -62,6 +89,18 @@
           <span class="text-secondary">عدد القطع</span>
           <b>{{ store.totalUnits() }}</b>
         </li>
+        @if (store.selectedTariff()) {
+          <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+            <span class="text-secondary">سعر المنتجات</span>
+            <b dir="ltr">${{ money(store.productsBaseTotal()) }}</b>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
+            <span class="text-secondary">
+              الشحن (<bdi dir="ltr">{{ store.totalUnits() }} × {{ money(store.shippingPerUnit()) }}</bdi>)
+            </span>
+            <b dir="ltr">${{ money(store.shippingTotal()) }}</b>
+          </li>
+        }
         <li class="list-group-item d-flex justify-content-between px-0 border-0 py-2">
           <span class="text-secondary">السعر بالدولار</span>
           <b dir="ltr">${{ money(store.productsTotal()) }}</b>

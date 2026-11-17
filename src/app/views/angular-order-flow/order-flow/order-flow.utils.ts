@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Customer, ProductLine } from './order-flow.models';
+import { Customer, ProductLine, TariffOption } from './order-flow.models';
 
 // =============================================================
 // تحويلات عامة
@@ -178,6 +178,104 @@ export function customerFromJson(json: Record<string, any>): Customer {
 /** الدولة - المدينة - المنطقة - نقطة دالة */
 export function addressText(c: Customer): string {
   return [c.countryName, c.city, c.area, c.landMark].filter((x): x is string => !!x).join(' - ');
+}
+
+// =============================================================
+// تعريفات الشحن (نفس TariffOption.fromTaarefs بنسخة Flutter)
+// =============================================================
+const FROM_KEYS = [
+  'fromCountry', 'sourceCountry', 'countryFrom', 'originCountry',
+  'from', 'source', 'origin', 'fromCountryName', 'sourceCountryName',
+];
+const TO_KEYS = [
+  'toCountry', 'destinationCountry', 'countryTo', 'targetCountry',
+  'to', 'destination', 'target', 'toCountryName', 'destinationCountryName',
+];
+const NAME_KEYS = [
+  'name', 'nameEn', 'nameAr', 'countryName', 'description', 'title', 'unitName', 'serviceName',
+];
+
+const nonEmpty = (v: unknown): string | null => {
+  const s = asStr(v)?.trim();
+  return s ? s : null;
+};
+
+/** يقرأ الاسم من كائن (name / description / ...) أو من نص مباشر */
+function nameOf(v: unknown): string | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v !== 'object') return nonEmpty(v);
+  const m = asObj(v);
+  for (const k of NAME_KEYS) {
+    const s = nonEmpty(m[k]);
+    if (s) return s;
+  }
+  return null;
+}
+
+function pickName(m: Record<string, any>, keys: string[]): string | null {
+  for (const k of keys) {
+    const s = nameOf(m[k]);
+    if (s) return s;
+  }
+  return null;
+}
+
+function currencyOf(v: unknown): string {
+  if (v && typeof v === 'object') {
+    const m = asObj(v);
+    return nonEmpty(m['code']) ?? nonEmpty(m['symbol']) ?? nameOf(m) ?? '';
+  }
+  return nonEmpty(v) ?? '';
+}
+
+function tariffMode(service: string): TariffOption['mode'] {
+  const s = service.toLowerCase();
+  if (s.includes('air') || s.includes('جو') || s.includes('طيران')) return 'air';
+  if (s.includes('sea') || s.includes('بحر') || s.includes('ocean')) return 'sea';
+  return 'land';
+}
+
+const isInactive = (o: Record<string, any>) => 'isActive' in o && o['isActive'] === false;
+
+/** يحوّل قائمة Taaref القادمة من السيرفر إلى خيارات (الفعّالة فقط). */
+export function tariffsFromTaarefs(list: unknown): TariffOption[] {
+  if (!Array.isArray(list)) return [];
+  const result: TariffOption[] = [];
+
+  for (const raw of list) {
+    const t = asObj(raw);
+    if (isInactive(t)) continue;
+    const taarefId = asNum(t['taarefId']);
+    const details: unknown[] = Array.isArray(t['tariffDetails']) ? t['tariffDetails'] : [];
+
+    for (const dRaw of details) {
+      const d = asObj(dRaw);
+      if (isInactive(d)) continue;
+
+      const shipping = asObj(d['shippingList']);
+      const tariffDetailsId = asNum(d['tariffDetailsId']) ?? 0;
+      // إذا ما لقينا من/إلى نعرض اسم/وصف قائمة الشحن نفسها
+      const from = pickName(shipping, FROM_KEYS) ?? nameOf(shipping) ?? '';
+      const to = pickName(shipping, TO_KEYS) ?? '';
+      const service = nameOf(d['service']) ?? '';
+      const route = from && to ? `${from} → ${to}` : from || to || `تعريفة #${tariffDetailsId}`;
+
+      result.push({
+        tariffDetailsId,
+        taarefId: asNum(d['taarefId']) ?? taarefId,
+        from,
+        to,
+        service,
+        unit: nameOf(d['unit']),
+        price: asNum(d['price']) ?? 0,
+        currency: currencyOf(d['currency']),
+        route,
+        label: service ? `${route} (${service})` : route,
+        mode: tariffMode(service),
+      });
+    }
+  }
+  return result;
 }
 
 // =============================================================

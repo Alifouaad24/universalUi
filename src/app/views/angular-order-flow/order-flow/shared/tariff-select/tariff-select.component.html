@@ -1,0 +1,96 @@
+<!-- ===== الحقل ===== -->
+<button type="button" class="ts-trigger"
+        [class.is-active]="!!selected()"
+        [class.is-open]="open()"
+        [disabled]="loading() || disabled()"
+        aria-haspopup="listbox" [attr.aria-expanded]="open()"
+        (click)="toggle()">
+  <span class="ts-mode" [class.is-active]="!!selected()">
+    <of-icon [name]="icon(selected())" [size]="22" />
+  </span>
+
+  <span class="ts-body">
+    @if (loading()) {
+      <span class="ts-placeholder text-secondary">جارِ تحميل التعريفات...</span>
+    } @else if (selected(); as t) {
+      <bdi class="ts-route" dir="ltr">{{ t.route }}</bdi>
+      @if (t.service) {
+        <span class="ts-chip">{{ t.service }}</span>
+      }
+    } @else {
+      <span class="ts-placeholder">
+        {{ items().length ? 'اختر تعريفة الشحن' : 'لا توجد تعريفات — اضغط لإعادة التحميل' }}
+      </span>
+      @if (items().length) {
+        <small class="text-secondary">{{ items().length }} خط شحن متاح</small>
+      }
+    }
+  </span>
+
+  @if (loading()) {
+    <span class="spinner-border spinner-border-sm text-secondary"></span>
+  } @else if (selected(); as t) {
+    <bdi class="ts-price" dir="ltr">{{ priceText(t) }}</bdi>
+  } @else {
+    <of-icon name="chevrons-up-down" class="text-secondary" />
+  }
+</button>
+
+<!-- ===== القائمة ===== -->
+@if (open()) {
+  <div class="ts-backdrop" (click)="close()"></div>
+
+  <div class="ts-panel" role="listbox">
+    <div class="ts-handle"></div>
+
+    <div class="ts-head">
+      <strong class="fs-6">تعريفة الشحن</strong>
+      @if (selected()) {
+        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none d-inline-flex align-items-center gap-1 p-0"
+                (click)="pick(null)">
+          <of-icon name="x" [size]="16" /> إزالة
+        </button>
+      }
+    </div>
+
+    @if (items().length > 5) {
+      <div class="ts-search">
+        <of-icon name="search" [size]="18" class="text-secondary" />
+        <input type="text" autocomplete="off" placeholder="ابحث عن دولة أو نوع شحن"
+               [value]="query()" (input)="query.set($any($event.target).value)" />
+      </div>
+    }
+
+    <div class="ts-list">
+      @for (t of filtered(); track t.tariffDetailsId) {
+        @let isSel = selected()?.tariffDetailsId === t.tariffDetailsId;
+        <button type="button" class="ts-tile" role="option"
+                [class.is-selected]="isSel" [attr.aria-selected]="isSel"
+                (click)="pick(t)">
+          <span class="ts-mode" [class.is-active]="isSel">
+            <of-icon [name]="icon(t)" [size]="22" />
+          </span>
+
+          <span class="ts-body">
+            <bdi class="ts-route" dir="ltr">{{ t.route }}</bdi>
+            <span class="d-flex flex-wrap gap-1">
+              @if (t.service) {
+                <span class="ts-chip">{{ t.service }}</span>
+              }
+              @if (t.unit) {
+                <span class="ts-chip is-muted">لكل {{ t.unit }}</span>
+              }
+            </span>
+          </span>
+
+          <span class="d-flex flex-column align-items-end gap-1">
+            <bdi class="ts-price" dir="ltr">{{ priceText(t) }}</bdi>
+            <of-icon name="check-circle" [size]="20" class="ts-check" [class.is-visible]="isSel" />
+          </span>
+        </button>
+      } @empty {
+        <p class="text-center text-secondary py-4 mb-0">لا توجد نتائج</p>
+      }
+    </div>
+  </div>
+}

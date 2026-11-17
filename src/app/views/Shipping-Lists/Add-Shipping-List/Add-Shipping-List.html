@@ -47,7 +47,7 @@
                   Select Shipping Type
                 </option>
                 <option *ngFor="let type of shippingTypes" [ngValue]="type.shippingTypeId">
-                  {{ type.description }}
+                  {{ type.name }}
                 </option>
               </select>
             </c-col>

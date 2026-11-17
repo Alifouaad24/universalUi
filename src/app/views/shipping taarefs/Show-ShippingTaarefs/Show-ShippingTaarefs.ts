@@ -19,13 +19,14 @@ export class ShowTariffsComponent implements OnInit {
   tariffs: any[] = [];
   isLoading = false;
   message = '';
-
+  businessId?: number;
   constructor(
     private http: HttpConnectService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.businessId = Number(localStorage.getItem('businessId'));
     this.getAllTariffs();
   }
 
@@ -33,9 +34,9 @@ export class ShowTariffsComponent implements OnInit {
   this.isLoading = true;
   this.message = '';
 
-  this.http.getAllData('ShippingTaaref').subscribe({
+  this.http.getAllData(`ShippingTaaref/GetAllTaarefs/${this.businessId}`).subscribe({
     next: (res: any) => {
-
+      console.log(res)
       const tariffList = Array.isArray(res) ? res : [];
 
       if (tariffList.length === 0) {

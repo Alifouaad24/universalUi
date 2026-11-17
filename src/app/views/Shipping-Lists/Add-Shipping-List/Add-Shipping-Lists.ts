@@ -1,6 +1,6 @@
 
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   ActivatedRoute,
@@ -29,6 +29,7 @@ interface ShippingListModel {
   currencyId?: string | number;
   shippingTypeId?: string | number;
   isActive: boolean;
+  businessId?: number
 }
 
 @Component({
@@ -54,6 +55,7 @@ export class AddEditShippingListComponent implements OnInit {
     fromCountryId: undefined,
     toCountryId: undefined,
     shippingTypeId: undefined,
+    businessId: undefined,
     isActive: true
   };
 
@@ -67,7 +69,7 @@ export class AddEditShippingListComponent implements OnInit {
   // ضع مسارات الـ API الفعلية هنا
   private readonly api = {
     countries: 'Country',
-    shippingTypes: 'ShippingTypes',
+    shippingTypes: `GlobalShippingTypes`,
     getShippingList: 'YOUR_GET_SHIPPING_LIST_API',
     createShippingList: 'ShippingList',
     updateShippingList: 'YOUR_UPDATE_SHIPPING_LIST_API'
@@ -76,17 +78,18 @@ export class AddEditShippingListComponent implements OnInit {
   constructor(
     private http: HttpConnectService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((param) => {
-      this.shippTypeId = param['shippTypeId']
+      this.shippTypeId = Number(param['shippTypeId'])
       console.log(this.shippTypeId)
     })
     this.loadCountries();
     this.loadShippingTypes();
-
+    this.shippingList.businessId = Number(localStorage.getItem('businessId'))
     // في حال التعديل
     const shippingListStr =
       this.route.snapshot.queryParamMap.get('shippingList');
@@ -134,7 +137,10 @@ export class AddEditShippingListComponent implements OnInit {
     this.http.getAllData(this.api.shippingTypes).subscribe({
       next: (res: any) => {
         this.shippingTypes = res;
+        console.log(res)
         this.shippingList.shippingTypeId = this.shippTypeId
+        console.log(`@@@@@${this.shippingList.shippingTypeId}`)
+        this.cdr.detectChanges()
       },
       error: (error: any) => {
         console.error('Error loading shipping types:', error);
@@ -182,11 +188,6 @@ export class AddEditShippingListComponent implements OnInit {
       return;
     }
 
-    if (!this.shippingList.currencyId) {
-      this.message = 'Please select a currency';
-      return;
-    }
-
     if (!this.shippingList.shippingTypeId) {
       this.message = 'Please select a shipping type';
       return;
@@ -209,7 +210,7 @@ export class AddEditShippingListComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         this.loading = false;
-        this.router.navigate(['/Home/shipping-lists']);
+        this.router.navigate([`/Home/shipping-lists/${this.shippingList.shippingTypeId}`]);
       },
       error: (error: any) => {
         console.error('Error creating shipping list:', error);
@@ -228,7 +229,7 @@ export class AddEditShippingListComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         this.loading = false;
-        this.router.navigate(['/Home/shipping-lists']);
+        this.router.navigate([`/Home/shipping-lists/${this.shippingList.shippingTypeId}`]);
       },
       error: (error: any) => {
         console.error('Error updating shipping list:', error);

@@ -9,6 +9,7 @@ import { OrderApiService } from '../../services/order-api.service';
 import { OrderDraftStore } from '../../services/order-draft.store';
 import { OrderToastService } from '../../services/order-toast.service';
 import { OfIconComponent } from '../../shared/of-icon.component';
+import { TariffSelectComponent } from '../../shared/tariff-select/tariff-select.component';
 
 /**
  * الخطوة 3 — مراجعة الطلب: ملخص الزبون والحساب + رسوم التوصيل
@@ -16,7 +17,7 @@ import { OfIconComponent } from '../../shared/of-icon.component';
  */
 @Component({
   selector: 'of-order-review',
-  imports: [OfIconComponent],
+  imports: [OfIconComponent, TariffSelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './order-review.component.html',
 })
@@ -40,6 +41,28 @@ export class OrderReviewComponent {
   });
 
   readonly money = money;
+
+  constructor() {
+    // نجلب التعريفات مرة واحدة (مثل loadTariffs بنسخة Flutter)
+    if (this.store.tariffs().length === 0) this.loadTariffs();
+  }
+
+  loadTariffs(): void {
+    const businessId = this.store.currentBusinessId();
+    if (businessId === null || this.store.tariffsLoading()) return;
+
+    this.store.tariffsLoading.set(true);
+    this.api
+      .getTariffs(businessId)
+      .pipe(
+        finalize(() => this.store.tariffsLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (list) => this.store.setTariffs(list),
+        error: (e) => this.toast.error(apiErrorMessage(e)),
+      });
+  }
 
   onDeliveryInput(el: HTMLInputElement): void {
     const clean = filterDigits(el.value);

@@ -76,6 +76,7 @@ export class ShowShippingListComponent implements OnInit {
   showDeleteModal = false;
   selectedType: any;
   shippTypeId?: number
+  businessId?: number
   // Toaster
   position = 'top-end';
   toastVisible = signal(false);
@@ -94,7 +95,7 @@ export class ShowShippingListComponent implements OnInit {
       this.shippTypeId = param['shippingTypeId']
       console.log(this.shippTypeId)
     })
-    
+    this.businessId = Number(localStorage.getItem('businessId'))
     this.getAllShippingLists();
   }
 
@@ -102,7 +103,7 @@ export class ShowShippingListComponent implements OnInit {
     this.isLoading = true;
     this.message = '';
 
-    this.http.getAllData(`ShippingList/${this.shippTypeId}`).subscribe(
+    this.http.getAllData(`ShippingList/${this.shippTypeId}/${this.businessId}`).subscribe(
       (res: any) => {
         console.log(res)
         this.ShippingLists = res;
