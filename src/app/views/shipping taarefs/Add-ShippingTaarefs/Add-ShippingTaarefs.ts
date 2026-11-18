@@ -33,7 +33,6 @@ interface TariffDetailModel {
   taarefId?: number;
   service_id: number | null;
   shippingListId: number | null;
-  itemId: number | null;
   currencyId: number | null;
   unitId: number | null;
   price: number | null;
@@ -96,11 +95,8 @@ export class AddEditTariffComponent implements OnInit {
     items: 'Item',
     currencies: 'Currency',
     units: 'Unit',
-
     tariffs: `ShippingTaaref`,
-
     tariffDetails: 'ShippingTaaref/AddTariffDetails',
-
     loadTariffDetails: 'ShippingTaaref/GetTaarefDetails'
   };
 
@@ -139,7 +135,6 @@ export class AddEditTariffComponent implements OnInit {
     return {
       service_id: null,
       shippingListId: null,
-      itemId: null,
       currencyId: null,
       unitId: null,
       price: null,
@@ -329,28 +324,20 @@ export class AddEditTariffComponent implements OnInit {
   // Load the single tariff detail
 
   loadTariffDetails(id: number): void {
-
     this.loadingDetails = true;
-
     this.http.getAllData<any>(
       `${this.api.loadTariffDetails}/${id}`
     ).subscribe({
-
       next: res => {
-
         // Backend currently returns FirstOrDefaultAsync,
         // but also support an array response.
-
         const item = Array.isArray(res)
           ? res[0]
           : res;
 
         if (!item) {
-
           this.detail = this.createEmptyDetail();
-
           this.loadingDetails = false;
-
           return;
         }
 
@@ -372,11 +359,6 @@ export class AddEditTariffComponent implements OnInit {
           shippingListId:
             item.shippingListId ??
             item.ShippingListId ??
-            null,
-
-          itemId:
-            item.itemId ??
-            item.ItemId ??
             null,
 
           currencyId:
@@ -424,43 +406,23 @@ export class AddEditTariffComponent implements OnInit {
   validateDetail(): boolean {
 
     if (this.isServiceTariff) {
-
       if (this.detail.service_id == null) {
-
         this.message = 'Please select a Service';
-
         return false;
-
       }
-
       if (this.detail.shippingListId == null) {
-
         this.message = 'Please select a Shipping List';
-
         return false;
-
       }
-
     }
 
     if (this.isProductTariff) {
-
-      if (this.detail.itemId == null) {
-
-        this.message = 'Please select a Product';
-
-        return false;
-
-      }
-
+      this.detail.service_id == 71
     }
 
     if (this.detail.currencyId == null) {
-
       this.message = 'Please select a Currency';
-
       return false;
-
     }
 
     if (this.detail.unitId == null) {
@@ -501,10 +463,6 @@ export class AddEditTariffComponent implements OnInit {
 
       ShippingListId: this.isServiceTariff
         ? this.detail.shippingListId
-        : null,
-
-      ItemId: this.isProductTariff
-        ? this.detail.itemId
         : null,
 
       CurrencyId: this.detail.currencyId,

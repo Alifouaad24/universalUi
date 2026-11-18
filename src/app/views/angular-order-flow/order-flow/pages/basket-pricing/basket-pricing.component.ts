@@ -41,10 +41,10 @@ export class BasketPricingComponent implements OnInit {
     const q = this.route.snapshot.queryParamMap;
     if (q.has('businessId')) {
       this.store.start({
-        businessId: Number(q.get('businessId')),
-        platformId: Number(q.get('platformId')),
+        businessId: 46,
+        platformId: 8,
         serviceId: Number(q.get('serviceId')),
-        providerId: Number(q.get('providerId')),
+        providerId: 28,
       });
     }
   }
@@ -96,17 +96,35 @@ export class BasketPricingComponent implements OnInit {
   }
 
   // ---------- التالي ----------
-  createOrder(): void {
-    // if (!this.store.context()) {
-    //   this.toast.warning('افتح الطلب من صفحة المورّد أولًا');
-    //   return;
-    // }
-    // const error = this.store.validateProducts();
-    // if (error) {
-    //   this.toast.warning(error);
-    //   return;
-    // }
-    (document.activeElement as HTMLElement | null)?.blur();
-    this.router.navigate(['create-order'], { relativeTo: this.route.parent });
+  // createOrder(): void {
+  //   // if (!this.store.context()) {
+  //   //   this.toast.warning('افتح الطلب من صفحة المورّد أولًا');
+  //   //   return;
+  //   // }
+  //   // const error = this.store.validateProducts();
+  //   // if (error) {
+  //   //   this.toast.warning(error);
+  //   //   return;
+  //   // }
+  //   (document.activeElement as HTMLElement | null)?.blur();
+  //   this.router.navigate(['create-order'], { relativeTo: this.route.parent });
+  // }
+
+  adminPhone = '9647707132380'; // رقم الأدمن بالصيغة الدولية بدون + أو أصفار
+
+  createOrder() {
+    /*
+    // الكود الحالي معلّق مؤقتًا
+    ...
+    */
+    const message = 'مرحبًا، أريد التواصل بخصوص طلبي';
+    const url = `https://wa.me/${this.adminPhone}?text=${encodeURIComponent(message)}`;
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    isMobile ? (window.location.href = url) : window.open(url, '_blank');
+
+
+
+    window.location.href = url;
   }
 }

@@ -153,37 +153,7 @@
                 <option
                   *ngFor="let shipping of shippingLists"
                   [ngValue]="shipping.shippingListId ?? shipping.id">
-                  {{ shipping.fromCountry.name }} - {{ shipping.toCountry.name }} ({{ shipping.shippingType.name }})
-                </option>
-
-              </select>
-
-            </c-col>
-
-            <!-- Product -->
-            <c-col
-              md="6"
-              class="mb-3"
-              *ngIf="isProductTariff">
-
-              <label class="form-label">
-                Product <span class="text-danger">*</span>
-              </label>
-
-              <select
-                class="form-select"
-                name="itemId"
-                [(ngModel)]="detail.itemId"
-                [required]="isProductTariff">
-
-                <option [ngValue]="null" disabled>
-                  Select Product
-                </option>
-
-                <option
-                  *ngFor="let item of items"
-                  [ngValue]="item.itemId ?? item.id">
-                  {{ item.description || item.name }}
+                  {{ shipping.nackname }}
                 </option>
 
               </select>

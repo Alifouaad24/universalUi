@@ -30,6 +30,7 @@ interface ShippingListModel {
   shippingTypeId?: string | number;
   isActive: boolean;
   businessId?: number
+  nackname?: string
 }
 
 @Component({
@@ -178,8 +179,13 @@ export class AddEditShippingListComponent implements OnInit {
       return;
     }
 
+    if (!this.shippingList.nackname) {
+      this.message = 'Please select the Nack name';
+      return;
+    }
+
     if (!this.shippingList.toCountryId) {
-      this.message = 'Please select the destination country';
+      this.message = 'Please select the destination co  untry';
       return;
     }
 

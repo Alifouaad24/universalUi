@@ -9,6 +9,13 @@
       <c-card-body>
         <form (ngSubmit)="saveShippingList()" #shippingForm="ngForm">
           <c-row>
+            <!-- Nack name -->
+            <c-col md="6" class="mb-3">
+              <label class="form-label">
+                Nack name <span class="text-danger">*</span>
+              </label>
+              <input class="form-control" name="fromCountryId" [(ngModel)]="shippingList.nackname" required />
+            </c-col>
             <!-- From Country -->
             <c-col md="6" class="mb-3">
               <label class="form-label">

@@ -28,6 +28,7 @@
         <thead class="table-light">
           <tr>
             <th>#</th>
+            <th>Nack name</th>
             <th>From Country</th>
             <th>To Country</th>
             <th>Shipping Type</th>
@@ -40,7 +41,9 @@
           <tr *ngFor="let type of ShippingLists; let i = index">
 
             <td>{{ i + 1 }}</td>
-
+<td>
+              {{ type?.nackName || '-' }}
+            </td>
             <td>
               {{ type.fromCountry?.name || '-' }}
             </td>

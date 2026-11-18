@@ -1878,11 +1878,15 @@ export class ShowInventoryComponent implements OnInit {
     this.currentInventoryId = invId
   }
 
-  qtyToDec = 0
+  qtyToDec = 1
   showDecreaseModal = false
 
   DecreaseInv() {
-    this.http.getAllData(`Inventory/DecreaseInputQty/${this.currentInventoryId}/${this.qtyToDec}`).subscribe((ids: any) => {
+    this.http.putData(`Inventory/DecreaseInputQty/${this.currentInventoryId}?qtyDec=${this.qtyToDec}`, {}).subscribe((ids: any) => {
+      this.inventory = this.inventory.filter(i => i.inventory_id != this.currentInventoryId)
+      this.toastMessage.set('Action complated successfuly ');
+        this.toastVisible.set(true);
+        this.cdr.detectChanges()
     });
   }
 
