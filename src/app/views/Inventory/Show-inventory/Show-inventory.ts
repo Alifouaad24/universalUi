@@ -131,13 +131,14 @@ export class ShowInventoryComponent implements OnInit {
   imagesModalVisible = false;
   selectedImages: any[] = [];
   selectedImageIndex = 0;
+  isUpc = true
 
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
   ngOnInit(): void {
     this.isAuthInEbay = this.storage.getWithExpiry('ebayToken') != null ? true : false;
-
+    this.isUpc = this.getProductKey(localStorage.getItem('product_key_type'))
     this.businessId = Number(localStorage.getItem('businessId'));
     this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
     console.log('Current MY Business:', this.currentBusiness);
@@ -161,6 +162,11 @@ export class ShowInventoryComponent implements OnInit {
       console.log(res)
       this.Categories = res;
     })
+  }
+
+  getProductKey(key: string | null): boolean {
+    if (key != null && key == 'UPC') return true
+    return false
   }
 
   getSizes() {
@@ -2361,16 +2367,16 @@ export class ShowInventoryComponent implements OnInit {
     this.openModal(current.imageUrl);
   }
 
-  
+
   CopyUpc(upc: string | undefined) {
     if (upc) {
       navigator.clipboard.writeText(upc)
-      this.toastMessage.set('Upc copied successfuly')
+      this.toastMessage.set('Text copied successfuly')
       this.toastVisible.set(true);
       this.cdr.detectChanges();
 
     } else {
-      this.toastMessage.set('Item has no Upc')
+      this.toastMessage.set('Data is empty')
       this.toastVisible.set(true);
       this.cdr.detectChanges();
     }

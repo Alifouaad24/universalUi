@@ -127,12 +127,13 @@ export class ShowInventoryComponent implements OnInit {
   EbayTitle?: string
   lastPublishDate: string | null = null;
   selectedNewImages: { file: File; previewUrl: string }[] = [];
-
+isUpc = true
   constructor(private http: HttpConnectService, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private router: Router,
     private storage: StorageService) { }
 
   ngOnInit(): void {
     this.isAuthInEbay = this.storage.getWithExpiry('ebayToken') != null ? true : false;
+    this.isUpc = this.getProductKey(localStorage.getItem('product_key_type'))
     this.businessId = Number(localStorage.getItem('businessId'));
     this.currentBusiness = JSON.parse(localStorage.getItem('currentBusiness') || 'null');
     console.log('Current MY Business:', this.currentBusiness);
@@ -164,6 +165,11 @@ export class ShowInventoryComponent implements OnInit {
       console.log(res)
       this.Sizes = res;
     })
+  }
+
+  getProductKey(key: string | null): boolean {
+    if (key != null && key == 'UPC') return true
+    return false
   }
 
 
@@ -1873,7 +1879,7 @@ export class ShowInventoryComponent implements OnInit {
     });
   }
 
-  ShowDecreaseModals(invId: number){
+  ShowDecreaseModals(invId: number) {
     this.showDecreaseModal = true
     this.currentInventoryId = invId
   }
@@ -1885,8 +1891,8 @@ export class ShowInventoryComponent implements OnInit {
     this.http.putData(`Inventory/DecreaseInputQty/${this.currentInventoryId}?qtyDec=${this.qtyToDec}`, {}).subscribe((ids: any) => {
       this.inventory = this.inventory.filter(i => i.inventory_id != this.currentInventoryId)
       this.toastMessage.set('Action complated successfuly ');
-        this.toastVisible.set(true);
-        this.cdr.detectChanges()
+      this.toastVisible.set(true);
+      this.cdr.detectChanges()
     });
   }
 

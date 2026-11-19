@@ -52,9 +52,9 @@
       <thead class="table-light">
         <tr>
           <th>#</th>
-          <th style="width: 10%;">SKU</th>
+          <th *ngIf="!isUpc" style="width: 10%;">SKU</th>
           <th style="width: 10%;">Image</th>
-          <th style="width: 10%;">UPC/Eby sku</th>
+          <th *ngIf="isUpc" style="width: 10%;">UPC</th>
           <th style="width: 5%;">Size</th>
           <th style="width: 8%;">Base Price</th>
           <th style="width: 8%;">Price</th>
@@ -77,12 +77,12 @@
           <td *ngIf="type.ebayListingId == null">
             {{ type.inventory_id }}
           </td>
-          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
+          <td *ngIf="!isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
               type.item?.sku }}</a></td>
           <td><img (click)="ShowAllImages(type.item?.images)"
               [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
               alt="Image" style="width: 60px; height: 75px;"></td>
-          <td><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
+          <td *ngIf="isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
               type.item?.upc }}</a>
 
           </td>

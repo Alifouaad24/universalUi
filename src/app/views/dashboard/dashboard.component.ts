@@ -225,6 +225,12 @@ export class DashboardComponent implements OnInit {
 
   selectBusiness(b: any) {
     this.currentBusiness = b;
+    if(b.business_name == 'Duty'){
+      localStorage.setItem('product_key_type', 'UPC')
+    }
+    else{
+      localStorage.setItem('product_key_type', 'SKU')
+    }
     this.businessCtx.setCurrentBusiness(b);
   }
 
