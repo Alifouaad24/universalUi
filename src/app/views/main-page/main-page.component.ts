@@ -1,11 +1,12 @@
 import {
   AfterViewInit, Component, HostListener, Input, OnDestroy, PLATFORM_ID,
+  computed,
   inject, signal
 } from '@angular/core';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-
+import { IconDirective, IconModule } from '@coreui/icons-angular';
 import { LanguageService } from '../../core/Services/LanguageService';
 import { AuthMsgKey, LANGUAGES, Lang, SectionId, WHATSAPP_NUMBER } from '../../core/Services/l18n';
 
@@ -62,11 +63,23 @@ export class ApxIconComponent {
    صفحة Apx الرئيسية
    ========================================================= */
 const SECTION_IDS: SectionId[] = ['home', 'services', 'about', 'contact'];
-
+interface LangCountry {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  lang: 'ar' | 'en';
+  langLabel: string;
+}
+interface LangRegion {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  countries: LangCountry[];
+}
 @Component({
   selector: 'app-apx-landing',
   standalone: true,
-  imports: [ReactiveFormsModule, ApxIconComponent],
+  imports: [ReactiveFormsModule, ApxIconComponent, IconDirective, IconModule],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
   // الاتجاه واللغة على عنصر المكوّن نفسه (وليس <html>)
@@ -76,6 +89,8 @@ const SECTION_IDS: SectionId[] = ['home', 'services', 'about', 'contact'];
     '[attr.lang]': 'lang()',
   },
 })
+
+
 export class ApxLandingComponent implements AfterViewInit, OnDestroy {
 
   private router = inject(Router);
@@ -279,4 +294,61 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
     this.authMsgKey = this.authTab === 'login' ? 'login' : 'register';
     form.reset();
   }
+
+
+
+
+// داخل الكلاس:
+readonly regions: LangRegion[] = [
+  {
+    id: 'americas', nameEn: 'Americas', nameAr: 'الأمريكتان',
+    countries: [
+      { id: 'us', nameEn: 'United States', nameAr: 'الولايات المتحدة', lang: 'en', langLabel: 'English' },
+      { id: 'ca', nameEn: 'Canada', nameAr: 'كندا', lang: 'en', langLabel: 'English' },
+    ],
+  },
+  {
+    id: 'mea', nameEn: 'Middle East & Africa', nameAr: 'الشرق الأوسط وأفريقيا',
+    countries: [
+      { id: 'iq', nameEn: 'Iraq', nameAr: 'العراق', lang: 'ar', langLabel: 'العربية' },
+      { id: 'sa', nameEn: 'Saudi Arabia', nameAr: 'السعودية', lang: 'ar', langLabel: 'العربية' },
+      { id: 'jo', nameEn: 'Jordan', nameAr: 'الأردن', lang: 'ar', langLabel: 'العربية' },
+      { id: 'ae-ar', nameEn: 'United Arab Emirates', nameAr: 'الإمارات', lang: 'ar', langLabel: 'العربية' },
+      { id: 'ae-en', nameEn: 'United Arab Emirates', nameAr: 'الإمارات', lang: 'en', langLabel: 'English' },
+    ],
+  },
+  {
+    id: 'europe', nameEn: 'Europe', nameAr: 'أوروبا',
+    countries: [
+      { id: 'uk', nameEn: 'United Kingdom', nameAr: 'المملكة المتحدة', lang: 'en', langLabel: 'English' },
+    ],
+  },
+];
+
+readonly regionQuery = signal('');
+readonly selectedCountry = signal<string>('us');
+
+readonly filteredRegions = computed(() => {
+  const q = this.regionQuery().trim().toLowerCase();
+  if (!q) return this.regions;
+  return this.regions
+    .map(r => ({
+      ...r,
+      countries: r.countries.filter(c =>
+        [c.nameEn, c.nameAr, c.langLabel, r.nameEn, r.nameAr]
+          .some(v => v.toLowerCase().includes(q))),
+    }))
+    .filter(r => r.countries.length > 0);
+});
+
+chooseCountry(c: LangCountry) {
+  this.selectedCountry.set(c.id);
+  this.setLang(c.lang);
+  this.closeLangMenu();
+}
+
+// @HostListener('document:keydown.escape')
+// onEscape() {
+//   if (this.langMenuOpen) this.closeLangMenu();
+// }
 }

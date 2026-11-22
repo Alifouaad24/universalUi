@@ -4,7 +4,7 @@
   <!-- ================= Navbar ================= -->
   <header class="apx-nav-wrap" [class.scrolled]="scrolled">
     <div class="container">
-      <nav class="navbar navbar-expand-lg apx-navbar" [attr.aria-label]="t().nav.aria">
+      <nav class="navbar navbar-expand-lg apx-navbar bg-light" [attr.aria-label]="t().nav.aria">
         <a class="navbar-brand apx-brand" href="#" (click)="go('home', $event)" [attr.aria-label]="t().nav.brandAria">
           <img class="apx-logo" alt="Apx" width="50" height="50"
             src="https://res.cloudinary.com/dianvimfq/image/upload/v1766428830/Inventory_uploads/Logo_3c405b69-11db-4309-aedb-c49259b42632_c9nsrj.jpg" />
@@ -29,12 +29,10 @@
             <!-- زر اللغة: يفتح نافذة باللغات المتاحة -->
             <button type="button" class="btn btn-lang" (click)="toggleLang()" [attr.aria-label]="t().langSwitch.aria"
               aria-haspopup="dialog" [attr.aria-expanded]="langMenuOpen">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
-                <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"
-                  stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+
+              <svg cIcon [name]="'cif-' + selectedCountry().toLowerCase()" width="40" height="30" aria-hidden="true">
               </svg>
-              <span>{{ t().langSwitch.label }}</span>
+
             </button>
             <button type="button" class="btn btn-apx" (click)="goToLogin()">
               <apx-icon name="user" />
@@ -205,7 +203,8 @@
           <div class="social">
             <a href="#" aria-label="LinkedIn"><apx-icon name="linkedin" /></a>
             <a href="#" aria-label="Instagram"><apx-icon name="instagram" /></a>
-            <a [href]="whatsappUrl()" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><apx-icon name="whatsapp" /></a>
+            <a [href]="whatsappUrl()" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><apx-icon
+                name="whatsapp" /></a>
             <a href="#" aria-label="X"><apx-icon name="x" /></a>
           </div>
         </aside>
@@ -268,7 +267,7 @@
   <footer class="apx-footer">
     <div class="container">
       <div class="row g-4">
-        <div class="col-lg-5">
+        <!-- <div class="col-lg-5">
           <a href="#" class="apx-brand light d-inline-flex align-items-center gap-2 text-decoration-none"
             (click)="go('home', $event)">
             <img
@@ -277,7 +276,7 @@
             <span>Apx</span>
           </a>
           <p class="footer-about">{{ t().footer.about }}</p>
-        </div>
+        </div> -->
         <div class="col-6 col-lg-3">
           <h5>{{ t().footer.quickLinks }}</h5>
           <ul class="footer-links">
@@ -330,44 +329,53 @@
   </div>
 </div>
 
-<!-- ================= Language Modal ================= -->
+<!-- ================= Language / Region Sheet ================= -->
 @if (langMenuOpen) {
-<div class="modal-backdrop show apx-backdrop"></div>
-<div class="modal d-block apx-modal lang-modal" tabindex="-1" role="dialog" aria-modal="true"
-  aria-labelledby="langTitle" (click)="closeLangMenu()">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-brand">
-          <apx-icon name="globe" class="lang-check" />
-          <h2 class="modal-title" id="langTitle">{{ t().langMenu.title }}</h2>
-        </div>
-        <button type="button" class="btn-close" (click)="closeLangMenu()"
-          [attr.aria-label]="t().langMenu.close"></button>
+<div class="lang-overlay" (click)="closeLangMenu()"></div>
+<section class="lang-sheet" role="dialog" aria-modal="true" aria-labelledby="langTitle">
+  <div class="container">
+    <div class="lang-sheet-head">
+      <div>
+        <h2 id="langTitle">{{ lang() === 'ar' ? 'اختر الدولة / المنطقة واللغة' : 'Choose your country / region and
+          language' }}</h2>
+        <p>{{ t().langMenu.subtitle }}</p>
       </div>
-      <div class="modal-body">
-        <p class="lang-sub">{{ t().langMenu.subtitle }}</p>
-        <ul class="lang-list" role="listbox" [attr.aria-label]="t().langMenu.title">
-          @for (l of languages; track l.code) {
+      <button type="button" class="btn-close" (click)="closeLangMenu()" [attr.aria-label]="t().langMenu.close"></button>
+    </div>
+
+    <div class="lang-search">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+        <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="search" class="form-control" [value]="regionQuery()"
+        (input)="regionQuery.set($any($event.target).value)"
+        [attr.placeholder]="lang() === 'ar' ? 'ابحث عن دولة أو لغة' : 'Search country or language'"
+        [attr.aria-label]="lang() === 'ar' ? 'ابحث عن دولة أو لغة' : 'Search country or language'" />
+    </div>
+
+    <div class="lang-regions">
+      @for (r of filteredRegions(); track r.id) {
+      <div class="lang-region">
+        <h3>{{ lang() === 'ar' ? r.nameAr : r.nameEn }}</h3>
+        <ul>
+          @for (c of r.countries; track c.id) {
           <li>
-            <button type="button" class="lang-option" role="option" [class.selected]="lang() === l.code"
-              [attr.aria-selected]="lang() === l.code" [attr.lang]="l.code" (click)="setLang(l.code)">
-              <span class="lang-code">{{ l.code }}</span>
-              <span class="lang-names">
-                <strong>{{ l.native }}</strong>
-                <small lang="en">{{ l.english }}</small>
-              </span>
-              @if (lang() === l.code) {
-              <span class="lang-check"><apx-icon name="check" /></span>
-              }
+            <button type="button" class="lang-country" [class.selected]="selectedCountry() === c.id"
+              [attr.aria-current]="selectedCountry() === c.id ? 'true' : null" (click)="chooseCountry(c)">
+              <span class="c-name">{{ lang() === 'ar' ? c.nameAr : c.nameEn }}</span>
+              <span class="c-lang" [attr.lang]="c.lang">{{ c.langLabel }}</span>
             </button>
           </li>
           }
         </ul>
       </div>
+      } @empty {
+      <p class="lang-empty">{{ lang() === 'ar' ? 'لا توجد نتائج' : 'No results found' }}</p>
+      }
     </div>
   </div>
-</div>
+</section>
 }
 
 <!-- ================= Login Modal ================= -->

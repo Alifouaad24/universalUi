@@ -46,7 +46,6 @@ const AR = {
   links: <NavLink[]>[
     { id: 'home', label: 'الرئيسية' },
     { id: 'services', label: 'خدماتنا' },
-    { id: 'about', label: 'من نحن' },
     { id: 'contact', label: 'اتصل بنا' },
   ],
 
@@ -219,7 +218,6 @@ const EN: Translation = {
   links: [
     { id: 'home', label: 'Home' },
     { id: 'services', label: 'Services' },
-    { id: 'about', label: 'About' },
     { id: 'contact', label: 'Contact' },
   ],
 
