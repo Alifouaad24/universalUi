@@ -5,8 +5,35 @@ export type SectionId = 'home' | 'services' | 'about' | 'contact';
 
 interface NavLink { id: SectionId; label: string; }
 
+/** اللغات المتاحة حالياً (تظهر في نافذة اختيار اللغة) */
+export interface LangOption { code: Lang; native: string; english: string; }
+export const LANGUAGES: LangOption[] = [
+  { code: 'ar', native: 'العربية', english: 'Arabic' },
+  { code: 'en', native: 'English', english: 'English' },
+];
+
+/** رقم واتساب بصيغة دولية بدون + أو مسافات */
+export const WHATSAPP_NUMBER = '19165968865';
+
 const AR = {
-  langSwitch: { label: 'English', aria: 'Switch to English' },
+  langSwitch: { label: 'العربية', aria: 'تغيير اللغة' },
+  langMenu: {
+    title: 'اختر اللغة',
+    subtitle: 'اللغات المتاحة حالياً',
+    close: 'إغلاق',
+  },
+  fab: {
+    label: 'تواصل معنا',
+    open: 'فتح خيارات التواصل',
+    close: 'إغلاق خيارات التواصل',
+    title: 'كيف يمكننا مساعدتك؟',
+    subtitle: 'فريقنا جاهز للرد على استفساراتك',
+    whatsapp: 'محادثة عبر واتساب',
+    whatsappSub: 'رد سريع خلال ساعات العمل',
+    whatsappMsg: 'مرحباً، أود الاستفسار عن خدماتكم.',
+    contact: 'تواصل معنا',
+    contactSub: 'أرسل لنا تفاصيل مشروعك',
+  },
 
   nav: {
     aria: 'القائمة الرئيسية',
@@ -34,7 +61,7 @@ const AR = {
       { value: '+80', label: 'عميل في المنطقة' },
       { value: '24/7', label: 'دعم فني' },
     ],
-    artAria: 'شعار Apx: قمة متدرجة',
+    artAria: 'معاينة لوحة تحكم تحليلية',
     satisfaction: 'رضا العملاء',
     launching: 'مشروع قيد الإطلاق',
     projectName: 'منصة متجر إلكتروني',
@@ -88,7 +115,7 @@ const AR = {
     subtitle: 'أخبرنا عن مشروعك وسنرد عليك خلال يوم عمل واحد.',
     infoTitle: 'معلومات التواصل',
     addressLabel: 'العنوان',
-    address: 'الولايات المتحدة الأمريكية، إنديانا',
+    // address: 'الولايات المتحدة الأمريكية، إنديانا',
     phoneLabel: 'الهاتف',
     emailLabel: 'البريد الإلكتروني',
     hoursLabel: 'ساعات العمل',
@@ -123,7 +150,7 @@ const AR = {
     about: 'حلول رقمية متكاملة للشركات: مواقع، تطبيقات، أنظمة سحابية ودعم مستمر.',
     quickLinks: 'روابط سريعة',
     contactUs: 'تواصل معنا',
-    address: 'الولايات المتحدة الأمريكية، إنديانا',
+    // address: 'الولايات المتحدة الأمريكية، إنديانا',
     rights: 'جميع الحقوق محفوظة.',
     privacy: 'سياسة الخصوصية',
     terms: 'الشروط والأحكام',
@@ -162,7 +189,24 @@ export type Translation = typeof AR;
 export type AuthMsgKey = keyof Translation['auth']['messages'];
 
 const EN: Translation = {
-  langSwitch: { label: 'العربية', aria: 'التبديل إلى العربية' },
+  langSwitch: { label: 'English', aria: 'Change language' },
+  langMenu: {
+    title: 'Choose a language',
+    subtitle: 'Currently available languages',
+    close: 'Close',
+  },
+  fab: {
+    label: 'Contact us',
+    open: 'Open contact options',
+    close: 'Close contact options',
+    title: 'How can we help?',
+    subtitle: 'Our team is ready to answer your questions',
+    whatsapp: 'Chat on WhatsApp',
+    whatsappSub: 'Quick replies during business hours',
+    whatsappMsg: 'Hello, I would like to ask about your services.',
+    contact: 'Contact',
+    contactSub: 'Send us your project details',
+  },
 
   nav: {
     aria: 'Main navigation',
@@ -190,7 +234,7 @@ const EN: Translation = {
       { value: '80+', label: 'Clients in the region' },
       { value: '24/7', label: 'Technical support' },
     ],
-    artAria: 'Apx logo: a layered peak',
+    artAria: 'Analytics dashboard preview',
     satisfaction: 'Client satisfaction',
     launching: 'Launching soon',
     projectName: 'E-commerce platform',
@@ -212,7 +256,6 @@ const EN: Translation = {
       { icon: 'cloud', title: 'Cloud solutions', text: 'Move your systems to the cloud with automatic backups and on-demand scaling.' },
       { icon: 'chart', title: 'Data analytics', text: 'Dashboards and reports that help you make decisions based on the numbers.' },
       { icon: 'shield', title: 'Cybersecurity', text: 'Vulnerability scanning, data protection and defense against breaches.' },
-      { icon: 'headset', title: 'Support & maintenance', text: 'Regular updates and fast response to any issue, around the clock.' },
     ],
   },
 
@@ -244,7 +287,7 @@ const EN: Translation = {
     subtitle: 'Tell us about your project and we’ll reply within one business day.',
     infoTitle: 'Contact information',
     addressLabel: 'Address',
-    address: 'Indiana, United States',
+    // address: 'Indiana, United States',
     phoneLabel: 'Phone',
     emailLabel: 'Email',
     hoursLabel: 'Working hours',
@@ -278,7 +321,7 @@ const EN: Translation = {
     about: 'End-to-end digital solutions for businesses: websites, apps, cloud systems and ongoing support.',
     quickLinks: 'Quick links',
     contactUs: 'Get in touch',
-    address: 'Indiana, United States',
+    // address: 'Indiana, United States',
     rights: 'All rights reserved.',
     privacy: 'Privacy policy',
     terms: 'Terms & conditions',

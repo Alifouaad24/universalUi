@@ -77,12 +77,14 @@
           <td *ngIf="type.ebayListingId == null">
             {{ type.inventory_id }}
           </td>
-          <td *ngIf="!isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()" target="_blank">{{
+          <td *ngIf="!isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.sku?.trim()"
+              target="_blank">{{
               type.item?.sku }}</a></td>
           <td><img (click)="ShowAllImages(type.item?.images)"
               [src]="type.item?.images?.length >= 1 ? type.item?.images?.[0]?.imageUrl : defaultBusinessLogo"
               alt="Image" style="width: 60px; height: 75px;"></td>
-          <td *ngIf="isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()" target="_blank">{{
+          <td *ngIf="isUpc"><a [href]="'https://' + type.platform?.productUrl?.trim() + type.item?.upc?.trim()"
+              target="_blank">{{
               type.item?.upc }}</a>
 
           </td>
@@ -791,7 +793,7 @@
         </div>
 
         <!--  Title -->
-        <div class="col-12" *ngIf="selectedType?.Product_name">
+        <div class="col-12" *ngIf="selectedType?.item.itemDescription">
           <div class="card shadow-sm p-3">
             <div class="d-flex justify-content-between align-items-center">
               <p></p>
@@ -803,7 +805,7 @@
                 Copy
               </button>
             </div>
-            <p class="mb-0 mt-2">{{ selectedType?.Product_name }}</p>
+            <p class="mb-0 mt-2">{{ selectedType?.item.itemDescription }}</p>
           </div>
           <div class="card shadow-sm p-3">
             <div class="d-flex justify-content-between align-items-center">
@@ -832,19 +834,19 @@
 
         </div>
         <!-- Description -->
-        <div (click)="copyText(selectedType?.product_description)" class="col-12"
+        <div (click)="copyText(selectedType?.item.itemDetails)" class="col-12"
           *ngIf="selectedType?.product_description">
           <div class="card shadow-sm p-3">
             <div class="d-flex justify-content-between align-items-center">
               <p></p>
               <small class="text-muted">Description</small>
               <button type="button" class="btn btn-sm btn-outline-primary"
-                (click)="copyText(selectedType?.product_description)">
+                (click)="copyText(selectedType?.item.itemDetails)">
                 <i class="fas fa-copy me-1"></i>
                 Copy
               </button>
             </div>
-            <p class="mb-0 mt-2">{{ selectedType?.product_description }}</p>
+            <p class="mb-0 mt-2">{{ selectedType?.item.itemDetails }}</p>
 
           </div>
         </div>

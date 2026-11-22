@@ -7,7 +7,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 
 import { LanguageService } from '../../core/Services/LanguageService';
-import { AuthMsgKey, SectionId } from '../../core/Services/l18n';
+import { AuthMsgKey, LANGUAGES, Lang, SectionId, WHATSAPP_NUMBER } from '../../core/Services/l18n';
 
 /* =========================================================
    أيقونات SVG مدمجة (بدون أي مكتبة أيقونات خارجية)
@@ -37,7 +37,10 @@ const ICONS: Record<string, string> = {
   instagram: 'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M17.5 6.5v.01',
   chat: 'M21 12a9 9 0 0 1-13.4 7.9L3 21l1.2-4.4A9 9 0 1 1 21 12z',
   x: 'M4 4l16 16 M20 4 4 20',
-  google: 'M20 12h-8 M20 12a8 8 0 1 1-2.3-5.7'
+  google: 'M20 12h-8 M20 12a8 8 0 1 1-2.3-5.7',
+  globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18 M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z',
+  whatsapp: 'M21 12a9 9 0 0 1-13.4 7.9L3 21l1.2-4.4A9 9 0 1 1 21 12z M9 8.2c-.4 2.9 3.9 7.2 6.8 6.8l.9-1.4-2.1-1-.9.7a4.5 4.5 0 0 1-2-2l.7-.9-1-2.1z',
+  close: 'M6 6l12 12 M18 6 6 18'
 };
 
 @Component({
@@ -88,8 +91,55 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
   dir = this.langSvc.dir;     // 'rtl' | 'ltr'
   t = this.langSvc.t;         // نصوص اللغة الحالية
 
+  languages = LANGUAGES;
+  langMenuOpen = false;
+
+  /** يفتح نافذة اختيار اللغة */
   toggleLang(): void {
-    this.langSvc.toggle();
+    this.menuOpen = false;
+    this.langMenuOpen = true;
+    if (this.isBrowser) {
+      this.lastFocused = this.doc.activeElement as HTMLElement;
+      this.doc.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeLangMenu(): void {
+    this.langMenuOpen = false;
+    if (!this.isBrowser) return;
+    this.doc.body.style.overflow = '';
+    this.lastFocused?.focus();
+  }
+
+  setLang(code: Lang): void {
+    this.langSvc.set(code);
+    this.closeLangMenu();
+  }
+
+  /* ---------- زر التواصل العائم (أسفل اليمين) ---------- */
+  fabOpen = false;
+
+  toggleFab(): void {
+    this.fabOpen = !this.fabOpen;
+  }
+
+  whatsappUrl(): string {
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(this.t().fab.whatsappMsg)}`;
+  }
+
+  /**
+   * نفتح واتساب يدوياً ثم نغلق اللوحة.
+   * (إغلاق اللوحة يحذف الرابط من الصفحة فوراً، فلا يتبعه المتصفح لو تُرك للسلوك الافتراضي)
+   */
+  openWhatsapp(event: Event): void {
+    event.preventDefault();
+    if (this.isBrowser) window.open(this.whatsappUrl(), '_blank', 'noopener,noreferrer');
+    this.fabOpen = false;
+  }
+
+  fabContact(): void {
+    this.fabOpen = false;
+    this.go('contact');
   }
 
   year = new Date().getFullYear();
@@ -135,7 +185,9 @@ export class ApxLandingComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape() {
-    if (this.loginOpen) this.closeLogin();
+    if (this.langMenuOpen) this.closeLangMenu();
+    else if (this.loginOpen) this.closeLogin();
+    else if (this.fabOpen) this.fabOpen = false;
     else if (this.menuOpen) this.menuOpen = false;
   }
 
