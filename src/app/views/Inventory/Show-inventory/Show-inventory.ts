@@ -1858,11 +1858,13 @@ export class ShowInventoryComponent implements OnInit {
   getingPlatformsScraps = false;
   showPlatformsScrapsBool = false;
   UpcForScrape?: string;
+  SkuForScrape?: string;
 
-  showPlatformsScraps(upc: string, itemId: number) {
+  showPlatformsScraps(upc: string, sku: string, itemId: number) {
     this.getingPlatformsScraps = true;
     this.showPlatformsScrapsBool = true;
     this.UpcForScrape = upc;
+    this.SkuForScrape = sku
     this.currentItemId = itemId;
     this.cdr.detectChanges();
     console.log('>>> SHOW PLATFORMS SCRAPS');
@@ -1904,9 +1906,10 @@ export class ShowInventoryComponent implements OnInit {
   showFullDescription = false;
 
   startScraping(platform: string) {
-    const term = encodeURIComponent((this.UpcForScrape ?? '').toString().trim());
+    const term = this.isUpc ? encodeURIComponent((this.UpcForScrape ?? '').toString().trim()) : encodeURIComponent((this.SkuForScrape ?? '').toString().trim());
+    console.log(term)
     if (!term) {
-      alert('Please enter a UPC first');
+      this.isUpc ? alert('Please enter a UPC first') : alert('Please enter a Sku first');
       return;
     }
     if (this.selectedPlatform?.description == 'eBay') {
@@ -2005,6 +2008,127 @@ export class ShowInventoryComponent implements OnInit {
       });
       return
     }
+
+    if (this.selectedPlatform?.description == 'SHEIN') {
+      this.isScraping = true;
+
+      this.http.getAllData(`AutoScraper/SheinSearchBYSKU?query=${term}`).subscribe({
+        next: (res: any) => {
+          console.log('Scraped product from SHEIN:', res);
+
+          this.scrapedProduct = res?.goods_id ? this.normalizeSheinProduct(res) : null;
+          if (!this.scrapedProduct) {
+            alert('No product found for this SKU');
+          }
+
+          this.showScrapDetailsBool = !!this.scrapedProduct;
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error scraping from SHEIN:', err);
+          const message = err?.error?.message || 'Error scraping from SHEIN';
+          const details = err?.error?.details ? '\n' + err.error.details : '';
+          alert(message + details);
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return;
+    }
+
+    if (this.selectedPlatform?.description == 'mex.somee.com') {
+      this.isScraping = true;
+
+      this.http.getAllData(`Item/GetItemFromDbMax2024/${term}`).subscribe({
+        next: (res: any) => {
+          console.log('Item from mex DB:', res);
+
+          this.scrapedProduct = res ? this.normalizeDbItem(res) : null;
+          this.showScrapDetailsBool = !!this.scrapedProduct;
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading item from mex DB:', err);
+          // 404 يعني أن الـ SKU غير موجود في القاعدة
+          const message = err?.status === 404
+            ? 'No product found for this SKU'
+            : err?.error?.message || 'Error loading item from mex.somee.com';
+          alert(message);
+          this.isScraping = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return;
+    }
+  }
+  private normalizeDbItem(i: any) {
+    const images = (i?.itemImages ?? i?.images ?? [])
+      .map((img: any) => typeof img === 'string' ? img : img?.imageUrl ?? img?.url)
+      .filter(Boolean) as string[];
+
+    return {
+      id: i.itemId ?? i.id ?? i.sku,
+      sku: i.sku,
+      title: i.itemDescription ?? i.name ?? i.title ?? i.sku,
+      brand: i.brand ?? null,
+      price: i.price ?? i.basePrice ?? null,
+      originalPrice: null,
+      currency: 'USD',
+      images,
+      description: i.itemDetails ?? i.description ?? '',
+      category: i.category?.name ?? null,
+      url: null,
+      source: 'mex.somee.com',
+    };
+  }
+  private normalizeSheinProduct(p: any) {
+    const sale = p?.pricing?.sale_price;
+    const retail = p?.pricing?.retail_price;
+
+    // SHEIN لا يرجع وصفًا نصيًا، فنبنيه من المواصفات
+    const attributes: { name: string; value: string }[] =
+      (p?.attributes ?? []).filter((a: any) => a?.name && a?.value);
+    const description = attributes.map(a => `${a.name}: ${a.value}`).join('\n');
+
+    // لون المنتج الحالي
+    const color =
+      attributes.find(a => a.name === 'Color')?.value ??
+      p?.options?.find((o: any) => o.is_main)?.values
+        ?.find((v: any) => v.goods_id === p.goods_id)?.value ??
+      null;
+
+    // المقاسات مع المخزون والسعر
+    const sizes = (p?.sizes ?? []).map((s: any) => ({
+      size: s.size,
+      skuCode: s.sku_code,
+      stock: s.stock ?? 0,
+      inStock: !!s.in_stock,
+      price: s.price?.amount ?? null,
+    }));
+
+    return {
+      id: p.goods_id,
+      sku: p.sku,
+      title: p.name,
+      brand: p.brand?.name ?? p.store?.name ?? null,
+      price: sale?.amount ?? retail?.amount ?? null,
+      originalPrice: retail?.amount ?? null,
+      currency: sale?.currency ?? retail?.currency ?? 'USD',
+      discountPercent: p.pricing?.discount_percent ?? null,
+      images: (p.images ?? []).filter(Boolean) as string[],
+      description,
+      attributes,
+      category: p.category?.name ?? null,
+      categoryPath: p.category?.breadcrumb ?? [],
+      color,
+      sizes,
+      inStock: !!p.in_stock,
+      stock: p.stock ?? null,
+      url: p.link,
+      source: 'SHEIN',
+    };
   }
 
   /** تحويل ريسبونس eBay لنفس شكل Home Depot */

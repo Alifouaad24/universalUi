@@ -64,11 +64,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let type of inventory; index as i" [ngClass]="{
-          'table-warning': type.notFound,
-          'table-success': type.status?.trim()?.includes('Auto Published'),
-          'table-danger': type.status?.trim()?.includes('Offer Made Only')
-        }">
+        <tr *ngFor="let type of inventory; index as i">
           <td *ngIf="type.ebayListingId != null">
             <a [href]="'https://www.ebay.com/itm/' + type.ebayListingId" target="_blank" class="text-decoration-none">
               {{ type.inventory_id }}
@@ -906,7 +902,7 @@
 
         </div>
         <div>
-          <button *ngIf="selectedImagesToEbay.length > 0 && selectedType?.category?.name && selectedType?.itemCondition?.description
+          <button *ngIf="selectedImagesToEbay.length > 0 && selectedType?.item.category?.name && selectedType?.itemCondition?.description
             " [ngClass]="selectedType?.status?.includes('Auto Published') ? 'btn btn-success' : 'btn btn-primary'"
             (click)="PublishByEbay(selectedType)">
             {{ PublishingByEbay ? 'Publishing...' : (selectedType?.status?.includes('Auto Published') ? 'Republish on

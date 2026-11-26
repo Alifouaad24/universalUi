@@ -1,0 +1,441 @@
+<div class="zmc">
+
+    <!-- ============ Header ============ -->
+    <header class="zmc-head">
+        <div class="zmc-head__title">
+            <span class="zmc-mark" aria-hidden="true">Z</span>
+            <div>
+                <h2>
+                    ZMC Customers
+                    <span class="zmc-count" *ngIf="sessionKey && !loading">{{ customers.length }}</span>
+                </h2>
+                <p>Manage and onboard your ZMC customers</p>
+            </div>
+        </div>
+
+        <div class="zmc-head__actions" *ngIf="sessionKey">
+            <button type="button" class="zbtn zbtn--ghost" (click)="logout()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 17l5-5-5-5M20 12H9M12 21H5a2 2 0 01-2-2V5a2 2 0 012-2h7" />
+                </svg>
+                Logout
+            </button>
+            <button type="button" class="zbtn zbtn--primary" (click)="openAddCustomer()"
+                [disabled]="loadingCities || loading">
+                <span class="zspin" *ngIf="loadingCities"></span>
+                <svg *ngIf="!loadingCities" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                {{ loadingCities ? 'Loading cities…' : 'Add Customer' }}
+            </button>
+        </div>
+    </header>
+
+    <!-- ============ Alerts ============ -->
+    <div class="zalert zalert--error" role="alert" *ngIf="errorMessage && !loginModal">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4M12 16h.01" />
+        </svg>
+        <span>{{ errorMessage }}</span>
+        <button type="button" aria-label="Dismiss" (click)="errorMessage = ''">&times;</button>
+    </div>
+
+    <div class="zalert zalert--success" role="status" *ngIf="successMessage">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8 12l3 3 5-6" />
+        </svg>
+        <span>{{ successMessage }}</span>
+        <button type="button" aria-label="Dismiss" (click)="successMessage = ''">&times;</button>
+    </div>
+
+    <!-- ============ Customers card ============ -->
+    <section class="zcard" *ngIf="sessionKey">
+
+        <div class="zcard__toolbar">
+            <div class="zsearch">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.5-3.5" />
+                </svg>
+                <input type="search" placeholder="Search by name, phone or email…" aria-label="Search customers"
+                    [(ngModel)]="search" (keyup.enter)="searchCustomers()">
+            </div>
+            <button type="button" class="zbtn zbtn--soft" (click)="searchCustomers()">Search</button>
+            <button type="button" class="zbtn zbtn--icon" title="Refresh" aria-label="Refresh" (click)="loadCustomers()"
+                [class.is-spinning]="loading">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Loading skeleton -->
+        <div class="zskeleton" *ngIf="loading" aria-busy="true" aria-label="Loading customers">
+            <div class="zskeleton__row" *ngFor="let r of [1,2,3,4,5,6]">
+                <span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <!-- Table -->
+
+        <!-- Table -->
+        <div class="ztable-wrap" *ngIf="!loading && customers.length > 0">
+            <table class="ztable">
+                <thead>
+                    <tr>
+                        <th class="ztable__num">#</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th class="ztable__document">Document</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let row of customers; let i = index">
+                        <td class="ztable__num"><span>{{ i + 1 }}</span></td>
+
+                        <td><span class="zcode">{{ customerCode(row) }}</span></td>
+
+                        <td class="ztable__primary">{{ customerName(row) || '—' }}</td>
+
+                        <td>
+                            <a *ngIf="customerPhone(row); else noPhone" class="zphone"
+                                [href]="'tel:' + customerPhone(row)" dir="ltr">{{ customerPhone(row) }}</a>
+                            <ng-template #noPhone>—</ng-template>
+                        </td>
+
+                        <td class="zaddress">
+                            <strong *ngIf="customerCity(row)">{{ customerCity(row) }} </strong>
+                            <span *ngIf="customerAddress(row)">{{ customerAddress(row) }}</span>
+                            <ng-container *ngIf="!customerCity(row) && !customerAddress(row)">—</ng-container>
+                        </td>
+
+                        <td class="ztable__document">
+                            <span *ngIf="hasDocument(row)" class="zdocument-check" title="Document uploaded">✓</span>
+
+                            <button *ngIf="!hasDocument(row)" type="button" class="zbtn zbtn--soft zbtn--upload"
+                                [disabled]="isUploading(row)" (click)="selectDocument(row, documentInput)">
+                                <ng-container *ngIf="!isUploading(row)"><span>↑</span> Upload Document</ng-container>
+                                <ng-container *ngIf="isUploading(row)">Uploading...</ng-container>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Hidden file input -->
+        <input #documentInput type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            (change)="onDocumentSelected($event)">
+
+
+        <!-- Empty -->
+        <div class="zempty" *ngIf="!loading && customers.length === 0">
+            <div class="zempty__icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                </svg>
+            </div>
+            <strong>No customers found</strong>
+            <p>Try a different search, or add your first customer.</p>
+            <button type="button" class="zbtn zbtn--primary" (click)="openAddCustomer()" [disabled]="loadingCities">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add Customer
+            </button>
+        </div>
+    </section>
+</div>
+
+
+<!-- ====================================== -->
+<!-- LOGIN MODAL                            -->
+<!-- ====================================== -->
+<div class="zoverlay" *ngIf="loginModal">
+    <div class="zmodal zmodal--login" role="dialog" aria-modal="true" aria-labelledby="zmcLoginTitle">
+
+        <div class="zlogin__brand">
+            <span class="zmc-mark zmc-mark--lg" aria-hidden="true">Z</span>
+            <h3 id="zmcLoginTitle">Connect to ZMC</h3>
+            <p>Sign in with your ZMC account to manage customers</p>
+        </div>
+
+        <form (ngSubmit)="submitLogin()" class="zform">
+            <label class="zfield">
+                <span class="zfield__label">Username</span>
+                <span class="zfield__control">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 21a8 8 0 0116 0" />
+                    </svg>
+                    <input type="text" name="username" [(ngModel)]="login.username" required autocomplete="username"
+                        placeholder="Enter username">
+                </span>
+            </label>
+
+            <label class="zfield">
+                <span class="zfield__label">Password</span>
+                <span class="zfield__control">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="4" y="11" width="16" height="10" rx="2" />
+                        <path d="M8 11V7a4 4 0 018 0v4" />
+                    </svg>
+                    <input type="password" name="password" [(ngModel)]="login.password" required
+                        autocomplete="current-password" placeholder="Enter password">
+                </span>
+            </label>
+
+            <div class="zalert zalert--error zalert--inline" role="alert" *ngIf="errorMessage">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v4M12 16h.01" />
+                </svg>
+                <span>{{ errorMessage }}</span>
+            </div>
+
+            <button type="submit" class="zbtn zbtn--primary zbtn--block zbtn--lg" [disabled]="loading">
+                <span class="zspin" *ngIf="loading"></span>
+                {{ loading ? 'Connecting…' : 'Sign in' }}
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- ====================================== -->
+<!-- ADD CUSTOMER MODAL                     -->
+<!-- ====================================== -->
+<div class="zoverlay" *ngIf="addCustomerModal" (click)="closeAddCustomer()">
+    <div class="zmodal zmodal--wide" role="dialog" aria-modal="true" aria-labelledby="zmcAddTitle"
+        (click)="$event.stopPropagation()">
+
+        <!-- Sticky header -->
+        <div class="zmodal__head">
+            <div>
+                <h3 id="zmcAddTitle">New customer</h3>
+                <p>Fields marked <b class="zreq">*</b> are required</p>
+            </div>
+            <button type="button" class="zbtn zbtn--icon" aria-label="Close" (click)="closeAddCustomer()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="zskeleton zskeleton--form" *ngIf="loadingCities">
+            <div class="zskeleton__row" *ngFor="let r of [1,2,3,4]"><span></span><span></span></div>
+        </div>
+
+        <form *ngIf="!loadingCities" (ngSubmit)="submitCustomer()" class="zmodal__form">
+            <div class="zmodal__body">
+
+                <!-- Personal -->
+                <section class="zsection">
+                    <div class="zsection__head">
+                        <span class="zsection__icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4" />
+                                <path d="M4 21a8 8 0 0116 0" />
+                            </svg></span>
+                        <div>
+                            <h4>Personal information</h4>
+                            <p>Who the customer is and how to reach them</p>
+                        </div>
+                    </div>
+
+                    <div class="zgrid">
+                        <label class="zfield">
+                            <span class="zfield__label">Full name <b class="zreq">*</b></span>
+                            <input type="text" name="sFullname" [(ngModel)]="customer.sFullname"
+                                (ngModelChange)="updateLogo()" required placeholder="e.g. Ali Hassan">
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Email</span>
+                            <input type="email" name="sEmail" [(ngModel)]="customer.sEmail"
+                                placeholder="name@example.com" dir="ltr">
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Phone number</span>
+                            <input type="tel" name="cPhone" [(ngModel)]="customer.cPhone"
+                                (ngModelChange)="updatePhone()" placeholder="+964 7xx xxx xxxx" dir="ltr">
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Phone without country code</span>
+                            <input type="tel" name="sPhone" [(ngModel)]="customer.sPhone" placeholder="7xx xxx xxxx"
+                                dir="ltr">
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Customer type</span>
+                            <select name="sCusType" [(ngModel)]="customer.sCusType">
+                                <option value="0">Individual</option>
+                                <option value="1">Company</option>
+                            </select>
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Business type</span>
+                            <select name="addBusinessType" [(ngModel)]="customer.addBusinessType">
+                                <option value="Individual">Individual</option>
+                                <option value="Company">Company</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Company -->
+                <section class="zsection zsection--accent" *ngIf="customer.addBusinessType === 'Company'">
+                    <div class="zsection__head">
+                        <span class="zsection__icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="4" y="3" width="16" height="18" rx="2" />
+                                <path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-4h4v4" />
+                            </svg></span>
+                        <div>
+                            <h4>Company information</h4>
+                            <p>Representatives, delivery and warehouse details</p>
+                        </div>
+                    </div>
+
+                    <div class="zgrid">
+                        <label class="zfield">
+                            <span class="zfield__label">Company name</span>
+                            <input type="text" name="addCompanyName" [(ngModel)]="customer.addCompanyName">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Company address</span>
+                            <input type="text" name="addCompanyAddress" [(ngModel)]="customer.addCompanyAddress">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Company representative</span>
+                            <input type="text" name="addCompanyRepresentative"
+                                [(ngModel)]="customer.addCompanyRepresentative">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Representative phone</span>
+                            <input type="text" name="addCompanyRepresentativesPhoneNumber" dir="ltr"
+                                [(ngModel)]="customer.addCompanyRepresentativesPhoneNumber">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Delivery address</span>
+                            <input type="text" name="addCompanyDeliveryAddress"
+                                [(ngModel)]="customer.addCompanyDeliveryAddress">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Receipt representative</span>
+                            <input type="text" name="addCompanyRepresentativeForReceipt"
+                                [(ngModel)]="customer.addCompanyRepresentativeForReceipt">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Receivers number</span>
+                            <input type="text" name="addCompanyReceiversNumber" dir="ltr"
+                                [(ngModel)]="customer.addCompanyReceiversNumber">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Warehouse</span>
+                            <input type="text" name="addCompanyWarehouse" [(ngModel)]="customer.addCompanyWarehouse">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Warehouse address</span>
+                            <input type="text" name="addCompanyWarehouseAddress"
+                                [(ngModel)]="customer.addCompanyWarehouseAddress">
+                        </label>
+                        <label class="zfield">
+                            <span class="zfield__label">Warehouse representative</span>
+                            <input type="text" name="addCompanyRepresentativeAtWarehouse"
+                                [(ngModel)]="customer.addCompanyRepresentativeAtWarehouse">
+                        </label>
+                        <label class="zfield zgrid__full">
+                            <span class="zfield__label">Related contact number</span>
+                            <input type="text" name="addCompanyRelatedContactNumber" dir="ltr"
+                                [(ngModel)]="customer.addCompanyRelatedContactNumber">
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Address -->
+                <section class="zsection">
+                    <div class="zsection__head">
+                        <span class="zsection__icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z" />
+                                <circle cx="12" cy="9.5" r="2.5" />
+                            </svg></span>
+                        <div>
+                            <h4>Address</h4>
+                            <p>Where orders will be delivered</p>
+                        </div>
+                    </div>
+
+                    <div class="zgrid">
+                        <label class="zfield">
+                            <span class="zfield__label">Country</span>
+                            <select name="sCountry" [(ngModel)]="customer.sCountry">
+                                <option value="1">Iraq</option>
+                            </select>
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">City <b class="zreq">*</b></span>
+                            <select name="sCity" [(ngModel)]="customer.sCity" required>
+                                <option value="">Select city</option>
+                                <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option>
+                            </select>
+                        </label>
+
+                        <label class="zfield zgrid__full">
+                            <span class="zfield__label">Full address</span>
+                            <textarea name="sAddress" [(ngModel)]="customer.sAddress" rows="3"
+                                placeholder="Street, district, nearest landmark…"></textarea>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Other -->
+                <section class="zsection">
+                    <div class="zsection__head">
+                        <span class="zsection__icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 8h.01M11 12h1v4h1" />
+                            </svg></span>
+                        <div>
+                            <h4>Other information</h4>
+                            <p>Optional preferences</p>
+                        </div>
+                    </div>
+
+                    <div class="zgrid">
+                        <label class="zfield">
+                            <span class="zfield__label">Birth date</span>
+                            <input type="date" name="sBD" [(ngModel)]="customer.sBD">
+                        </label>
+
+                        <label class="zfield">
+                            <span class="zfield__label">Preferred language</span>
+                            <select name="preferedLang" [(ngModel)]="customer.preferedLang">
+                                <option value="0">English</option>
+                                <option value="1">Arabic</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sticky footer -->
+            <div class="zmodal__foot">
+                <button type="button" class="zbtn zbtn--ghost" (click)="closeAddCustomer()">Cancel</button>
+                <button type="submit" class="zbtn zbtn--primary" [disabled]="saving">
+                    <span class="zspin" *ngIf="saving"></span>
+                    {{ saving ? 'Saving…' : 'Create customer' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

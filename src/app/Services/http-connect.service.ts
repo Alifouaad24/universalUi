@@ -17,7 +17,7 @@ export class HttpConnectService {
     });
   }
 
-  getAllData<T>(finalUrl: string): Observable<T> {
+  getAllData<T>(finalUrl: string, data?: any): Observable<T> {
     return this.http.get<T>(`${this.apiUrl}/${finalUrl}`, { headers: this.getHeaders() });
   }
 

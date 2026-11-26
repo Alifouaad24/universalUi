@@ -114,7 +114,7 @@
           <div class="d-flex flex-column align-items-center rounded-4 px-2 py-2 cursor-pointer"
             style="min-width: 48px; cursor: pointer;"
             [ngClass]="type.item?.isScraped ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-            (click)="showPlatformsScraps(type.item?.upc, type.item?.itemId)">
+            (click)="showPlatformsScraps(type.item?.upc, type.item?.sku, type.item?.itemId)">
             <i class="bi bi-globe2"></i>
             <span class="fw-bold mt-1" style="font-size: 9px;">Scrape</span>
           </div>
