@@ -83,7 +83,8 @@ export class ShowSystemsComponent implements OnInit {
           globalSystemName: item.globalSystemName,
           globalSystemType: item.globalSystemType,
           globalSystemUrl: item.globalSystemUrl,
-          businessGroup: item.businessGroup
+          businessGroup: item.businessGroup,
+          businessGroupId: item.businessGroupId
         }));
         this.isLoading = false;
 

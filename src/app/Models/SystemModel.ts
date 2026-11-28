@@ -4,6 +4,7 @@ export class SystemModel {
     globalSystemType?: any;
     globalSystemUrl?: string;
     businessGroup?: any
+    businessGroupId?: number
 
 
     constructor(init?: Partial<SystemModel>) {

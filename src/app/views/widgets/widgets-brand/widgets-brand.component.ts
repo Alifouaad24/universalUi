@@ -130,7 +130,7 @@ export class WidgetsBrandComponent
         this.CountUnProccessedImages =
           res.countUnProccessedImages;
 
-        this.CountUnnScrapedItems =
+        this.CountUnnScrapedItems = 
           res.countUnnScrapedItems;
 
         this.CountUnPublishedItems =

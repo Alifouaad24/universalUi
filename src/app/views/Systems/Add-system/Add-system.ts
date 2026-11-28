@@ -27,6 +27,7 @@ export class AddEditSystemComponent implements OnInit {
   isUpdate = false;
   groups: any[] = []
   groupId?: number;
+  currentSystem?: any
   constructor(private http: HttpConnectService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
@@ -35,6 +36,7 @@ export class AddEditSystemComponent implements OnInit {
       const system = JSON.parse(params.get('system') || 'null');
       console.log(system)
       if (system) {
+        this.currentSystem = system
         this.id = system.globalSystemId;
         this.name = system.globalSystemName;
         this.type = system.globalSystemType;
@@ -49,6 +51,7 @@ export class AddEditSystemComponent implements OnInit {
     this.http.getAllData(`Business/GetUserGroups/${userId}`).subscribe((res: any) => {
       console.log(res)
       this.groups = res
+      this.groupId = this.currentSystem.businessGroupId
       this.cdr.detectChanges()
     })
   }

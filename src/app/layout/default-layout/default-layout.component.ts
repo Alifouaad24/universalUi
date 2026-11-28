@@ -218,7 +218,7 @@ export class DefaultLayoutComponent {
         ...(s.description === 'eTask' && {
           badge: {
             color: 'danger',
-            text: this.taskCount.toString()
+            text: String(this.taskCount ?? 0)
           }
         })
       });
